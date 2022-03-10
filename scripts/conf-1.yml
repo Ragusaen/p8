@@ -1,7 +1,7 @@
 enable_RMPLS: false
 ldp: false
 php: true
-protection: facility-node
+protection: none
 random_seed: 1
 rsvp: true
 rsvp_num_lsps: 50
