@@ -1,26 +1,23 @@
-from mpls_fwd_gen import MPLS_Client
+from mpls_fwd_gen import MPLS_Client, oFEC
+from find_arborescences import find_arborescences
 
 class TargetBasedArborescence(MPLS_Client):
     def __init__(self):
-        pass
+        self.lsps: dict[str, tuple[str, str]] = {}
+        self.arborescences: dict[str, list[list[tuple[str, str]]]]
+
+
 
     # Abstract functions to be implemented by each client subclass.
-    def LFIB_compute_entry(self, fec, single=False):
-        # Each client must provide an generator to compute routing entries given the fec.
-        # optional parameter "single" forces the function to return just one routing entry.
-        # returns tuple (label, routing_entry)
-        # routing entries have format:
-        #  routing_entry = { "out": next_hop_iface, "ops": [{"pop":"" | "push": remote_label | "swap": remote_label}], "weight": cost  }
-        # A few rules regarding the ops:
-        #
-        # Rule 1:          NOp := [{"push":x}, {"pop":""}]  # should never appear in an entry.
-        # Rule 2: {"swap": x } := [{"pop":""}, {"push":x}]  # can be analized with just 2 operations.
-        # Corollary 1: All ops can be written with just pop and push operations
-        # Corollary 2: All ops must have a form like:  [{"pop":""}^n, prod_{i=1}^{m} {"push": x_i}]
-        #              which in turn can have at most one swap operation at the deepest inspected stack
-        #              level, so (if m > 1 and n>1):
-        #                 [{"pop":""}^{n-1}, {"swap": x_1} ,prod_{i=2}^{m} {"push": x_i}]
+    def LFIB_compute_entry(self, fec: oFEC, single=False):
+        fec.value
         pass
+
+    def define_lsp(self, tailend: str, tunnel_local_id = 0, weight='weight', protection = None, **kwargs):
+        self.lsps[f"{len(self.lsps.items())}_{self.router.name}_to_{tailend}"] = (self.router.name, tailend)
+
+        self.arborescences = find_arborescences(self.router.network, self.router.name, tailend)
+
 
     def LFIB_refine(self, label):
         # Some process might require a refinement of the LFIB.
