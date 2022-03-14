@@ -125,7 +125,8 @@ def main(conf):
                                  PE_s_per_service = conf["vpn_pes_per_services"],
                                  CEs_per_PE = conf["vpn_ces_per_pe"],
                                  random_seed = conf["random_seed"],
-                                 protection=conf["protection"]
+                                 protection=conf["protection"],
+                                 enable_tba=conf["tba"]
                           )
 
     # save config
@@ -164,6 +165,7 @@ if __name__ == "__main__":
     p.add_argument("--rsvp_tunnels_per_pair",type=int, default = 5, help="Number of (random) tunnels between same endpoints. RSVP only, if enabled. Defaults to 5")
     p.add_argument("--enable_RMPLS", action="store_true", help="Use experimental RMPLS recursive protection (LFIB post processing). Defaults False")
     p.add_argument("--protection", type=str, default="facility-node", help="RSVP protection to implement. facility-node (default), facility-link or None ")
+    p.add_argument("--tba", action="store_true", help="Use target based arborescences")
 
     p.add_argument("--vpn", action="store_true", help="Enable MPLS VPN generic services. Defaults False. ")
     p.add_argument("--vpn_num_services",type=int, default = 1, help="Number of (random) MPLS VPN services, if enabled. Defaults to 1")

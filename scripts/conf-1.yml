@@ -3,6 +3,7 @@ ldp: false
 php: true
 protection: none
 random_seed: 1
+tba: true
 rsvp: true
 rsvp_num_lsps: 50
 rsvp_tunnels_per_pair: 1
