@@ -10,26 +10,27 @@ def find_arborescences(network: Network, ingress: list[str], egress: str) -> lis
     router_link_amount.sort()
     arborescence_to_find = router_link_amount[len(router_link_amount) // 2]
 
-    edge_to_num_arborescence_appearance = {e: 0 for e in network.topology.edges}
+    edges = []
+    for (n1,n2) in network.topology.edges:
+        edges.append((n1,n2))
+        edges.append((n2,n1))
+
+    edge_to_num_arborescence_appearance = {e: 0 for e in edges}
     node_to_neighbors = {n: network.topology.neighbors(n) for n in network.topology.nodes}
 
-    for arbor in range(arborescence_to_find):
-        arborescence = []
-        nodes_used_in_arborescence = []
+    arborescence_to_edges = [[] for _ in range(arborescence_to_find)]
+    arborescence_to_nodes = [[] for _ in range(arborescence_to_find)]
+    arborescence_to_edges_to_consider = [[(n1, n2) for (n1, n2) in edges if n2 == egress] for _ in range(arborescence_to_find)]
 
-        for i in range(len(network.routers) - 1):
-            # Only considered != egress and nodes not already in current arborescence
-            restricted_node_to_neighbors = {node: n for node, n in node_to_neighbors.items() if
-                                            node not in nodes_used_in_arborescence and node != egress}
-            node_with_fewest_neighbors = min(restricted_node_to_neighbors, key=len)
 
-            # Find least used outgoing edge
-            used_edge_out = {(n1, n2): n for (n1, n2), n in edge_to_num_arborescence_appearance.items() if
-                             n1 == node_with_fewest_neighbors}
-            least_used_edge_out = min(used_edge_out, key=used_edge_out.get)
+    for step in range(len(network.topology.nodes) - 1):
+        for arborescence in range(arborescence_to_find):
+            appearances = {e: edge_to_num_arborescence_appearance[e] for e in arborescence_to_edges_to_consider[arborescence]}
+            least_used_edge = min(appearances, key=appearances.get)
+            arborescence_to_edges[arborescence].append(least_used_edge)
+            arborescence_to_nodes[arborescence].append(least_used_edge[1])
+            edge_to_num_arborescence_appearance[least_used_edge] = edge_to_num_arborescence_appearance[least_used_edge] + 1
+            new_edges_to_consider = [(n1,n2) for (n1,n2) in edges if n2 == least_used_edge[0] and n1 not in arborescence_to_nodes[arborescence]]
+            arborescence_to_edges_to_consider[arborescence].extend(new_edges_to_consider)
 
-            arborescence.append(least_used_edge_out)
-
-        arborescences.append(arborescence)
-
-    return arborescences
+    return arborescence_to_edges
