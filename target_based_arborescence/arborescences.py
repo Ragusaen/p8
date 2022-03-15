@@ -10,10 +10,7 @@ def find_arborescences(network: Network, ingress: list[str], egress: str) -> lis
     router_link_amount.sort()
     arborescence_to_find = router_link_amount[len(router_link_amount) // 2]
 
-    edges = []
-    for (n1,n2) in network.topology.edges:
-        edges.append((n1,n2))
-        edges.append((n2,n1))
+    edges: list[tuple[int, int]] = [(n1,n2) for (n1,n2) in network.topology.edges] + [(n2,n1) for (n1,n2) in network.topology.edges]
 
     edge_to_num_arborescence_appearance = {e: 0 for e in edges}
     node_to_neighbors = {n: network.topology.neighbors(n) for n in network.topology.nodes}
@@ -27,9 +24,12 @@ def find_arborescences(network: Network, ingress: list[str], egress: str) -> lis
         for arborescence in range(arborescence_to_find):
             appearances = {e: edge_to_num_arborescence_appearance[e] for e in arborescence_to_edges_to_consider[arborescence]}
             least_used_edge = min(appearances, key=appearances.get)
+
             arborescence_to_edges[arborescence].append(least_used_edge)
             arborescence_to_nodes[arborescence].append(least_used_edge[1])
+
             edge_to_num_arborescence_appearance[least_used_edge] = edge_to_num_arborescence_appearance[least_used_edge] + 1
+
             new_edges_to_consider = [(n1,n2) for (n1,n2) in edges if n2 == least_used_edge[0] and n1 not in arborescence_to_nodes[arborescence]]
             arborescence_to_edges_to_consider[arborescence].extend(new_edges_to_consider)
 
