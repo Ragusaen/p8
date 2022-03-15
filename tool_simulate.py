@@ -185,6 +185,8 @@ if __name__ == "__main__":
                    help="Random seed for genrating the data plane. Leave empty to pick a random one.")
     p.add_argument("--random_seed_sim", type=int, default=random.randint(0, 99999999),
                    help="Random seed for simulation execution. Leave empty to pick a random one.")
+    p.add_argument("--tba", action="store_true", help="Use target based arborescences")
+
 
     p.add_argument("--output_file", type=str, default="",
                    help="Path of the output file, to store forwarding configuration. Defaults to print on screen.")

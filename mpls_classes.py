@@ -2902,8 +2902,8 @@ class Simulator(object):
 
 
 
-    def run(self, verbose = False, flows = None):
-        # Forward a packet for each flow in the 'flows' list, and returnresults and stats.
+    def run(self, verbose = True, flows = None):
+        # Forward a packet for each flow in the 'flows' list, and return results and stats.
 
         # classify according to fec_type
         print(f"running simulation with seed {self.random_seed}" )
@@ -2923,7 +2923,7 @@ class Simulator(object):
                     print(f"\n processing router {router_name}")
 
                 p = MPLS_packet(self.network, init_router = router_name, init_stack = [in_label],
-                                verbose = False, restricted_topology = self.topology)
+                                verbose = verbose, restricted_topology = self.topology)
                 res = p.fwd()
 
                 last_router_name = p.traceroute[-1].name

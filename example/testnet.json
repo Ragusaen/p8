@@ -1,0 +1,13 @@
+{
+  "network" : {
+    "links" : [
+      {
+        "bidirectional": true,
+        "from_interface": "in0",
+        "from_router": "New_York",
+        "to_interface": "in0",
+        "to_router": "Chicago"
+      }
+    ]
+  }
+}

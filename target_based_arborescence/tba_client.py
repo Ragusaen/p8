@@ -24,15 +24,23 @@ class TargetBasedArborescence(MPLS_Client):
         _, next_hop, bounce_fec_name = self.arborescence_next_hop[fec.name]
 
         local_label = self.get_local_label(fec)
-        remote_label = self.get_remote_label(next_hop, fec)
-        main_entry = {"out": next_hop, "ops": [{"swap" : remote_label}], "weight" : 0}
+        assert(local_label is not None)
+
+        # If final hop, pop the label
+        if next_hop == fec.value[0]:
+            main_entry = {"out": next_hop, "ops": [{"pop" : ""}], "weight" : 0}
+        else:
+            remote_label = self.get_remote_label(next_hop, fec)
+            assert(remote_label is not None)
+            main_entry = {"out": next_hop, "ops": [{"swap" : remote_label}], "weight" : 0}
         yield (local_label, main_entry)
 
         bounce_fec, bounce_next_hop, _ = self.arborescence_next_hop[bounce_fec_name]
-        local_bounce_label = self.get_local_label(bounce_fec)
-        remote_bounce_label = self.get_remote_label(bounce_next_hop, bounce_fec)
+        remote_bounce_label = self.get_remote_label(self.router.name, bounce_fec)
+        assert(remote_bounce_label is not None)
+
         bounce_entry = {"out": self.LOCAL_LOOKUP, "ops": [{"swap" : remote_bounce_label}], "weight" : 1}
-        yield (local_bounce_label, bounce_entry)
+        yield (local_label, bounce_entry)
 
 
     # Defines a demand for a headend to this one
