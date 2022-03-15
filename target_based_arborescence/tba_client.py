@@ -23,12 +23,14 @@ class TargetBasedArborescence(MPLS_Client):
     def LFIB_compute_entry(self, fec: oFEC, single=False):
         _, next_hop, bounce_fec_name = self.arborescence_next_hop[fec.name]
 
-        main_entry = {"out": next_hop, "ops": [{"swap" : self.get_remote_label(next_hop, fec)}], "priority" : 0}
-        yield main_entry
+        local_label = self.get_local_label(fec)
+        main_entry = {"out": next_hop, "ops": [{"swap" : self.get_remote_label(next_hop, fec)}], "weight" : 0}
+        yield (local_label, main_entry)
 
         bounce_fec, bounce_next_hop, _ = self.arborescence_next_hop[bounce_fec_name]
-        bounce_entry = {"out": self.LOCAL_LOOKUP, "ops": [{"swap" : self.get_remote_label(bounce_next_hop, bounce_fec)}]}
-        yield bounce_entry
+        local_bounce_label = self.get_local_label(bounce_fec)
+        bounce_entry = {"out": self.LOCAL_LOOKUP, "ops": [{"swap" : self.get_remote_label(bounce_next_hop, bounce_fec)}], "weight" : 1}
+        yield (local_bounce_label, bounce_entry)
 
 
     # Defines a demand for a headend to this one
@@ -41,7 +43,7 @@ class TargetBasedArborescence(MPLS_Client):
         fec_arbors: list[tuple[oFEC, list[tuple[str, str]]]] =\
             [(oFEC("arborescence", f"{self.router.name}_{i}", (self.router.name, i)), a) for i, a in enumerate(self.rooted_arborescences)]
 
-        for i, fec, a in enumerate(fec_arbors):
+        for i, (fec, a) in enumerate(fec_arbors):
             assert len(fec_arbors) > 1
             bounce_fec, _ = fec_arbors[i % len(fec_arbors)]
 
@@ -49,15 +51,17 @@ class TargetBasedArborescence(MPLS_Client):
             for src, tgt in a:
                 # Add a arborescence next-hop for this FEC to the routers in the arborescence
                 src_router: TargetBasedArborescence = self.router.network.routers[src].clients["tba"]
-                src_router.arborescence_next_hop[fec.name] = (fec, tgt, bounce_fec)
+                src_router.arborescence_next_hop[fec.name] = (fec, tgt, bounce_fec.name)
 
+    def compute_bypasses(self):
+        pass
 
     def LFIB_refine(self, label):
         pass
 
     def known_resources(self):
-        for fec, _ in self.arborescence_next_hop:
-            yield fec
+        for _, v in self.arborescence_next_hop.items():
+            yield v[0]
 
     def self_sourced(self, fec: oFEC):
         return fec.fec_type == "arborescence" and fec.value[0] == self.router.name
