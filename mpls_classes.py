@@ -2630,7 +2630,7 @@ class MPLS_packet(object):
 
         self.traceroute = [self.init_router]
         self.link_traceroute = [(self.init_router,None)]
-        self.trace = [(self.init_router,None,self.init_stack)]
+        self.trace: list[tuple[str, str, str]] = [("",self.init_router.name, "|".join(self.init_stack))]
         self.state = "uninitialized"
         self.verbose = verbose
         self.alternatives = []
@@ -2814,7 +2814,7 @@ class MPLS_packet(object):
                 p.traceroute.append(next_hop)
                 p.link_traceroute[-1] = (p.link_traceroute[-1][0], outgoing_iface)
                 p.link_traceroute.append((next_hop, None))
-                p.trace.append("|".join(self.stack))
+                p.trace.append((curr_r.name, "|".join(self.stack), next_hop.name))
 
 
             # Processing the stack
