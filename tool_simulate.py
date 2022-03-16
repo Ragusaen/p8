@@ -67,7 +67,8 @@ def main(conf):
                                  PE_s_per_service=conf["vpn_pes_per_services"],
                                  CEs_per_PE=conf["vpn_ces_per_pe"],
                                  protection=conf["protection"],
-                                 random_seed=conf["random_seed"]
+                                 random_seed=conf["random_seed"],
+                                 enable_tba=conf["tba"]
                                  )
 
     # save config
@@ -133,7 +134,7 @@ def simulation(network, failed_set, f):
     # Compute subgraph
     view = nx.subgraph_view(network.topology, filter_node=filter_node, filter_edge=filter_edge)
 
-    # Instantiate simulator object
+    # Instantiate simulator object 
     s = Simulator(network, trace_mode="links", restricted_topology=view, random_seed=conf["random_seed_sim"])
     s.run()
     (success, total, codes) = s.success_rate(exit_codes=True)

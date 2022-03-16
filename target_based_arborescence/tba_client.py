@@ -48,10 +48,11 @@ class TargetBasedArborescence(MPLS_Client):
         self.demands[f"{len(self.demands.items())}_{headend}_to_{self.router.name}"] = (headend, self.router.name)
 
     def commit_config(self):
-        self.rooted_arborescences = find_arborescences(self.router.network, self.demands.keys(), self.router.name)
+        headends = tuple(set(map(lambda x: x[0], self.demands.values()))) #lists cannot be hashed :|
+        self.rooted_arborescences = find_arborescences(self.router.network, list(headends), self.router.name)
 
         fec_arbors: list[tuple[oFEC, list[tuple[str, str]]]] =\
-            [(oFEC("arborescence", f"{self.router.name}_{i}", (self.router.name, i)), a) for i, a in enumerate(self.rooted_arborescences)]
+            [(oFEC("arborescence", f"{self.router.name}_{i}", (self.router.name, i, headends)), a) for i, a in enumerate(self.rooted_arborescences)]
 
         for i, (fec, a) in enumerate(fec_arbors):
             assert len(fec_arbors) > 1

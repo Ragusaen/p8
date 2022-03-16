@@ -669,6 +669,10 @@ class Network(object):
                     for srv_inst in r.get_FEC_owner(fec).locate_service_instances(vpn_name):
                         good_sources.append(srv_inst.router.name)
 
+                elif fec.fec_type == "arborescence":
+                    good_sources = list(fec.value[2])
+                    good_targets = [fec.value[0]]
+
                 if router_name not in good_sources:
                     continue  # this router can be the source of a packet to this FEC
 
@@ -2949,7 +2953,7 @@ class Simulator(object):
                     print("Good Targets:")
                     pprint(good_targets)
                     pprint(last_router_name)
-                    pprint(f"{fec.name}/{fec.fec_type}/{fec.value}")
+                    #pprint(f"{fec.name}/{fec.fec_type}/{fec.value}")
                     pprint(self.decode_trace(p.traceroute))
                     pprint(f"Result: {res}")
                     print(" ####################")
