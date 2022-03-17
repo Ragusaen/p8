@@ -27,7 +27,15 @@ class HopDistance_Client(MPLS_Client):
     # Abstract functions to be implemented by each client subclass.
     def LFIB_compute_entry(self, fec: oFEC, single=False):
         # TODO: Handle the case when there are multiple next-hops in the same  layer
-        pass
+
+        for next_hop_fec, next_hop in self.fec_to_layer_next_hop.items():
+            if next_hop_fec.value[2] >= fec.value[2] - 1:
+                local_label = self.get_local_label(fec)
+                remote_label = self.get_remote_label(next_hop, next_hop_fec)
+                if next_hop == fec.value[1]:
+                    yield (local_label, {"out": next_hop, "ops": [{"pop": ""}], "weight": next_hop_fec.value[2]})
+                else:
+                    yield (local_label, {"out": next_hop, "ops": [{"swap": remote_label}], "weight": next_hop_fec.value[2]})
 
 
 
@@ -36,7 +44,7 @@ class HopDistance_Client(MPLS_Client):
         self.demands[f"{len(self.demands.items())}_{headend}_to_{self.router.name}"] = (headend, self.router.name)
 
     def commit_config(self):
-        for _, (ingress, egress) in self.demands:
+        for _, (ingress, egress) in self.demands.items():
             # Find the distance layers
             distance_edges = find_distance_edges(self.router.network, ingress, egress)
 
