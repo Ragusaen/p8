@@ -68,7 +68,8 @@ def main(conf):
                                  CEs_per_PE=conf["vpn_ces_per_pe"],
                                  protection=conf["protection"],
                                  random_seed=conf["random_seed"],
-                                 enable_tba=conf["tba"]
+                                 enable_tba=conf["tba"],
+                                 enable_hd=conf["hd"]
                                  )
 
     # save config
@@ -187,6 +188,7 @@ if __name__ == "__main__":
     p.add_argument("--random_seed_sim", type=int, default=random.randint(0, 99999999),
                    help="Random seed for simulation execution. Leave empty to pick a random one.")
     p.add_argument("--tba", action="store_true", help="Use target based arborescences")
+    p.add_argument("--hd", action="store_true", help="Use hop distance routing")
 
 
     p.add_argument("--output_file", type=str, default="",

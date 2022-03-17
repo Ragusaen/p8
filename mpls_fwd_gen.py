@@ -34,6 +34,8 @@ import copy
 from pprint import pprint
 from itertools import chain, count
 import numpy as np
+
+import hop_distance_client
 import target_based_arborescence.tba_client as tba
 from mpls_classes import MPLS_Client
 
@@ -46,7 +48,7 @@ from mpls_classes import *
 def generate_fwd_rules(G, enable_PHP = True, numeric_labels = False, enable_LDP = False,
                        enable_RSVP = False, num_lsps = 10, tunnels_per_pair = 3, protection = 'facility-node',
                        enable_services = False, num_services = 2, PE_s_per_service = 3, CEs_per_PE = 1,
-                       enable_RMPLS = False, random_seed = random.random(), enable_tba = False
+                       enable_RMPLS = False, random_seed = random.random(), enable_tba = False, enable_hd = False
                       ):
     """
     Generates MPLS forwarding rules for a given topology.
@@ -119,6 +121,10 @@ def generate_fwd_rules(G, enable_PHP = True, numeric_labels = False, enable_LDP 
         if enable_tba:
             network.start_client(tba.TargetBasedArborescence)
             protocol_name = "tba"
+
+        elif enable_hd:
+            network.start_client(hop_distance_client.HopDistance_Client)
+            protocol_name = "hop_distance"
         # Start RSVP-TE process in each router
         elif protection is not None and protection.startswith("plinko"):
                 network.start_client(ProcPlinko)
@@ -160,7 +166,7 @@ def generate_fwd_rules(G, enable_PHP = True, numeric_labels = False, enable_LDP 
                     tunnels[(headend, tailend)] += 1  #counter to differentiate tunnels on same (h,t) pair
 
                     try:
-                        if protocol_name == "tba":
+                        if protocol_name == "tba" or protocol_name == "hop_distance":
                             network.routers[tailend].clients[protocol_name].define_demand(headend)
                         else:
                             network.routers[headend].clients[protocol_name].define_lsp(tailend,
