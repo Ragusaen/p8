@@ -1,6 +1,7 @@
 /gen
 /results
 .idea
+/networks
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

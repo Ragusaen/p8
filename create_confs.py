@@ -146,6 +146,8 @@ def generate_conf(n, conf_type = 0, topofile = None, random_seed = 1):
         elif  conf_type == 10:
             base_config["enable_RMPLS"] = False
             base_config["protection"] = "plinko/4"
+        elif  conf_type == 21:
+            base_config["tba"] = True
 
     return base_config
 
@@ -154,10 +156,10 @@ if __name__ == "__main__":
     # #general options
     p = argparse.ArgumentParser(description='Command line utility to generate MPLS simulation specifications.')
 
-    p.add_argument("--topology_path", type=str, default = "topo.json", help="File with existing topology to be loaded.")
-    p.add_argument("--conf_dir", type=str, default = "confs/", help="where to store created configurations. Must not exists.")
+    p.add_argument("--topology", type=str, help="File with existing topology to be loaded.")
+    p.add_argument("--conf", type=str, help="where to store created configurations. Must not exists.")
 
-    p.add_argument("--K",type=int, default = 4, help="Maximum number of failed links.")
+    p.add_argument("--K", type=int, default = 4, help="Maximum number of failed links.")
 
     p.add_argument("--threshold",type=int, default = math.comb(40,4), help="Maximum number of failures to generate")
 
@@ -168,8 +170,8 @@ if __name__ == "__main__":
     args = p.parse_args()
     conf = vars(args)
 
-    topofile = conf["topology_path"]
-    configs_dir = conf["conf_dir"]
+    topofile = conf["topology"]
+    configs_dir = conf["conf"]
     K = conf["K"]
 #    L = conf["L"]
     random_seed = conf["random_seed"]
@@ -204,16 +206,8 @@ if __name__ == "__main__":
         with open(path, "w") as file:
             documents = yaml.dump(dict_conf, file, Dumper=NoAliasDumper)
 
-    create(1)    # conf file with unprotected RSVP, no RMPLS
-    create(2)    # conf file with unprotected RSVP, RMPLS
     create(3)    # conf file with RSVP(FRR), no RMPLS
-    create(4)    # conf file with RSVP(FRR), RMPLS
-    create(5)    # conf file with LDP, no RMPLS
-    create(6)    # conf file with LDP, RMPLS
-    create(7)    # conf file with Plinko protection over RSVP, resiliency level 1
-    create(8)    # conf file with Plinko protection over RSVP, resiliency level 2
-    create(9)    # conf file with Plinko protection over RSVP, resiliency level 3
-    create(10)    # conf file with Plinko protection over RSVP, resiliency level 4
+    create(21)   # conf file with TBA
 
     # Generate failures
     if math.comb(G.number_of_edges(), K) > threshold:
