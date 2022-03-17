@@ -9,6 +9,7 @@ import copy
 from pprint import pprint
 from itertools import chain, count
 import numpy as np
+from networkx import Graph
 
 from networkx.algorithms.shortest_paths.weighted import _weight_function, _dijkstra_multisource
 from resource import getrusage, RUSAGE_SELF
@@ -502,7 +503,7 @@ class Network(object):
     def __init__(self, topology, name=None):
 
         # load network topology (a networkx graph)
-        self.topology = topology
+        self.topology: Graph = topology
         if not name:
             try:
                 self.name = topology.graph["name"]
