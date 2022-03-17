@@ -126,7 +126,8 @@ def main(conf):
                                  CEs_per_PE = conf["vpn_ces_per_pe"],
                                  random_seed = conf["random_seed"],
                                  protection=conf["protection"],
-                                 enable_tba=conf["tba"]
+                                 enable_tba=conf["tba"],
+                                 enable_hd=conf["hd"]
                           )
 
     # save config
@@ -166,6 +167,7 @@ if __name__ == "__main__":
     p.add_argument("--enable_RMPLS", action="store_true", help="Use experimental RMPLS recursive protection (LFIB post processing). Defaults False")
     p.add_argument("--protection", type=str, default="facility-node", help="RSVP protection to implement. facility-node (default), facility-link or None ")
     p.add_argument("--tba", action="store_true", help="Use target based arborescences")
+    p.add_argument("--hd", action="store_true", help="Use hop distance routing")
 
     p.add_argument("--vpn", action="store_true", help="Enable MPLS VPN generic services. Defaults False. ")
     p.add_argument("--vpn_num_services",type=int, default = 1, help="Number of (random) MPLS VPN services, if enabled. Defaults to 1")
