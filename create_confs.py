@@ -167,6 +167,8 @@ if __name__ == "__main__":
 
     p.add_argument("--random_seed",type=int, default = 1, help="Random seed. Leave empty to pick a random one.")
 
+    p.add_argument("--keep_failure_chunks", action="store_true", default=False, help="Do not generate failure chunks if they already exist")
+
     args = p.parse_args()
     conf = vars(args)
 
@@ -209,17 +211,18 @@ if __name__ == "__main__":
     create(3)    # conf file with RSVP(FRR), no RMPLS
     create(21)   # conf file with TBA
 
-    # Generate failures
-    if math.comb(G.number_of_edges(), K) > threshold:
-        F_list = generate_failures_random(G, threshold, division = division, random_seed = random_seed)
-    else:
-        F_list = generate_failures_all(G,  division = division, random_seed = random_seed)
+    if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):
+        # Generate failures
+        if math.comb(G.number_of_edges(), K) > threshold:
+            F_list = generate_failures_random(G, threshold, division = division, random_seed = random_seed)
+        else:
+            F_list = generate_failures_all(G,  division = division, random_seed = random_seed)
 
-    failure_folder = os.path.join(folder, "failure_chunks")
-    os.makedirs(failure_folder, exist_ok = True)
-    i = 0
-    for F_chunk in F_list:
-        pathf = os.path.join(failure_folder, str(i)+".yml")
-        i+=1
-        with open(pathf, "w") as file:
-            documents = yaml.dump(F_chunk, file, default_flow_style=True, Dumper=NoAliasDumper)
+        failure_folder = os.path.join(folder, "failure_chunks")
+        os.makedirs(failure_folder, exist_ok = True)
+        i = 0
+        for F_chunk in F_list:
+            pathf = os.path.join(failure_folder, str(i)+".yml")
+            i+=1
+            with open(pathf, "w") as file:
+                documents = yaml.dump(F_chunk, file, default_flow_style=True, Dumper=NoAliasDumper)

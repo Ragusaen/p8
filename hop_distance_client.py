@@ -3,8 +3,94 @@ from target_based_arborescence.arborescences import find_arborescences
 
 
 def find_distance_edges(network: Network, ingress: str, egress: str) -> list[list[tuple[str, str]]]:
+    edges = []
+    vertices = set()
+
+    E: list[tuple[str, str, int]] = []
+    for i, layer in enumerate(edges):
+        for src, tgt in layer:
+            E.append((src, tgt, i))
+
+    find_cycles(vertices, E)
+
     pass
 
+
+def find_cycles(vertices: set[str], E: list[tuple[str, str, int]]) -> list[list[str]]:
+    cycles: list[list[str]] = []
+
+    def DFS_cycle(path: list[str], layer: int):
+        for src, tgt, l in E:
+            if src == path[-1] and l >= layer - 1:
+                if tgt in path:
+                    idx = path.index(tgt)
+                    cycles.append(path[idx:])
+                else:
+                    DFS_cycle(path + [tgt], l)
+
+    for v in vertices:
+        DFS_cycle([v], 0)
+
+    return cycles
+
+def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, str, int]], cycles: list[list[str]]):
+    # Minimum number of failures required to reach this vertex
+    min_failure_reach: dict[str, int] = {ingress: 0}
+
+    unfinised = set(vertices)
+    while len(unfinised) > 0:
+        for v, f_v in min_failure_reach:
+            outgoing_edges = [(s,t,l) for s,t,l in E if s == v]
+            outgoing_edges.sort(key=lambda x: x[2])
+
+            for f_e, (_, t, _) in enumerate(outgoing_edges):
+                if t not in min_failure_reach or f_e + f_v < min_failure_reach[t]:
+                    min_failure_reach[t] = f_e + f_v
+                    unfinised.add(t)
+
+            unfinised.discard(v)
+
+    # Minimum number of failures required to use this edge
+    min_failure_edge: dict[tuple[str, str], int] = {}
+
+    for v in vertices:
+        outgoing_edges = [(s, t, l) for s, t, l in E if s == v]
+        outgoing_edges.sort(key=lambda x: x[2])
+
+        for f, (s,t,l) in outgoing_edges:
+            min_failure_edge[(s,t)] = min_failure_reach[v] + f
+
+    for cycle in cycles:
+        # Check that we did not fix this cycle already
+        p = cycle[-1]
+        cl = 0
+        for n in cycle:
+            l = [l for s, t, l in E if s == p and t == n][0]
+            if not (l >= cl - 1):
+                continue
+            p = n
+
+        max_fail_edge: tuple[str, str] = (cycle[-1], cycle[0])
+
+        p = cycle[0]
+        for n in cycle[1:]:
+            if min_failure_edge[(p,n)] > min_failure_edge[max_fail_edge]:
+                max_fail_edge = (p,n)
+            p = n
+
+        # Remove the edge
+        s, t, l = [(s,t,l) for s,t,l in E if s == max_fail_edge[0] and t == max_fail_edge[1]][0]
+        E.remove((s,t,l))
+
+        ## Check if we can promote the edge, find the current layer
+        # Find the edge after this one in the cycle
+        next_target = cycle[(cycle.index(t) + 1) % len(cycle)]
+        sn, tn, ln = [(s,t,l) for s,t,l in E if s == t and t == next_target][0]
+
+        # We need to go at least 2 layers above the layer of the next edge in the cycle to break the loop
+        pos_layers = [lp + 1 for (sp, tp, lp) in E if sp == t and lp > ln]
+        if len(pos_layers) > 0:
+            E.append((s,t, pos_layers[0]))
 
 
 class HopDistance_Client(MPLS_Client):
