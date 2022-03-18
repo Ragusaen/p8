@@ -3,7 +3,7 @@ import networkx as nx
 
 
 def find_arborescences(network: Network, ingress: list[str], egress: str) -> list[list[tuple[str, str]]]:
-    edges: list[tuple[int, int]] = [(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
+    edges: list[tuple[str, str]] = [(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
                                    + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2]
 
     # Find median of linked edges on routers - Placeholder to find amount of arborescences
