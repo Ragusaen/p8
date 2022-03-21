@@ -4,6 +4,8 @@ import networkx as nx
 from networkx import Graph
 import matplotlib.pyplot as plt
 
+import graphviz as gv
+
 from mpls_classes import MPLS_Client, Network, oFEC, Router
 from target_based_arborescence.arborescences import find_arborescences
 
@@ -65,7 +67,7 @@ def find_distance_edges(network: Network, ingress: str, egress: str) -> list[lis
     for i, layer in enumerate(layers):
         for src, tgt in layer:
             E.append((src, tgt, i))
-    V = set([s for s,t in edges] + [t for s,t in edges])
+    V = set([s for s,_,_ in E] + [t for _,t,_ in E])
 
     while True:
         cycles = find_cycles(V, E)
@@ -82,18 +84,22 @@ def find_distance_edges(network: Network, ingress: str, egress: str) -> list[lis
 
 def find_cycles(vertices: set[str], E: list[tuple[str, str, int]]) -> list[list[str]]:
     cycles: list[list[str]] = []
+    missing = vertices.copy()
 
-    def DFS_cycle(path: list[str], layer: int):
+    def DFS_cycle(path: list[tuple[str, int]]):
+        missing.discard(path[-1][0])
+        v, layer = path[-1]
         for src, tgt, l in E:
-            if src == path[-1] and l >= layer - 1:
-                if tgt in path:
-                    idx = path.index(tgt)
-                    cycles.append(path[idx:])
+            if src == v and l >= layer - 1:
+                if (tgt, l) in path:
+                    idx = path.index((tgt, l))
+                    cycles.append([v for v, l in path[idx:]])
                 else:
-                    DFS_cycle(path + [tgt], l)
+                    DFS_cycle(path + [(tgt, l)])
 
-    for v in vertices:
-        DFS_cycle([v], 0)
+    while len(missing) > 0:
+        v = missing.pop()
+        DFS_cycle([(v, 0)])
 
     return cycles
 
@@ -102,8 +108,11 @@ def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, 
     min_failure_reach: dict[str, int] = {ingress: 0}
 
     unfinised = set(vertices)
-    while len(unfinised) > 0:
-        for v, f_v in min_failure_reach:
+    last_unfinished = set()
+    while unfinised != last_unfinished:
+        last_unfinished = unfinised.copy()
+
+        for v, f_v in min_failure_reach.copy().items():
             outgoing_edges = [(s,t,l) for s,t,l in E if s == v]
             outgoing_edges.sort(key=lambda x: x[2])
 
@@ -114,6 +123,9 @@ def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, 
 
             unfinised.discard(v)
 
+    # Set unreachable to "infinity"
+    min_failure_reach.update({v: 1_000_000 for v in unfinised})
+
     # Minimum number of failures required to use this edge
     min_failure_edge: dict[tuple[str, str], int] = {}
 
@@ -121,7 +133,7 @@ def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, 
         outgoing_edges = [(s, t, l) for s, t, l in E if s == v]
         outgoing_edges.sort(key=lambda x: x[2])
 
-        for f, (s,t,l) in outgoing_edges:
+        for f, (s,t,l) in enumerate(outgoing_edges):
             min_failure_edge[(s,t)] = min_failure_reach[v] + f
 
     for cycle in cycles:
@@ -129,32 +141,33 @@ def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, 
         p = cycle[-1]
         cl = 0
         for n in cycle:
-            l = [l for s, t, l in E if s == p and t == n][0]
-            if not (l >= cl - 1):
-                continue
+            l = [l for s, t, l in E if s == p and t == n]
+            if len(l) == 0 or not (l[0] >= cl - 1):
+                break
             p = n
+            cl = l[0]
+        else:
+            max_fail_edge: tuple[str, str] = (cycle[-1], cycle[0])
 
-        max_fail_edge: tuple[str, str] = (cycle[-1], cycle[0])
+            p = cycle[0]
+            for n in cycle[1:]:
+                if min_failure_edge[(p,n)] > min_failure_edge[max_fail_edge]:
+                    max_fail_edge = (p,n)
+                p = n
 
-        p = cycle[0]
-        for n in cycle[1:]:
-            if min_failure_edge[(p,n)] > min_failure_edge[max_fail_edge]:
-                max_fail_edge = (p,n)
-            p = n
+            # Remove the edge
+            s, t, l = [(s,t,l) for s,t,l in E if s == max_fail_edge[0] and t == max_fail_edge[1]][0]
+            E.remove((s,t,l))
 
-        # Remove the edge
-        s, t, l = [(s,t,l) for s,t,l in E if s == max_fail_edge[0] and t == max_fail_edge[1]][0]
-        E.remove((s,t,l))
+            ## Check if we can promote the edge, find the current layer
+            # Find the edge after this one in the cycle
+            next_target = cycle[(cycle.index(t) + 1) % len(cycle)]
+            sn, tn, ln = [(sp,tp,lp) for sp,tp,lp in E if sp == t and tp == next_target][0]
 
-        ## Check if we can promote the edge, find the current layer
-        # Find the edge after this one in the cycle
-        next_target = cycle[(cycle.index(t) + 1) % len(cycle)]
-        sn, tn, ln = [(s,t,l) for s,t,l in E if s == t and t == next_target][0]
-
-        # We need to go at least 2 layers above the layer of the next edge in the cycle to break the loop
-        pos_layers = [lp + 1 for (sp, tp, lp) in E if sp == t and lp > ln]
-        if len(pos_layers) > 0:
-            E.append((s,t, pos_layers[0]))
+            # We need to go at least 2 layers above the layer of the next edge in the cycle to break the loop
+            pos_layers = [lp + 1 for (sp, tp, lp) in E if sp == t and lp > ln]
+            if len(pos_layers) > 0:
+                E.append((s,t, pos_layers[0]))
 
 
 class HopDistance_Client(MPLS_Client):
@@ -196,19 +209,16 @@ class HopDistance_Client(MPLS_Client):
             distance_edges = find_distance_edges(self.router.network, ingress, egress)
 
             # Create graph for debugging
-            g = nx.DiGraph()
-            edge_labels: dict[tuple[str,str], str] = {}
+            g = gv.Digraph(format="svg")
 
             for i, layer in enumerate(distance_edges):
-                g.add_edges_from(layer)
-                edge_labels.update({e: str(i) for e in layer})
+                for s,t in layer:
+                    g.edge(s,t, str(i))
 
-            pos = nx.planar_layout(g)
-            nx.draw_networkx(g, pos)
-            nx.draw_networkx_edge_labels(g, pos, edge_labels=edge_labels)
+            g.node(ingress, ingress, color="red")
+            g.node(egress, egress, color="blue")
 
-            plt.title(f"hd_{ingress}_to_{egress}")
-            plt.show()
+            g.render(f"hop_distance_{ingress}_to_{egress}", "gen")
 
             for i, layer in enumerate(distance_edges):
                 # For each layer, create a fec that represents that layer
