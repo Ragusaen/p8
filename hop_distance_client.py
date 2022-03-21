@@ -57,11 +57,7 @@ def find_distance_edges(network: Network, ingress: str, egress: str) -> list[lis
     layers = new_layers.copy()
 
     # remove edges that have egress switch as src
-    new_layers = list(list())
-    for layer in layers:
-        new_layer = list(filter(lambda e: e[0] != egress, layer))
-        new_layers.append(new_layer)
-    layers = new_layers.copy()
+    layers = [[(s,t) for s,t in l if s != egress] for l in layers]
 
 
     # Remove loops

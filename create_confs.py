@@ -98,7 +98,7 @@ def generate_conf(n, conf_type = 0, topofile = None, random_seed = 1):
             "vpn_num_services": int(math.sqrt(n)),
             "vpn_pes_per_services": 4,
             "vpn_ces_per_pe": 2,
-            "random_seed_gen": random_seed
+            "random_seed": random_seed,
         }
     elif topofile:
         base_config = {
@@ -112,7 +112,8 @@ def generate_conf(n, conf_type = 0, topofile = None, random_seed = 1):
             "rsvp_num_lsps": n, #sqrt f(n)
             "rsvp_tunnels_per_pair": 1,
             "vpn": False,
-            "random_seed_gen": random_seed
+            "random_seed": random_seed,
+            "result_folder": conf["result_folder"]
         }
         if  conf_type == 1:
             base_config["enable_RMPLS"] = False
@@ -168,6 +169,8 @@ if __name__ == "__main__":
     p.add_argument("--random_seed",type=int, default = 1, help="Random seed. Leave empty to pick a random one.")
 
     p.add_argument("--keep_failure_chunks", action="store_true", default=False, help="Do not generate failure chunks if they already exist")
+
+    p.add_argument("--result_folder", type=str, default='results', help="Folder to store results in")
 
     args = p.parse_args()
     conf = vars(args)
