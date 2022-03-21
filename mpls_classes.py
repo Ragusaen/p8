@@ -9,6 +9,7 @@ import copy
 from pprint import pprint
 from itertools import chain, count
 import numpy as np
+from networkx import Graph
 
 from networkx.algorithms.shortest_paths.weighted import _weight_function, _dijkstra_multisource
 from resource import getrusage, RUSAGE_SELF
@@ -394,7 +395,7 @@ class ProcLDP(MPLS_Client):
     should use which path.
 
     Manages IP prefixes as resources/FECs.
-    The fec_types it handles are "link" and "loopback"
+    The fec_types it handles are "link" and "bback"
 
     Requires access to the router's routing table, nexthop information, the
     linkstate database and the remote labels to generate routing entries.
@@ -502,7 +503,7 @@ class Network(object):
     def __init__(self, topology, name=None):
 
         # load network topology (a networkx graph)
-        self.topology = topology
+        self.topology: Graph = topology
         if not name:
             try:
                 self.name = topology.graph["name"]
@@ -2907,6 +2908,7 @@ class Simulator(object):
 
 
     def run(self, verbose = True, flows = None):
+        loop_links = set()
         # Forward a packet for each flow in the 'flows' list, and return results and stats.
 
         # classify according to fec_type
@@ -2935,6 +2937,7 @@ class Simulator(object):
                 if res and last_router_name not in good_targets:
                     res = False
 
+
                 if verbose:
                     print(f"label: {in_label}, Initial result: {res}")
 
@@ -2957,6 +2960,33 @@ class Simulator(object):
                     pprint(self.decode_trace(p.traceroute))
                     pprint(f"Result: {res}")
                     print(" ####################")
+
+                if not res:
+                    breakloop = False
+                    for i in range(0, len(p.trace)):
+                        for j in range(i+1, len(p.trace)):
+                            if p.trace[i] == p.trace[j]:
+                                loop_links = loop_links.union({(x[0], x[2]) for x in p.trace[i:j+1]})
+                                breakloop = True
+                                break
+
+                            if breakloop:
+                                break
+
+        if loop_links:
+            def filter_edge(n1, n2):
+                if (n1, n2) in loop_links or (n2, n1) in loop_links:
+                    return False
+                return True
+
+            def filter_node(n):
+                return True
+
+            view = nx.subgraph_view(self.topology, filter_edge=filter_edge, filter_node=filter_node)
+            self.topology = view
+            self.traces = dict()
+            self.run()
+
 
 
     def decode_trace(self, trace):

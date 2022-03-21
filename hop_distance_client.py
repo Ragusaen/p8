@@ -1,19 +1,87 @@
+import queue
+
+import networkx as nx
+from networkx import Graph
+import matplotlib.pyplot as plt
+
 from mpls_classes import MPLS_Client, Network, oFEC, Router
 from target_based_arborescence.arborescences import find_arborescences
 
 
 def find_distance_edges(network: Network, ingress: str, egress: str) -> list[list[tuple[str, str]]]:
-    edges = []
-    vertices = set()
+    edges: set[tuple[str, str]] = set([(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
+                                      + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2])
 
+    layers: list[list] = list(list())  # result
+
+    frontiers: set = set()  # set containing next layer switches
+    frontiers.add(egress)  # initialise frontiers to egress, then we traverse the network backwards from there
+
+    i = 0  # number indicating the current layer
+    while len(frontiers) != 0:
+        layers.append(list())
+        next_frontiers: set = set()
+
+        for v in frontiers:
+            incoming_edges = set(filter(lambda e: e[1] == v, edges))
+            if len(incoming_edges) == 0:
+                continue
+
+            # add sources of incoming edges to as next frontiers
+            next_frontiers = next_frontiers.union(set(map(lambda e: e[0], incoming_edges)))
+            edges = edges - incoming_edges  # we remove already analyzed edges so they are not reconsidered
+            layers[i].extend(list(incoming_edges))
+
+        frontiers = next_frontiers.copy()
+        i += 1
+
+    # remove last layer if there is no edges in it
+    if len(layers[:0]) == 0:
+        layers.remove(layers[:0])
+
+    # Ensure switches only have 1 outgoing rule in the same layer
+    # We sort layers by source and remove edges if src is same as last element
+    new_layers = list(list())
+    for layer in layers:
+        layer.sort(key=lambda e: e[0])
+        fixed_layer = layer.copy()
+
+        last: int = layer[0][0]
+        for src2, tgt2 in layer[1:]:
+            if last == src2:
+                fixed_layer.remove((src2, tgt2))
+            else:
+                last = src2
+
+        new_layers.append(fixed_layer)
+    layers = new_layers.copy()
+
+    # remove edges that have egress switch as src
+    new_layers = list(list())
+    for layer in layers:
+        new_layer = list(filter(lambda e: e[0] != egress, layer))
+        new_layers.append(new_layer)
+    layers = new_layers.copy()
+
+
+    # Remove loops
     E: list[tuple[str, str, int]] = []
-    for i, layer in enumerate(edges):
+    for i, layer in enumerate(layers):
         for src, tgt in layer:
             E.append((src, tgt, i))
+    V = set([s for s,t in edges] + [t for s,t in edges])
 
-    find_cycles(vertices, E)
+    while True:
+        cycles = find_cycles(V, E)
+        if len(cycles) == 0:
+            break
 
-    pass
+        demote_or_remove_loops(V, ingress, E, cycles)
+
+    max_layer = max(E, key=lambda x: x[2])[2]
+    layers = [[(s,t) for (s,t,lp) in E if lp == l] for l in range(max_layer + 1)]
+
+    return layers
 
 
 def find_cycles(vertices: set[str], E: list[tuple[str, str, int]]) -> list[list[str]]:
@@ -94,7 +162,6 @@ def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, 
 
 
 class HopDistance_Client(MPLS_Client):
-
     protocol = "hop_distance"
 
     def __init__(self, router: Router, **kwargs):
@@ -109,7 +176,6 @@ class HopDistance_Client(MPLS_Client):
         # The next_hop and next_fec for this router in some FEC (not only those FECs that are tailend here)
         self.fec_to_layer_next_hop: dict[oFEC, str] = {}
 
-
     # Abstract functions to be implemented by each client subclass.
     def LFIB_compute_entry(self, fec: oFEC, single=False):
         # TODO: Handle the case when there are multiple next-hops in the same  layer
@@ -121,9 +187,8 @@ class HopDistance_Client(MPLS_Client):
                 if next_hop == fec.value[1]:
                     yield (local_label, {"out": next_hop, "ops": [{"pop": ""}], "weight": next_hop_fec.value[2]})
                 else:
-                    yield (local_label, {"out": next_hop, "ops": [{"swap": remote_label}], "weight": next_hop_fec.value[2]})
-
-
+                    yield (
+                    local_label, {"out": next_hop, "ops": [{"swap": remote_label}], "weight": next_hop_fec.value[2]})
 
     # Defines a demand for a headend to this one
     def define_demand(self, headend: str):
@@ -133,6 +198,21 @@ class HopDistance_Client(MPLS_Client):
         for _, (ingress, egress) in self.demands.items():
             # Find the distance layers
             distance_edges = find_distance_edges(self.router.network, ingress, egress)
+
+            # Create graph for debugging
+            g = nx.DiGraph()
+            edge_labels: dict[tuple[str,str], str] = {}
+
+            for i, layer in enumerate(distance_edges):
+                g.add_edges_from(layer)
+                edge_labels.update({e: str(i) for e in layer})
+
+            pos = nx.planar_layout(g)
+            nx.draw_networkx(g, pos)
+            nx.draw_networkx_edge_labels(g, pos, edge_labels=edge_labels)
+
+            plt.title(f"hd_{ingress}_to_{egress}")
+            plt.show()
 
             for i, layer in enumerate(distance_edges):
                 # For each layer, create a fec that represents that layer
@@ -157,4 +237,3 @@ class HopDistance_Client(MPLS_Client):
 
     def self_sourced(self, fec: oFEC):
         return fec.fec_type == 'hop_distance' and fec.value[1] == self.router.name
-
