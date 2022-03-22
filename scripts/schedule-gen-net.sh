@@ -1,6 +1,13 @@
 #!/bin/bash
 
+CONFIG_FILE="$1"
+
+source ${PD}/venv/bin/activate
+
 for TOPO in $(ls topologies) ; do
-    scripts/gen-net.sh scripts/conf-1.yml networks/conf-1/${TOPO} topologies/${TOPO}
-    break
+    TOPONAME=${TOPO/.json/}
+    for CONF in $(ls confs/${TOPONAME}/${CONFIG_FILE}) ; do
+        scripts/run-tool.sh confs/${TOPONAME}/${CONF}
+	done
 done
+
