@@ -114,10 +114,10 @@ def main(conf):
 
     with open(result_file, 'w') as f:
         for failed_set in failed_set_chunk:
-            simulation(network, failed_set, f)
+            simulation(network, failed_set, f, verbose=False)
 
 
-def simulation(network, failed_set, f):
+def simulation(network, failed_set, f, verbose):
     print("STARTING SIMULATION")
     print(failed_set)
 
@@ -137,7 +137,11 @@ def simulation(network, failed_set, f):
 
     # Instantiate simulator object 
     s = Simulator(network, trace_mode="links", restricted_topology=view, random_seed=conf["random_seed_sim"])
-    s.run()
+    verbose=conf["verbose"]
+    if verbose:
+        s.run()
+    else:
+        s.run(verbose=False)
     (success, total, codes) = s.success_rate(exit_codes=True)
     loops = codes[1]
     f.write("{0}; {1}; {2}\n".format(success, total, loops))
@@ -198,6 +202,7 @@ if __name__ == "__main__":
     p.add_argument("--failure_chunk_file", type=str, default="", help="Failure set, encoded as json readable list. ")
     p.add_argument("--result_folder", type=str, default="", help="Path to the folder of simulation result files. Defaults to print on screen.")
     p.add_argument("--print_flows", action="store_true", help="Print flows instead of running simulation. Defaults False.")
+    p.add_argument("--verbose", action="store_false", help="Remove verbosity")
 
     args = p.parse_args()
 
