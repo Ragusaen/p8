@@ -114,10 +114,10 @@ def main(conf):
 
     with open(result_file, 'w') as f:
         for failed_set in failed_set_chunk:
-            simulation(network, failed_set, f, verbose=False)
+            simulation(network, failed_set, f)
 
 
-def simulation(network, failed_set, f, verbose):
+def simulation(network, failed_set, f):
     print("STARTING SIMULATION")
     print(failed_set)
 
