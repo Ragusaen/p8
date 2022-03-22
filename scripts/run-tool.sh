@@ -19,9 +19,8 @@ PD=$(pwd)
 
 
 CONFIG_FILE="${PD}/$1"
-VERBOSE=$2
 
-${PD}/tool_simulate.py --conf ${CONFIG_FILE} ${VERBOSE}
+${PD}/tool_simulate.py --conf ${CONFIG_FILE}
 
 # # Clean up in scratch, if used.
 # cd /scratch/${U}

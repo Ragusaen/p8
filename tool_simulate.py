@@ -202,7 +202,7 @@ if __name__ == "__main__":
     p.add_argument("--failure_chunk_file", type=str, default="", help="Failure set, encoded as json readable list. ")
     p.add_argument("--result_folder", type=str, default="", help="Path to the folder of simulation result files. Defaults to print on screen.")
     p.add_argument("--print_flows", action="store_true", help="Print flows instead of running simulation. Defaults False.")
-    p.add_argument("--verbose", action="store_false", help="Remove verbosity")
+    p.add_argument("--verbose", action="store_true", help="Remove verbosity")
 
     args = p.parse_args()
 
