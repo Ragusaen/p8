@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFIG_FILE="$1"
+CONFIG_FILE="${1}.yml"
 
 source ${PD}/venv/bin/activate
 
