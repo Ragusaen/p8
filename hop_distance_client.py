@@ -101,11 +101,22 @@ def find_cycles(vertices: set[str], E: list[tuple[str, str, int]]) -> list[list[
         v = missing.pop()
         DFS_cycle([(v, 0)])
 
-    return cycles
+    # Canonize the cycles
+    def canonize(cycle: list[str]):
+        min_element = min(cycle)
+        min_idx = cycle.index(min_element)
+        return cycle[min_idx:] + cycle[:min_idx]
+
+    return [list(x) for x in set(tuple(canonize(cycle)) for cycle in cycles)]
 
 def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, str, int]], cycles: list[list[str]]):
     # Minimum number of failures required to reach this vertex
     min_failure_reach: dict[str, int] = {ingress: 0}
+
+    edge_to_layer = {(s,t): l for s,t,l in E}
+
+    for s,t,l in E:
+        assert edge_to_layer[(s,t)] == l
 
     unfinised = set(vertices)
     last_unfinished = set()
@@ -136,38 +147,43 @@ def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, 
         for f, (s,t,l) in enumerate(outgoing_edges):
             min_failure_edge[(s,t)] = min_failure_reach[v] + f
 
+    cycles.sort(key=len)
     for cycle in cycles:
         # Check that we did not fix this cycle already
         p = cycle[-1]
         cl = 0
         for n in cycle:
-            l = [l for s, t, l in E if s == p and t == n]
-            if len(l) == 0 or not (l[0] >= cl - 1):
+            l = edge_to_layer.get((p,n), None)
+            if l is None or not (l >= cl - 1):
                 break
             p = n
-            cl = l[0]
+            cl = l
         else:
             max_fail_edge: tuple[str, str] = (cycle[-1], cycle[0])
 
             p = cycle[0]
             for n in cycle[1:]:
-                if min_failure_edge[(p,n)] > min_failure_edge[max_fail_edge]:
+                if min_failure_edge[(p,n)] > min_failure_edge[max_fail_edge] or\
+                    (min_failure_edge[(p,n)] == min_failure_edge[max_fail_edge] and
+                        edge_to_layer[(p,n)] > edge_to_layer[max_fail_edge]):
                     max_fail_edge = (p,n)
                 p = n
 
             # Remove the edge
-            s, t, l = [(s,t,l) for s,t,l in E if s == max_fail_edge[0] and t == max_fail_edge[1]][0]
-            E.remove((s,t,l))
+            l = edge_to_layer[max_fail_edge]
+            E.remove((max_fail_edge[0], max_fail_edge[1],l))
+            edge_to_layer.pop(max_fail_edge, None)
 
             ## Check if we can promote the edge, find the current layer
             # Find the edge after this one in the cycle
-            next_target = cycle[(cycle.index(t) + 1) % len(cycle)]
-            sn, tn, ln = [(sp,tp,lp) for sp,tp,lp in E if sp == t and tp == next_target][0]
+            next_target = cycle[(cycle.index(max_fail_edge[1]) + 1) % len(cycle)]
+            ln = edge_to_layer[(max_fail_edge[1], next_target)]
 
             # We need to go at least 2 layers above the layer of the next edge in the cycle to break the loop
-            pos_layers = [lp + 1 for (sp, tp, lp) in E if sp == t and lp > ln]
+            pos_layers = [lp + 1 for (sp, tp, lp) in E if sp == max_fail_edge[1] and lp > ln]
             if len(pos_layers) > 0:
-                E.append((s,t, pos_layers[0]))
+                E.append((max_fail_edge[0],max_fail_edge[1], pos_layers[0]))
+                edge_to_layer[max_fail_edge] = pos_layers[0]
 
 
 class HopDistance_Client(MPLS_Client):
@@ -182,29 +198,38 @@ class HopDistance_Client(MPLS_Client):
         # [(headend, [fecs_for_layer_i])]
         self.headend_layers: list[tuple[str, list[oFEC]]] = []
 
+        # Incoming FECs
+        self.incoming_fecs: list[oFEC] = []
+
         # The next_hop and next_fec for this router in some FEC (not only those FECs that are tailend here)
-        self.fec_to_layer_next_hop: dict[oFEC, str] = {}
+        self.demand_fec_layer_next_hop: dict[str, dict[oFEC, str]] = {}
 
     # Abstract functions to be implemented by each client subclass.
     def LFIB_compute_entry(self, fec: oFEC, single=False):
-        # TODO: Handle the case when there are multiple next-hops in the same  layer
+        if fec not in self.incoming_fecs:
+            return
 
-        for next_hop_fec, next_hop in self.fec_to_layer_next_hop.items():
+        if fec.value[1] == self.router.name:
+            return
+
+        demand = fec.value[3]
+        for next_hop_fec, next_hop in self.demand_fec_layer_next_hop[demand].items():
             if next_hop_fec.value[2] >= fec.value[2] - 1:
                 local_label = self.get_local_label(fec)
                 remote_label = self.get_remote_label(next_hop, next_hop_fec)
+                assert(local_label is not None)
                 if next_hop == fec.value[1]:
                     yield (local_label, {"out": next_hop, "ops": [{"pop": ""}], "weight": next_hop_fec.value[2]})
                 else:
-                    yield (
-                    local_label, {"out": next_hop, "ops": [{"swap": remote_label}], "weight": next_hop_fec.value[2]})
+                    assert(remote_label is not None)
+                    yield (local_label, {"out": next_hop, "ops": [{"swap": remote_label}], "weight": next_hop_fec.value[2]})
 
     # Defines a demand for a headend to this one
     def define_demand(self, headend: str):
         self.demands[f"{len(self.demands.items())}_{headend}_to_{self.router.name}"] = (headend, self.router.name)
 
     def commit_config(self):
-        for _, (ingress, egress) in self.demands.items():
+        for demand, (ingress, egress) in self.demands.items():
             # Find the distance layers
             distance_edges = find_distance_edges(self.router.network, ingress, egress)
 
@@ -218,18 +243,27 @@ class HopDistance_Client(MPLS_Client):
             g.node(ingress, ingress, color="red")
             g.node(egress, egress, color="blue")
 
-            g.render(f"hop_distance_{ingress}_to_{egress}", "gen")
+            g.render(f"hop_distance_{demand}", "gen")
 
             for i, layer in enumerate(distance_edges):
                 # For each layer, create a fec that represents that layer
-                layer_fec = oFEC("hop_distance", f"{ingress}_{egress}_d{i}", (ingress, egress, i))
+                layer_fec = oFEC("hop_distance", f"{demand}_l{i}", (ingress, egress, i, demand))
 
                 # Add the next_hop information to the routers involved
                 for (src, tgt) in layer:
                     src_router: Router = self.router.network.routers[src]
                     src_client: HopDistance_Client = src_router.clients["hop_distance"]
 
-                    src_client.fec_to_layer_next_hop[layer_fec] = tgt
+                    if demand not in src_client.demand_fec_layer_next_hop:
+                        src_client.demand_fec_layer_next_hop[demand] = {}
+
+                    src_client.demand_fec_layer_next_hop[demand][layer_fec] = tgt
+
+                    tgt_router: Router = self.router.network.routers[tgt]
+                    tgt_client: HopDistance_Client = tgt_router.clients["hop_distance"]
+
+                    tgt_client.incoming_fecs.append(layer_fec)
+
 
     def compute_bypasses(self):
         pass
@@ -238,8 +272,11 @@ class HopDistance_Client(MPLS_Client):
         pass
 
     def known_resources(self):
-        for fec, _ in self.fec_to_layer_next_hop:
+        for _, fec_dict in self.demand_fec_layer_next_hop.items():
+            for fec, _ in fec_dict.items():
+                yield fec
+        for fec in self.incoming_fecs:
             yield fec
 
     def self_sourced(self, fec: oFEC):
-        return fec.fec_type == 'hop_distance' and fec.value[1] == self.router.name
+        return fec.fec_type == 'hop_distance' and fec.value[0] == self.router.name

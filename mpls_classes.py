@@ -674,6 +674,10 @@ class Network(object):
                     good_sources = list(fec.value[2])
                     good_targets = [fec.value[0]]
 
+                elif fec.fec_type == "hop_distance":
+                    good_sources = [fec.value[0]]
+                    good_targets = [fec.value[1]]
+
                 if router_name not in good_sources:
                     continue  # this router can be the source of a packet to this FEC
 
