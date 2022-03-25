@@ -2,7 +2,7 @@ from mpls_classes import Network
 import networkx as nx
 
 
-def find_arborescences(network: Network, egress: str) -> list[list[tuple[str, str]]]:
+1def find_arborescences(network: Network, egress: str) -> list[list[tuple[str, str]]]:
     edges: list[tuple[str, str]] = [(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
                                    + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2]
 
