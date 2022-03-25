@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --mail-type=FAIL # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-type=NONE # Type of email notification- BEGIN,END,FAIL,ALL
 #SBATCH --mail-user=amad18@student.aau.dk
 #SBATCH --output=/nfs/home/cs.aau.dk/amad18/slurm-output/setup-venv-%j.out 
 #SBATCH --error=/nfs/home/cs.aau.dk/amad18/slurm-output/setup-venv-%j.err

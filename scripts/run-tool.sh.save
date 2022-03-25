@@ -6,11 +6,12 @@
 #SBATCH --partition=naples,dhabi,rome
 #SBATCH --time=00:30:00
 
+let "m=1024*1024"
+ulimit -v $m
+
 PD=$(pwd)
 
 source ~/p8/venv/bin/activate
-
-python3 -m pip install -r requirements.txt
 
 # # In case you write to auxiliary files, you can work in a temporary folder in /scratch (which is node-local).
 # U=$(whoami)

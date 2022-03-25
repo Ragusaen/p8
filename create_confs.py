@@ -207,7 +207,7 @@ if __name__ == "__main__":
     def create(conf_type):
         dict_conf = generate_conf(n, conf_type = conf_type, topofile = topofile, random_seed = random_seed)
         path = os.path.join(folder, "conf_{}.yml".format(conf_type))
-        dict_conf["output_file"] = os.path.join(folder, "dp_{}.yml".format(conf_type))
+       # dict_conf["output_file"] = os.path.join(folder, "dp_{}.yml".format(conf_type))
         with open(path, "w") as file:
             documents = yaml.dump(dict_conf, file, Dumper=NoAliasDumper)
 
