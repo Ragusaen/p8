@@ -120,22 +120,6 @@ def main(conf):
             simulation(network, failed_set, f)
 
 
-    with open(result_file, 'r') as f:
-        def compute_probability(f, e, pf = 0.001):
-            return (pf**f) * (1 - pf)**(e - f)
-
-        total_links = len(network.topology.edges)
-        probabilities = [compute_probability(i, total_links) for i in range(0, 4)]
-
-        i = 0
-        cn = 0
-        for l in f.readlines():
-            s = l.split(" ")
-            i += 1
-            cn += probabilities[int(s[0])] * float(s[1])
-
-        print(cn)
-
 def simulation(network, failed_set, f):
     print("STARTING SIMULATION")
     print(failed_set)
@@ -153,18 +137,22 @@ def simulation(network, failed_set, f):
 
     # Compute subgraph
     view = nx.subgraph_view(network.topology, filter_node=filter_node, filter_edge=filter_edge)
-    links = len(view.edges)
+    links = len(network.topology.edges)
+
     # Instantiate simulator object 
     s = Simulator(network, trace_mode="links", restricted_topology=view, random_seed=conf["random_seed_sim"])
+
     verbose=conf["verbose"]
     if verbose:
         s.run()
     else:
         s.run(verbose=False)
+
     (success, total, codes) = s.success_rate(exit_codes=True)
+    
     loops = codes[1]
     #f.write("attempted: {0}; succeses: {1}; loops: {2}; failed_links: {3}; connectivity: {4}\n".format(total, success, loops, len(F), success/total))
-    f.write(f"{len(F)} {success/total} {links} {s.failed_links} {total} {success} {codes[1]} \n") # TODO: Fix connectivity
+    f.write(f"{len(F)} {success/total} {links} {s.failed_links} {total} {success} {loops} \n") # TODO: Fix connectivity
     print("SIMULATION FINISHED")
 
 
