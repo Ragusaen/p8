@@ -2,6 +2,7 @@
 /results
 .idea
 /networks
+/confs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
