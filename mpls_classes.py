@@ -2889,9 +2889,11 @@ class Simulator(object):
         self.trace_mode= trace_mode
         self.random_seed = random_seed
         self.count_connected = 0
+        self.failed_links = 0
 
         if restricted_topology is not None:
             self.topology = restricted_topology
+            self.initial_links = len(self.topology.edges)
         else:
             self.topology = network.topology
 
@@ -2904,8 +2906,6 @@ class Simulator(object):
                 p = MPLS_packet(self.network, init_router = router_name, init_stack = [in_label], verbose = True)
                 res = p.fwd()
                 self.traces[router_name][in_label] = [{"trace": p, "result": res}]
-
-
 
     def run(self, verbose = True, flows = None):
         loop_links = set()
@@ -2986,6 +2986,8 @@ class Simulator(object):
             self.topology = view
             self.traces = dict()
             self.run()
+
+        self.failed_links = self.initial_links - len(self.topology.edges)
 
 
 

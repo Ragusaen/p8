@@ -1,0 +1,2638 @@
+{
+  "network": {
+    "links": [
+      {
+        "bidirectional": true,
+        "from_interface": "Amsterdam",
+        "from_router": "New_York",
+        "to_interface": "New_York",
+        "to_router": "Amsterdam",
+        "weight": 10
+      },
+      {
+        "bidirectional": true,
+        "from_interface": "London",
+        "from_router": "Amsterdam",
+        "to_interface": "Amsterdam",
+        "to_router": "London",
+        "weight": 10
+      },
+      {
+        "bidirectional": true,
+        "from_interface": "Stockholm",
+        "from_router": "Amsterdam",
+        "to_interface": "Amsterdam",
+        "to_router": "Stockholm",
+        "weight": 10
+      },
+      {
+        "bidirectional": true,
+        "from_interface": "Frankfurt",
+        "from_router": "Amsterdam",
+        "to_interface": "Amsterdam",
+        "to_router": "Frankfurt",
+        "weight": 10
+      },
+      {
+        "bidirectional": true,
+        "from_interface": "Paris",
+        "from_router": "Amsterdam",
+        "to_interface": "Amsterdam",
+        "to_router": "Paris",
+        "weight": 10
+      },
+      {
+        "bidirectional": true,
+        "from_interface": "St_Petersburg",
+        "from_router": "Stockholm",
+        "to_interface": "Stockholm",
+        "to_router": "St_Petersburg",
+        "weight": 10
+      },
+      {
+        "bidirectional": true,
+        "from_interface": "Moscow",
+        "from_router": "St_Petersburg",
+        "to_interface": "St_Petersburg",
+        "to_router": "Moscow",
+        "weight": 10
+      },
+      {
+        "from_interface": "local_lookup",
+        "from_router": "New_York",
+        "to_interface": "loop_back",
+        "to_router": "New_York"
+      },
+      {
+        "from_interface": "local_lookup",
+        "from_router": "Amsterdam",
+        "to_interface": "loop_back",
+        "to_router": "Amsterdam"
+      },
+      {
+        "from_interface": "local_lookup",
+        "from_router": "London",
+        "to_interface": "loop_back",
+        "to_router": "London"
+      },
+      {
+        "from_interface": "local_lookup",
+        "from_router": "Stockholm",
+        "to_interface": "loop_back",
+        "to_router": "Stockholm"
+      },
+      {
+        "from_interface": "local_lookup",
+        "from_router": "St_Petersburg",
+        "to_interface": "loop_back",
+        "to_router": "St_Petersburg"
+      },
+      {
+        "from_interface": "local_lookup",
+        "from_router": "Moscow",
+        "to_interface": "loop_back",
+        "to_router": "Moscow"
+      },
+      {
+        "from_interface": "local_lookup",
+        "from_router": "Frankfurt",
+        "to_interface": "loop_back",
+        "to_router": "Frankfurt"
+      },
+      {
+        "from_interface": "local_lookup",
+        "from_router": "Paris",
+        "to_interface": "loop_back",
+        "to_router": "Paris"
+      }
+    ],
+    "name": "Gblnet",
+    "routers": [
+      {
+        "interfaces": [
+          {
+            "names": [
+              "iNew_York",
+              "Amsterdam",
+              "loop_back"
+            ],
+            "routing_table": {
+              "50510": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50510"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50511": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50511"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50512": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50512"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50513": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50513"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50514": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50514"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50515": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50515"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50516": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50516"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50517": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50517"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50518": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50518"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50519": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50519"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50520": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50520"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50521": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50521"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50522": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50522"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50523": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50523"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50524": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50525": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50526": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50527": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ]
+            }
+          },
+          {
+            "name": "local_lookup",
+            "routing_table": {}
+          }
+        ],
+        "name": "New_York",
+        "location": {
+          "latitude": 53.079,
+          "longitude": -0.1401
+        }
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "iAmsterdam",
+              "New_York",
+              "London",
+              "Stockholm",
+              "Frankfurt",
+              "Paris",
+              "loop_back"
+            ],
+            "routing_table": {
+              "50510": [
+                {
+                  "out": "Paris",
+                  "ops": [
+                    {
+                      "swap": "50510"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50511": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50510"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50512": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50510"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50513": [
+                {
+                  "out": "Paris",
+                  "ops": [
+                    {
+                      "swap": "50511"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50514": [
+                {
+                  "out": "Paris",
+                  "ops": [
+                    {
+                      "swap": "50512"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50515": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50511"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50516": [
+                {
+                  "out": "Paris",
+                  "ops": [
+                    {
+                      "swap": "50513"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50517": [
+                {
+                  "out": "Paris",
+                  "ops": [
+                    {
+                      "swap": "50514"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50518": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50511"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50519": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50512"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50520": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50512"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50521": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50513"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50522": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50513"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50523": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50514"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50524": [
+                {
+                  "out": "Paris",
+                  "ops": [
+                    {
+                      "swap": "50515"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50525": [
+                {
+                  "out": "London",
+                  "ops": [
+                    {
+                      "swap": "50510"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50526": [
+                {
+                  "out": "London",
+                  "ops": [
+                    {
+                      "swap": "50511"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50527": [
+                {
+                  "out": "New_York",
+                  "ops": [
+                    {
+                      "swap": "50524"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50528": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50515"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50529": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50516"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50530": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50531": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50517"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50532": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50518"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50533": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50534": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50519"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50535": [
+                {
+                  "out": "New_York",
+                  "ops": [
+                    {
+                      "swap": "50525"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50536": [
+                {
+                  "out": "Paris",
+                  "ops": [
+                    {
+                      "swap": "50516"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50537": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50520"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50538": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50539": [
+                {
+                  "out": "Paris",
+                  "ops": [
+                    {
+                      "swap": "50517"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50540": [
+                {
+                  "out": "New_York",
+                  "ops": [
+                    {
+                      "swap": "50526"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50541": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50514"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50542": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50515"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50543": [
+                {
+                  "out": "London",
+                  "ops": [
+                    {
+                      "swap": "50520"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50544": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50516"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50545": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50546": [
+                {
+                  "out": "New_York",
+                  "ops": [
+                    {
+                      "swap": "50527"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50547": [
+                {
+                  "out": "London",
+                  "ops": [
+                    {
+                      "swap": "50521"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50548": [
+                {
+                  "out": "Paris",
+                  "ops": [
+                    {
+                      "swap": "50518"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50549": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50550": [
+                {
+                  "out": "London",
+                  "ops": [
+                    {
+                      "swap": "50522"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50551": [
+                {
+                  "out": "London",
+                  "ops": [
+                    {
+                      "swap": "50523"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50552": [
+                {
+                  "out": "London",
+                  "ops": [
+                    {
+                      "swap": "50524"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50553": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50554": [
+                {
+                  "out": "Paris",
+                  "ops": [
+                    {
+                      "swap": "50519"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50555": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50517"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50556": [
+                {
+                  "out": "Paris",
+                  "ops": [
+                    {
+                      "swap": "50520"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50557": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50518"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50558": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50519"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50559": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50544"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50560": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50545"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50561": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50546"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50562": [
+                {
+                  "out": "London",
+                  "ops": [
+                    {
+                      "swap": "50525"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50563": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50547"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50564": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50548"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50565": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50549"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50566": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50550"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50567": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50528"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50568": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50551"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50569": [
+                {
+                  "out": "Frankfurt",
+                  "ops": [
+                    {
+                      "swap": "50529"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50570": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50552"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50571": [
+                {
+                  "out": "London",
+                  "ops": [
+                    {
+                      "swap": "50526"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ]
+            }
+          },
+          {
+            "name": "local_lookup",
+            "routing_table": {}
+          }
+        ],
+        "name": "Amsterdam",
+        "location": {
+          "latitude": 52.374,
+          "longitude": 4.8897
+        }
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "iLondon",
+              "Amsterdam",
+              "loop_back"
+            ],
+            "routing_table": {
+              "50510": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50511": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50512": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50530"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50513": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50531"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50514": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50532"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50515": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50533"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50516": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50534"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50517": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50535"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50518": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50536"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50519": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50537"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50520": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50521": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50522": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50523": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50524": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50525": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50526": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ]
+            }
+          },
+          {
+            "name": "local_lookup",
+            "routing_table": {}
+          }
+        ],
+        "name": "London",
+        "location": {
+          "latitude": 51.5085,
+          "longitude": -0.1257
+        }
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "iStockholm",
+              "St_Petersburg",
+              "Amsterdam",
+              "loop_back"
+            ],
+            "routing_table": {
+              "50510": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50511": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50512": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50510"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50513": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50514": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50511"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50515": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50512"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50516": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50517": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50513"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50518": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50519": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50514"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50520": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50515"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50521": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50538"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50522": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50539"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50523": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50540"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50524": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50541"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50525": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50542"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50526": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50543"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50527": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50544"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50528": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50516"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50529": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50545"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50530": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50546"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50531": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50532": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50547"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50533": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50548"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50534": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50549"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50535": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50550"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50536": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50551"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50537": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50552"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50538": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50553"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50539": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50554"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50540": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50555"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50541": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50556"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50542": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50557"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50543": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50558"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50544": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50545": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50546": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50532"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50547": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50548": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50549": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50533"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50550": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50534"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50551": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50552": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ]
+            }
+          },
+          {
+            "name": "local_lookup",
+            "routing_table": {}
+          }
+        ],
+        "name": "Stockholm",
+        "location": {
+          "latitude": 59.3326,
+          "longitude": 18.0649
+        }
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "iSt_Petersburg",
+              "Stockholm",
+              "Moscow",
+              "loop_back"
+            ],
+            "routing_table": {
+              "50510": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50511": [
+                {
+                  "out": "Moscow",
+                  "ops": [
+                    {
+                      "swap": "50510"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50512": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50513": [
+                {
+                  "out": "Moscow",
+                  "ops": [
+                    {
+                      "swap": "50511"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50514": [
+                {
+                  "out": "Moscow",
+                  "ops": [
+                    {
+                      "swap": "50512"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50515": [
+                {
+                  "out": "Moscow",
+                  "ops": [
+                    {
+                      "swap": "50513"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50516": [
+                {
+                  "out": "Moscow",
+                  "ops": [
+                    {
+                      "swap": "50514"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50517": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50529"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50518": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50530"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50519": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50531"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50520": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50532"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50521": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50533"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50522": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50534"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50523": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50535"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50524": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50536"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50525": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50537"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50526": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50538"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50527": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50539"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50528": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50540"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50529": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50541"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50530": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50542"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50531": [
+                {
+                  "out": "Stockholm",
+                  "ops": [
+                    {
+                      "swap": "50543"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50532": [
+                {
+                  "out": "Moscow",
+                  "ops": [
+                    {
+                      "swap": "50521"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50533": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50534": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ]
+            }
+          },
+          {
+            "name": "local_lookup",
+            "routing_table": {}
+          }
+        ],
+        "name": "St_Petersburg",
+        "location": {
+          "latitude": 59.8944,
+          "longitude": 30.2642
+        }
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "iMoscow",
+              "St_Petersburg",
+              "loop_back"
+            ],
+            "routing_table": {
+              "50510": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50511": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50512": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50513": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50514": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50515": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50526"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50516": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50527"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50517": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50528"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50518": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50529"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50519": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50530"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50520": [
+                {
+                  "out": "St_Petersburg",
+                  "ops": [
+                    {
+                      "swap": "50531"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50521": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ]
+            }
+          },
+          {
+            "name": "local_lookup",
+            "routing_table": {}
+          }
+        ],
+        "name": "Moscow",
+        "location": {
+          "latitude": 55.7522,
+          "longitude": 37.6156
+        }
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "iFrankfurt",
+              "Amsterdam",
+              "loop_back"
+            ],
+            "routing_table": {
+              "50510": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50511": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50512": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50513": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50514": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50515": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50516": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50517": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50518": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50519": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50520": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50559"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50521": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50560"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50522": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50561"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50523": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50562"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50524": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50563"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50525": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50564"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50526": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50565"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50527": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50566"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50528": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50529": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ]
+            }
+          },
+          {
+            "name": "local_lookup",
+            "routing_table": {}
+          }
+        ],
+        "name": "Frankfurt",
+        "location": {
+          "latitude": 50.1167,
+          "longitude": 8.6833
+        }
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "iParis",
+              "Amsterdam",
+              "loop_back"
+            ],
+            "routing_table": {
+              "50510": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50511": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50512": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50513": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50514": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50515": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50516": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50517": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50518": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50519": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50520": [
+                {
+                  "out": "local_lookup",
+                  "ops": [
+                    {
+                      "pop": ""
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50521": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50567"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50522": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50568"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50523": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50569"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50524": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50570"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ],
+              "50525": [
+                {
+                  "out": "Amsterdam",
+                  "ops": [
+                    {
+                      "swap": "50571"
+                    }
+                  ],
+                  "priority": 0
+                }
+              ]
+            }
+          },
+          {
+            "name": "local_lookup",
+            "routing_table": {}
+          }
+        ],
+        "name": "Paris",
+        "location": {
+          "latitude": 48.8534,
+          "longitude": 2.3488
+        }
+      }
+    ]
+  }
+}
