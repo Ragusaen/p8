@@ -10,6 +10,7 @@ PD=$(pwd)
 CONFIG_FILE="${1}.yml"
 
 for TOPO in $(ls confs) ; do
-    sbatch scripts/run-tool.sh confs/${TOPO}/${CONFIG_FILE}
+    for FAILCHUNK in $(ls confs/${TOPO}/failure_chunks) ; do
+        sbatch scripts/run-tool.sh confs/${TOPO}/${CONFIG_FILE} confs/${TOPO}/failure_chunks/${FAILCHUNK}
+    done
 done
-

@@ -20,8 +20,9 @@ python3 -m pip install -r requirements.txt
 
 
 CONFIG_FILE="$1"
+FAILCHUNK="$2"
 
-${PD}/tool_simulate.py --conf ${CONFIG_FILE}
+${PD}/tool_simulate.py --conf ${CONFIG_FILE} --failure_chunk_file ${FAILCHUNK}
 
 # # Clean up in scratch, if used.
 # cd /scratch/${U}
