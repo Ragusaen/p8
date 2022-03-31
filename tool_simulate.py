@@ -80,7 +80,7 @@ def main(conf):
     if output_file:
         with open(output_file, 'w') as f:
             json.dump(net_dict, f, indent=2)
-    else:
+    elif conf["verbose"]:
         print(" ~~~ FORWARDING DATAPLANE  ~~~ ")
         pprint(net_dict)
 

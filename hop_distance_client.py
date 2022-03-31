@@ -196,12 +196,12 @@ def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, 
 
             E.remove((max_fail_edge[0], max_fail_edge[1],l))
             edge_to_layer.pop(max_fail_edge, None)
-            print(f"Removed {max_fail_edge}")
+            #print(f"Removed {max_fail_edge}")
 
             if pl is not None:
                 E.append((max_fail_edge[0], max_fail_edge[1], pl))
                 edge_to_layer[max_fail_edge] = pl
-                print(f"Promoted {max_fail_edge} from {l} to {pl}")
+                #print(f"Promoted {max_fail_edge} from {l} to {pl}")
             break
 
 
@@ -253,16 +253,16 @@ class HopDistance_Client(MPLS_Client):
             distance_edges = find_distance_edges(self.router.network, ingress, egress)
 
             # Create graph for debugging
-            g = gv.Digraph(format="svg")
-
-            for i, layer in enumerate(distance_edges):
-                for s,t in layer:
-                    g.edge(s,t, str(i))
-
-            g.node(ingress, ingress, color="red")
-            g.node(egress, egress, color="blue")
-
-            g.render(f"hop_distance_{demand}", "gen")
+            # g = gv.Digraph(format="svg")
+            #
+            # for i, layer in enumerate(distance_edges):
+            #     for s,t in layer:
+            #         g.edge(s,t, str(i))
+            #
+            # g.node(ingress, ingress, color="red")
+            # g.node(egress, egress, color="blue")
+            #
+            # g.render(f"hop_distance_{demand}", "gen")
 
             for i, layer in enumerate(distance_edges):
                 # For each layer, create a fec that represents that layer
