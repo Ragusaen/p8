@@ -149,7 +149,7 @@ def simulation(network, failed_set, f):
         s.run(verbose=False)
 
     (success, total, codes) = s.success_rate(exit_codes=True)
-    
+
     loops = codes[1]
     #f.write("attempted: {0}; succeses: {1}; loops: {2}; failed_links: {3}; connectivity: {4}\n".format(total, success, loops, len(F), success/total))
     f.write(f"{len(F)} {success/total} {links} {s.failed_links} {total} {success} {loops} \n") # TODO: Fix connectivity
