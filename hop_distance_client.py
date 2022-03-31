@@ -1,4 +1,5 @@
 import queue
+from typing import Union
 
 import networkx as nx
 from networkx import Graph
@@ -147,6 +148,17 @@ def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, 
         for f, (s,t,l) in enumerate(outgoing_edges):
             min_failure_edge[(s,t)] = min_failure_reach[v] + f
 
+    def can_promote_to(edge: tuple[str, str]) -> Union[None, int]:
+        ln = edge_to_layer[edge]
+
+        # We need to go at least 2 layers above the layer of the next edge in the cycle to break the loop
+        pos_layers = [lp + 1 for (sp, tp, lp) in E if sp == edge[1] and lp >= ln]
+        if len(pos_layers) > 0:
+            return pos_layers[0]
+        else:
+            return None
+
+
     cycles.sort(key=len)
     for cycle in cycles:
         # Check that we did not fix this cycle already
@@ -159,31 +171,38 @@ def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, 
             p = n
             cl = l
         else:
+            def e_comp(e1: tuple[str, str], e2: tuple[str, str]):
+                if min_failure_edge[e1] == min_failure_edge[e2]:
+                    if edge_to_layer[e1] == edge_to_layer[e2]:
+                        cpt1 = can_promote_to(e1)
+                        cpt2 = can_promote_to(e2)
+                        return (10000 if cpt1 is None else cpt1) <= (10000 if cpt2 is None else cpt2)
+                    else:
+                        return edge_to_layer[e1] > edge_to_layer[e2]
+                else:
+                    return min_failure_edge[e1] > min_failure_edge[e2]
+
             max_fail_edge: tuple[str, str] = (cycle[-1], cycle[0])
 
             p = cycle[0]
             for n in cycle[1:]:
-                if min_failure_edge[(p,n)] > min_failure_edge[max_fail_edge] or\
-                    (min_failure_edge[(p,n)] == min_failure_edge[max_fail_edge] and
-                        edge_to_layer[(p,n)] > edge_to_layer[max_fail_edge]):
+                if e_comp((p,n), max_fail_edge):
                     max_fail_edge = (p,n)
                 p = n
 
             # Remove the edge
             l = edge_to_layer[max_fail_edge]
+            pl = can_promote_to(max_fail_edge)
+
             E.remove((max_fail_edge[0], max_fail_edge[1],l))
             edge_to_layer.pop(max_fail_edge, None)
+            print(f"Removed {max_fail_edge}")
 
-            ## Check if we can promote the edge, find the current layer
-            # Find the edge after this one in the cycle
-            next_target = cycle[(cycle.index(max_fail_edge[1]) + 1) % len(cycle)]
-            ln = edge_to_layer[(max_fail_edge[1], next_target)]
-
-            # We need to go at least 2 layers above the layer of the next edge in the cycle to break the loop
-            pos_layers = [lp + 1 for (sp, tp, lp) in E if sp == max_fail_edge[1] and lp > ln]
-            if len(pos_layers) > 0:
-                E.append((max_fail_edge[0],max_fail_edge[1], pos_layers[0]))
-                edge_to_layer[max_fail_edge] = pos_layers[0]
+            if pl is not None:
+                E.append((max_fail_edge[0], max_fail_edge[1], pl))
+                edge_to_layer[max_fail_edge] = pl
+                print(f"Promoted {max_fail_edge} from {l} to {pl}")
+            break
 
 
 class HopDistance_Client(MPLS_Client):
@@ -213,7 +232,7 @@ class HopDistance_Client(MPLS_Client):
             return
 
         demand = fec.value[3]
-        for next_hop_fec, next_hop in self.demand_fec_layer_next_hop[demand].items():
+        for next_hop_fec, next_hop in self.demand_fec_layer_next_hop.get(demand, {}).items():
             if next_hop_fec.value[2] >= fec.value[2] - 1:
                 local_label = self.get_local_label(fec)
                 remote_label = self.get_remote_label(next_hop, next_hop_fec)

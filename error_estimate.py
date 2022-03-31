@@ -1,7 +1,7 @@
 from mpmath import *
 
 
-mp.dps = 25
+mp.dps = 250
 
 def error_estimate(n: int, k: int, p_f: float = 0.001):
     sum = mpf('0')
@@ -13,4 +13,6 @@ def error_estimate(n: int, k: int, p_f: float = 0.001):
 
 
 
-print(error_estimate(100, 3))
+print(error_estimate(10, 4))
+print(error_estimate(100, 4))
+print(error_estimate(10000, 4))
