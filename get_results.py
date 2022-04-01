@@ -17,15 +17,16 @@ probability_dist = [compute_probability(x, 0) for x in range(0, 5)]
 with open(args.output_file, "w") as r:
     all_results = []
     for topology in os.listdir(folder):
-        for res_file in os.listdir(f"{folder}/{topology}"):
-            connectivity = 0
-            with open(f"{folder}/{topology}/{res_file}") as t:
-                l = t.readline()
-                while l:
-                    s = l.split(" ")
-                    connectivity += probability_dist[int(s[0])] * float(s[1])
+        for conf in os.listdir(f"{folder}/{topology}"):
+            for res_file in os.listdir(f"{folder}/{topology}/{conf}"):
+                connectivity = 0
+                with open(f"{folder}/{topology}/{conf}/{res_file}") as t:
                     l = t.readline()
-                all_results.append(connectivity)
+                    while l:
+                        s = l.split(" ")
+                        connectivity += probability_dist[int(s[0])] * float(s[1])
+                        l = t.readline()
+                    all_results.append(connectivity)
 
     all_results.sort()
     i = 0
