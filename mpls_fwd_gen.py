@@ -21,7 +21,7 @@ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 ###################################
 """
-
+from typing import Union
 
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -199,13 +199,13 @@ def generate_fwd_rules(G, enable_PHP = True, numeric_labels = False, enable_LDP 
                 else:
                     c[(h,t)] += 1
 
-                result = network.routers[h].clients[protocol_name].define_lsp(t,
+                if protocol_name == "tba" or protocol_name == "hop_distance":
+                    network.routers[t].clients[protocol_name].define_demand(h)
+                else:
+                    network.routers[h].clients[protocol_name].define_lsp(t,
                                                                  tunnel_local_id = c[(h,t)],
                                                                  weight='weight',
                                                                  protection=protection)
-                print(f"RESULT IS: {result}")
-                pprint(network.routers[h].clients[protocol_name].headended_lsps)
-
 
         else:
             raise Exception("num_lsps has wrong type (must be list of pairs or integer)")

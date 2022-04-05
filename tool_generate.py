@@ -111,6 +111,8 @@ def main(conf):
         print("*************cuack****************")
         print(G.graph["name"])
 
+    flows = []
+
     ## Generate MPLS forwarding rules
     network = generate_fwd_rules(G,
                                  enable_PHP = conf["php"],

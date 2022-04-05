@@ -1,3 +1,5 @@
+import sys
+
 import networkx as nx
 import matplotlib.pyplot as plt
 import random
@@ -622,21 +624,22 @@ class Network(object):
 
         return net_dict
 
-    def build_flow_table(self, verbose = False):
+    def build_flow_table(self, flows: list[tuple[str, str]], verbose = False):
         # Build dict of flows for each routable FEC the routers know, in the sense
         # of only initiating packets that could actually be generated from the router.
 
         # classify according to fec_type
         print(f"Computing flows for simulation." )
 
-        flows = dict()
+        labeled_flows = dict()
 
-        for router_name, r in self.routers.items():
-            flows[router_name] = dict()
+        for src_router, tgt_router in flows:
+            if src_router not in labeled_flows:
+                labeled_flows[src_router] = dict()
             if verbose:
-                print(f"\n processing router {router_name}")
+                print(f"\n processing flow {src_router} {tgt_router}")
 
-            for fec in r.LIB:
+            for fec in self.routers[src_router].LIB:
                 if verbose:
                     print(fec.name)
                 if fec.fec_type.startswith("bypass"):
@@ -647,14 +650,14 @@ class Network(object):
 
                 elif fec.fec_type == "loopback":
                     good_sources = set(self.routers)
-                    if fec.name.endswith(router_name):
-                        good_sources.difference_update([router_name])
+                    if fec.name.endswith(src_router):
+                        good_sources.difference_update([src_router])
                     good_targets = [fec.value]
 
                 elif fec.fec_type == "link":
                     good_sources = set(self.routers)
-                    if "_"+router_name+"_" in fec.name or fec.name.endswith("_"+router_name):
-                        good_sources.difference_update([router_name])
+                    if "_"+src_router+"_" in fec.name or fec.name.endswith("_"+src_router):
+                        good_sources.difference_update([src_router])
                     good_targets = list(fec.value)
 
                 elif fec.fec_type == "TE_LSP":
@@ -667,7 +670,7 @@ class Network(object):
                     tgt_ce = fec.value[2]
                     good_targets = [tgt_pe]   #actually we don't have implemented a way of checking delivery to a CE
                     good_sources = []
-                    for srv_inst in r.get_FEC_owner(fec).locate_service_instances(vpn_name):
+                    for srv_inst in self.routers[src_router].get_FEC_owner(fec).locate_service_instances(vpn_name):
                         good_sources.append(srv_inst.router.name)
 
                 elif fec.fec_type == "arborescence":
@@ -678,18 +681,21 @@ class Network(object):
                     good_sources = [fec.value[0]]
                     good_targets = [fec.value[1]]
 
-                if router_name not in good_sources:
+                if src_router not in good_sources or tgt_router not in good_targets:
                     continue  # this router can be the source of a packet to this FEC
 
-                in_label = r.get_label(fec)
+                in_label = self.routers[src_router].get_label(fec)
                 # Don't even try if this is not in the LFIB
-                if in_label not in r.LFIB:
+                if in_label not in self.routers[src_router].LFIB:
                     continue
 
                 # I have good_sources and good_targets in memory currently...
-                flows[router_name][in_label] = (good_sources,good_targets)
+                labeled_flows[src_router][in_label] = (good_sources,good_targets)
+                break # Successfully found flow
+            else:
+                print(f"ERROR: Could not find flow from {src_router} to {tgt_router}", file=sys.stderr)
 
-        return flows
+        return labeled_flows
 
 
     def visualize(self, router_list=None):
@@ -2911,19 +2917,19 @@ class Simulator(object):
                 res = p.fwd()
                 self.traces[router_name][in_label] = [{"trace": p, "result": res}]
 
-    def run(self, verbose = True, flows = None):
+    def run(self, flows, verbose = True):
         loop_links = set()
         # Forward a packet for each flow in the 'flows' list, and return results and stats.
 
         # classify according to fec_type
         print(f"running simulation with seed {self.random_seed}" )
         random.seed(self.random_seed)
-        if not flows:
-            flows = self.network.build_flow_table()
-            if verbose:
-                pprint(flows)
 
-        for router_name, lbl_items in flows.items():
+        labeled_flows = self.network.build_flow_table(flows)
+        if verbose:
+            pprint(labeled_flows)
+
+        for router_name, lbl_items in labeled_flows.items():
             self.traces[router_name] = dict()
 
             for in_label, tup in lbl_items.items():
@@ -2989,7 +2995,7 @@ class Simulator(object):
             view = nx.subgraph_view(self.topology, filter_edge=filter_edge, filter_node=filter_node)
             self.topology = view
             self.traces = dict()
-            self.run()
+            self.run(flows)
 
         self.failed_links = self.initial_links - len(self.topology.edges)
 

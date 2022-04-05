@@ -54,6 +54,9 @@ def main(conf):
         print("*****************************")
         print(G.graph["name"])
 
+    with open(conf["flows_file"],"r") as file:
+        flows = yaml.safe_load(file)
+
     ## Generate MPLS forwarding rules
     network = generate_fwd_rules(G,
                                  enable_PHP=conf["php"],
@@ -61,7 +64,7 @@ def main(conf):
                                  enable_LDP=conf["ldp"],
                                  enable_RSVP=conf["rsvp"],
                                  enable_RMPLS=conf["enable_RMPLS"],
-                                 num_lsps=conf["rsvp_num_lsps"],
+                                 num_lsps=flows,
                                  tunnels_per_pair=conf["rsvp_tunnels_per_pair"],
                                  enable_services=conf["vpn"],
                                  num_services=conf["vpn_num_services"],
@@ -70,7 +73,7 @@ def main(conf):
                                  protection=conf["protection"],
                                  random_seed=conf["random_seed"],
                                  enable_tba=conf["tba"],
-                                 enable_hd=conf["hd"]
+                                 enable_hd=conf["hd"],
                                  )
 
     # save config
@@ -117,10 +120,10 @@ def main(conf):
 
     with open(result_file, 'a') as f:
         for failed_set in failed_set_chunk:
-            simulation(network, failed_set, f)
+            simulation(network, failed_set, f, flows)
 
 
-def simulation(network, failed_set, f):
+def simulation(network, failed_set, f, flows: list[tuple[str, str]]):
     print("STARTING SIMULATION")
     print(failed_set)
 
@@ -143,10 +146,7 @@ def simulation(network, failed_set, f):
     s = Simulator(network, trace_mode="links", restricted_topology=view, random_seed=conf["random_seed_sim"])
 
     verbose=conf["verbose"]
-    if verbose:
-        s.run()
-    else:
-        s.run(verbose=False)
+    s.run(flows, verbose=verbose)
 
     (success, total, codes) = s.success_rate(exit_codes=True)
 
@@ -211,6 +211,7 @@ if __name__ == "__main__":
     p.add_argument("--result_folder", type=str, default="", help="Path to the folder of simulation result files. Defaults to print on screen.")
     p.add_argument("--print_flows", action="store_true", help="Print flows instead of running simulation. Defaults False.")
     p.add_argument("--verbose", action="store_true", help="Remove verbosity")
+    p.add_argument("--flows_file", type=str, default="", help="")
 
     args = p.parse_args()
 

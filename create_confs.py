@@ -28,6 +28,8 @@ from mpls_fwd_gen import *
 from itertools import chain, combinations
 from functools import reduce
 
+folder = ""
+
 
 class NoAliasDumper(yaml.SafeDumper):
     def ignore_aliases(self, data):
@@ -99,6 +101,7 @@ def generate_conf(n, conf_type = 0, topofile = None, random_seed = 1):
             "vpn_pes_per_services": 4,
             "vpn_ces_per_pe": 2,
             "random_seed": random_seed,
+            "flows_file": os.path.join(folder, "flows.yml")
         }
     elif topofile:
         base_config = {
@@ -113,7 +116,8 @@ def generate_conf(n, conf_type = 0, topofile = None, random_seed = 1):
             "rsvp_tunnels_per_pair": 1,
             "vpn": False,
             "random_seed": random_seed,
-            "result_folder": conf["result_folder"]
+            "result_folder": conf["result_folder"],
+            "flows_file": os.path.join(folder, "flows.yml")
         }
         if  conf_type == 1:
             base_config["enable_RMPLS"] = False
@@ -203,6 +207,17 @@ if __name__ == "__main__":
 
     G = gen(topofile)
     n = G.number_of_nodes() * G.number_of_nodes()    #tentative number of LSPs
+
+
+    # Generate flows
+    flows = []
+    for _ in range(G.number_of_nodes()):
+        f = (random.choice(list(G.nodes)),random.choice(list(G.nodes)))
+        if f not in f:
+            flows.append(f)
+
+    with open(os.path.join(folder, "flows.yml"), "w") as file:
+        yaml.dump(flows, file, default_flow_style=True, Dumper=NoAliasDumper)
 
     def create(conf_type):
         dict_conf = generate_conf(n, conf_type = conf_type, topofile = topofile, random_seed = random_seed)

@@ -1,4 +1,5 @@
 import queue
+from functools import cmp_to_key
 from typing import Union
 
 import networkx as nx
@@ -46,7 +47,7 @@ def find_distance_edges(network: Network, ingress: str, egress: str) -> list[lis
     # We sort layers by source and remove edges if src is same as last element
     new_layers = list(list())
     for layer in layers:
-        layer.sort(key=lambda e: e[0])
+        layer = sorted(layer, key=cmp_to_key(lambda e1, e2: e1[0] < e2 [0] if e1[0] != e2[0] else e1[1] < e2[1]))
         fixed_layer = layer.copy()
 
         last: int = layer[0][0]
@@ -225,8 +226,8 @@ class HopDistance_Client(MPLS_Client):
 
     # Abstract functions to be implemented by each client subclass.
     def LFIB_compute_entry(self, fec: oFEC, single=False):
-        if fec not in self.incoming_fecs:
-            return
+        # if fec not in self.incoming_fecs:
+        #     return
 
         if fec.value[1] == self.router.name:
             return
