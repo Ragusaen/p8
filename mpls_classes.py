@@ -2917,7 +2917,7 @@ class Simulator(object):
                 res = p.fwd()
                 self.traces[router_name][in_label] = [{"trace": p, "result": res}]
 
-    def run(self, flows, verbose = True):
+    def run(self, flows, verbose = False):
         loop_links = set()
         # Forward a packet for each flow in the 'flows' list, and return results and stats.
 

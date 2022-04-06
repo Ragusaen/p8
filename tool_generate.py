@@ -129,7 +129,8 @@ def main(conf):
                                  random_seed = conf["random_seed"],
                                  protection=conf["protection"],
                                  enable_tba=conf["tba"],
-                                 enable_hd=conf["hd"]
+                                 enable_hd=conf["hd"],
+                                 enable_cfor=conf["cfor"]
                           )
 
     # save config
