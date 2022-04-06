@@ -35,6 +35,7 @@ from pprint import pprint
 from itertools import chain, count
 import numpy as np
 
+import cfor
 import hop_distance_client
 import target_based_arborescence.tba_client as tba
 from mpls_classes import MPLS_Client
@@ -48,7 +49,8 @@ from mpls_classes import *
 def generate_fwd_rules(G, enable_PHP = True, numeric_labels = False, enable_LDP = False,
                        enable_RSVP = False, num_lsps = 10, tunnels_per_pair = 3, protection = 'facility-node',
                        enable_services = False, num_services = 2, PE_s_per_service = 3, CEs_per_PE = 1,
-                       enable_RMPLS = False, random_seed = random.random(), enable_tba = False, enable_hd = False
+                       enable_RMPLS = False, random_seed = random.random(), enable_tba = False, enable_hd = False,
+                       enable_cfor = False
                       ):
     """
     Generates MPLS forwarding rules for a given topology.
@@ -121,7 +123,9 @@ def generate_fwd_rules(G, enable_PHP = True, numeric_labels = False, enable_LDP 
         if enable_tba:
             network.start_client(tba.TargetBasedArborescence)
             protocol_name = "tba"
-
+        elif enable_cfor:
+            network.start_client(cfor.CFor)
+            protocol_name = "cfor"
         elif enable_hd:
             network.start_client(hop_distance_client.HopDistance_Client)
             protocol_name = "hop_distance"
@@ -199,7 +203,7 @@ def generate_fwd_rules(G, enable_PHP = True, numeric_labels = False, enable_LDP 
                 else:
                     c[(h,t)] += 1
 
-                if protocol_name == "tba" or protocol_name == "hop_distance":
+                if protocol_name == "tba" or protocol_name == "hop_distance" or protocol_name == "cfor":
                     network.routers[t].clients[protocol_name].define_demand(h)
                 else:
                     network.routers[h].clients[protocol_name].define_lsp(t,

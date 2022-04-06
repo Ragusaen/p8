@@ -74,6 +74,7 @@ def main(conf):
                                  random_seed=conf["random_seed"],
                                  enable_tba=conf["tba"],
                                  enable_hd=conf["hd"],
+                                 enable_cfor=conf["cfor"]
                                  )
 
     # save config
@@ -201,6 +202,7 @@ if __name__ == "__main__":
                    help="Random seed for simulation execution. Leave empty to pick a random one.")
     p.add_argument("--tba", action="store_true", help="Use target based arborescences")
     p.add_argument("--hd", action="store_true", help="Use hop distance routing")
+    p.add_argument("--cfor", action="store_true", help="Use CFor routing")
 
 
     p.add_argument("--output_file", type=str, default="",

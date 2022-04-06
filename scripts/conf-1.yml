@@ -5,7 +5,8 @@ protection: facility-node
 random_seed: 1
 tba: false
 hd: false
-rsvp: true
+cfor: true
+rsvp: false
 rsvp_num_lsps: 50
 rsvp_tunnels_per_pair: 1
 vpn: false
