@@ -6,7 +6,7 @@ random_seed: 1
 tba: false
 hd: false
 cfor: true
-rsvp: false
+rsvp: true
 rsvp_num_lsps: 50
 rsvp_tunnels_per_pair: 1
 vpn: false
