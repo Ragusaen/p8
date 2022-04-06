@@ -3,7 +3,24 @@ from mpls_classes import *
 ForwardingTable = dict[tuple[str, oFEC], tuple[int, str, oFEC]]
 
 def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> ForwardingTable:
-    pass
+    network.compute_dijkstra()
+    dist_sort = filter(lambda x : x.dist <= network.routers[ingress].dist, network.routers)
+    layers: dict[int, list[Router]] = dict()
+
+    for v in dist_sort:
+        layers[v.dist] = v
+
+    forwarding_table = ForwardingTable()
+    first_it_labels: dict[int, oFEC] = dict()
+    second_it_labels: dict[int, oFEC] = dict()
+
+    for j in range(0, len(layers)):
+        first_it_labels[j] = oFEC("type1", "dist-{j}-iter-1")
+        second_it_labels[j] = oFEC("type1", "dist-{j}-iter-2")
+        for v in layers[j]:
+            for v_down in filter(lambda x : x[0] == v and x[1] in layers[j-1], network.topology.edges):
+                forwarding_table[v, first_it_labels[j]] = (1, v_down, first_it_labels[j-1])
+                forwarding_table[v, second_it_labels[j]] = (1, v_down, second_it_labels[j-1])
 
 
 
