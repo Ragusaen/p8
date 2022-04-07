@@ -1177,6 +1177,9 @@ class oFEC(object):
     def __str__(self):
         return "{}({})".format( self.value, self.name, self.fec_type)
 
+    def __repr__(self):
+        return self.__str__()
+
 class ProcRSVPTE(MPLS_Client):
     """
     Class implementing a Resource Reservation Protocol with Traffic Engineering

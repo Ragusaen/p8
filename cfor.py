@@ -1,15 +1,21 @@
 from mpls_classes import *
+from functools import *
+from networkx import shortest_path
 
 
 class ForwardingTable:
-    table = dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]]
+    def __init__(self):
+        self.table: dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]] = {}
 
-    def add_rule(self, index: tuple[str, oFEC], to: tuple[int, str, oFEC]):
-        pass
-        # if list doesnt exists create it
+    def add_rule(self, key: tuple[str, oFEC], value: tuple[int, str, oFEC]):
+        if not self.table.keys().__contains__(key):
+            self.table[key] = []
+        self.table[key].append(value)
 
 
 def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> ForwardingTable:
+    edges: set[tuple[str, str]] = set([(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
+                                      + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2])
     network.compute_dijkstra()
     layers: dict[int, list[str]] = {layer: [] for layer in range(0, network.routers[ingress].dist[egress] + 1)}
 
@@ -19,17 +25,49 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
             layers[dist].append(v.name)
 
     forwarding_table = ForwardingTable()
-    first_it_labels: dict[int, oFEC] = dict()
-    second_it_labels: dict[int, oFEC] = dict()
 
-    for j in range(1, len(layers)):
-        first_it_labels[j] = oFEC("type1", "dist-{j}-iter-1")
-        second_it_labels[j] = oFEC("type1", "dist-{j}-iter-2")
-        for v in layers[j]:
-            for v_down in filter(lambda x: x[0] == v and x[1] in layers[j - 1], network.topology.edges):
-                forwarding_table[v, first_it_labels[j]].append((1, v_down, first_it_labels[j - 1]))
-                forwarding_table[v, second_it_labels[j]].append((1, v_down, second_it_labels[j - 1]))
+    for layer in layers.values():
+        layer.sort()
 
+    for i in range(1, len(layers)):
+        for j in range(0, len(layers[i])):
+            v = layers[i][j]
+            for v_down in filter(lambda edge: edge[0] == v and edge[1] in layers[i - 1], edges):
+                forwarding_table.add_rule((v, label(v, 1)), (1, v_down[1], label(v_down[1], 1)))
+                forwarding_table.add_rule((v, label(v, 2)), (1, v_down[1], label(v_down[1], 1)))
+
+            subtract_switches = set()
+            for k in range(0, i):
+                subtract_switches = subtract_switches.union(set(layers[k]))
+            subgraph_switches = set(network.topology.nodes).difference(subtract_switches)
+
+            is_last_switch = v == layers[i][-1]
+            v_next = layers[i][0]
+            if not is_last_switch:
+                v_next = layers[i][j+1]
+
+            subgraph = network.topology.subgraph(subgraph_switches)
+
+            # check if path exists
+            path = list(shortest_path(subgraph, v, v_next))
+            for k in range(1, len(path)):
+                if is_last_switch:
+                    if k == len(path)-1:
+                        forwarding_table.add_rule((path[k-1], label(v, 1)), (2, path[k], label(path[k], 1)))
+                    else:
+                        forwarding_table.add_rule((path[k-1], label(v, 1)), (2, path[k], label(v, 1)))
+                else:
+                    if k == len(path)-1:
+                        forwarding_table.add_rule((path[k-1], label(v, 1)), (2, path[k], label(path[k], 1)))
+                        forwarding_table.add_rule((path[k-1], label(v, 2)), (2, path[k], label(path[k], 2)))
+                    else:
+                        forwarding_table.add_rule((path[k-1], label(v, 1)), (2, path[k], label(v, 1)))
+                        forwarding_table.add_rule((path[k-1], label(v, 2)), (2, path[k], label(v, 2)))
+
+    return forwarding_table
+
+def label(switch: str, iteration: int):
+    return oFEC("cfor", f"v:{switch}, iter:{iteration}")
 
 class CFor(MPLS_Client):
     protocol = "cfor"
