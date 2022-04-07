@@ -16,6 +16,8 @@ from networkx import Graph
 from networkx.algorithms.shortest_paths.weighted import _weight_function, _dijkstra_multisource
 from resource import getrusage, RUSAGE_SELF
 
+from typing import *
+
 # Auxiliary functions
 def rand_name():
     """
@@ -624,7 +626,7 @@ class Network(object):
 
         return net_dict
 
-    def build_flow_table(self, flows: list[tuple[str, str]], verbose = False):
+    def build_flow_table(self, flows: List[Tuple[str, str]], verbose = False):
         # Build dict of flows for each routable FEC the routers know, in the sense
         # of only initiating packets that could actually be generated from the router.
 

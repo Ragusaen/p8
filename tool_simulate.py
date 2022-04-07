@@ -32,6 +32,8 @@ from pprint import pprint
 from itertools import chain, count
 import argparse
 import sys, os
+from typing import Union, Set, List, Dict, Tuple
+
 
 from mpls_fwd_gen import *
 
@@ -124,7 +126,7 @@ def main(conf):
             simulation(network, failed_set, f, flows)
 
 
-def simulation(network, failed_set, f, flows: list[tuple[str, str]]):
+def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
     print("STARTING SIMULATION")
     print(failed_set)
 

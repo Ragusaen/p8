@@ -1,6 +1,8 @@
 from mpls_classes import *
+from typing import Dict, Tuple, List
 
-ForwardingTable = dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]]
+
+ForwardingTable = Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]
 
 def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> ForwardingTable:
     pass

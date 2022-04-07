@@ -1,6 +1,6 @@
 import queue
 from functools import cmp_to_key
-from typing import Union
+from typing import Union, Set, List, Dict, Tuple
 
 import networkx as nx
 from networkx import Graph
@@ -12,7 +12,7 @@ from mpls_classes import MPLS_Client, Network, oFEC, Router
 from target_based_arborescence.arborescences import find_arborescences
 
 
-def find_distance_edges(network: Network, ingress: str, egress: str) -> list[list[tuple[str, str]]]:
+def find_distance_edges(network: Network, ingress: str, egress: str) -> List[List[Tuple[str, str]]]:
     edges: set[tuple[str, str]] = set([(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
                                       + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2])
 
@@ -84,11 +84,11 @@ def find_distance_edges(network: Network, ingress: str, egress: str) -> list[lis
     return layers
 
 
-def find_cycles(vertices: set[str], E: list[tuple[str, str, int]]) -> list[list[str]]:
+def find_cycles(vertices: Set[str], E: List[Tuple[str, str, int]]) -> List[List[str]]:
     cycles: list[list[str]] = []
     missing = vertices.copy()
 
-    def DFS_cycle(path: list[tuple[str, int]]):
+    def DFS_cycle(path: List[Tuple[str, int]]):
         missing.discard(path[-1][0])
         v, layer = path[-1]
         for src, tgt, l in E:
@@ -111,7 +111,7 @@ def find_cycles(vertices: set[str], E: list[tuple[str, str, int]]) -> list[list[
 
     return [list(x) for x in set(tuple(canonize(cycle)) for cycle in cycles)]
 
-def demote_or_remove_loops(vertices: set[str], ingress: str, E: list[tuple[str, str, int]], cycles: list[list[str]]):
+def demote_or_remove_loops(vertices: Set[str], ingress: str, E: List[Tuple[str, str, int]], cycles: List[List[str]]):
     # Minimum number of failures required to reach this vertex
     min_failure_reach: dict[str, int] = {ingress: 0}
 
