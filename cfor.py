@@ -1,27 +1,34 @@
 from mpls_classes import *
 
-ForwardingTable = dict[tuple[str, oFEC], tuple[int, str, oFEC]]
+
+class ForwardingTable:
+    table = dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]]
+
+    def add_rule(self, index: tuple[str, oFEC], to: tuple[int, str, oFEC]):
+        pass
+        # if list doesnt exists create it
+
 
 def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> ForwardingTable:
     network.compute_dijkstra()
-    dist_sort = filter(lambda x : x.dist <= network.routers[ingress].dist, network.routers)
-    layers: dict[int, list[Router]] = dict()
+    layers: dict[int, list[str]] = {layer: [] for layer in range(0, network.routers[ingress].dist[egress] + 1)}
 
-    for v in dist_sort:
-        layers[v.dist] = v
+    for v in network.routers.values():
+        dist = v.dist[egress]
+        if v.dist[egress] <= network.routers[ingress].dist[egress]:
+            layers[dist].append(v.name)
 
     forwarding_table = ForwardingTable()
     first_it_labels: dict[int, oFEC] = dict()
     second_it_labels: dict[int, oFEC] = dict()
 
-    for j in range(0, len(layers)):
+    for j in range(1, len(layers)):
         first_it_labels[j] = oFEC("type1", "dist-{j}-iter-1")
         second_it_labels[j] = oFEC("type1", "dist-{j}-iter-2")
         for v in layers[j]:
-            for v_down in filter(lambda x : x[0] == v and x[1] in layers[j-1], network.topology.edges):
-                forwarding_table[v, first_it_labels[j]] = (1, v_down, first_it_labels[j-1])
-                forwarding_table[v, second_it_labels[j]] = (1, v_down, second_it_labels[j-1])
-
+            for v_down in filter(lambda x: x[0] == v and x[1] in layers[j - 1], network.topology.edges):
+                forwarding_table[v, first_it_labels[j]].append((1, v_down, first_it_labels[j - 1]))
+                forwarding_table[v, second_it_labels[j]].append((1, v_down, second_it_labels[j - 1]))
 
 
 class CFor(MPLS_Client):
@@ -44,7 +51,7 @@ class CFor(MPLS_Client):
 
     # Abstract functions to be implemented by each client subclass.
     def LFIB_compute_entry(self, fec: oFEC, single=False):
-        pass #TODO
+        pass  # TODO
 
     # Defines a demand for a headend to this one
     def define_demand(self, headend: str):

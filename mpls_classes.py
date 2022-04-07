@@ -788,6 +788,9 @@ class Router(object):
     the directed acyclic graph for node n (how to reach this node).
     """
 
+    def __str__(self):
+        return self.name
+
     def __init__(self, network, name, alternative_names=[], location = None, php = False, dist=None, pred=None, paths=None, first_label=16,
                  max_first_label = 90000, seed=0, numeric_labels=True):
         self.name = name
