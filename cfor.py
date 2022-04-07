@@ -1,6 +1,9 @@
 from mpls_classes import *
 
-ForwardingTable = dict[tuple[str, oFEC], tuple[int, str, oFEC]]
+import nimporter
+import nim_test
+
+ForwardingTable = dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]]
 
 def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> ForwardingTable:
     pass
@@ -16,18 +19,20 @@ class CFor(MPLS_Client):
         # The demands where this router is the tailend
         self.demands: dict[str, tuple[str, str]] = {}
 
-        # [(headend, [fecs_for_layer_i])]
-        self.headend_layers: list[tuple[str, list[oFEC]]] = []
+        # Partial forwarding table containing only rules for this router
+        self.partial_forwarding_table: ForwardingTable = {}
 
-        # Incoming FECs
-        self.incoming_fecs: list[oFEC] = []
 
-        # The next_hop and next_fec for this router in some FEC (not only those FECs that are tailend here)
-        self.demand_fec_layer_next_hop: dict[str, dict[oFEC, str]] = {}
-
-    # Abstract functions to be implemented by each client subclass.
     def LFIB_compute_entry(self, fec: oFEC, single=False):
-        pass #TODO
+        for priority, next_hop, swap_fec in self.partial_forwarding_table[(self.router.name, fec)]:
+            local_label = self.get_local_label(fec)
+            remote_label = self.get_remote_label(next_hop, swap_fec)
+            assert(local_label is not None)
+            assert(remote_label is not None)
+
+            yield (local_label, {'out': next_hop, 'ops': [{'swap': remote_label}], 'weight': priority})
+
+
 
     # Defines a demand for a headend to this one
     def define_demand(self, headend: str):
@@ -35,7 +40,15 @@ class CFor(MPLS_Client):
 
     def commit_config(self):
         for demand, (ingress, egress) in self.demands.items():
-            generate_pseudo_forwarding_table(self.router.network, ingress, egress)
+            ft = generate_pseudo_forwarding_table(self.router.network, ingress, egress)
+
+            for (src, fec), entries in ft.items():
+                src_client: CFor = self.router.network.routers[src].clients["cfor"]
+
+                if (src, fec) not in src_client.partial_forwarding_table:
+                    src_client.partial_forwarding_table[(src, fec)] = []
+
+                src_client.partial_forwarding_table[(src, fec)].extend(entries)
 
     def compute_bypasses(self):
         pass
@@ -44,11 +57,8 @@ class CFor(MPLS_Client):
         pass
 
     def known_resources(self):
-        for _, fec_dict in self.demand_fec_layer_next_hop.items():
-            for fec, _ in fec_dict.items():
-                yield fec
-        for fec in self.incoming_fecs:
+        for _, fec in self.partial_forwarding_table.keys():
             yield fec
 
     def self_sourced(self, fec: oFEC):
-        return fec.fec_type == 'hop_distance' and fec.value[0] == self.router.name
+        return fec.fec_type == 'cfor' and fec.value[0] == self.router.name
