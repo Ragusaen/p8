@@ -1,8 +1,5 @@
 from mpls_classes import *
 
-import nimporter
-import nim_test
-
 ForwardingTable = dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]]
 
 def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> ForwardingTable:
