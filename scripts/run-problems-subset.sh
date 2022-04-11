@@ -16,5 +16,3 @@ for TOPO in $(ls confs) ; do
     fi
     (( count++ ))
 done
-
-rm count
