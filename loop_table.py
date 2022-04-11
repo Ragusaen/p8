@@ -1,5 +1,7 @@
 import argparse
 import os
+
+import overleaf
 from get_results import parse_result_data
 
 parser = argparse.ArgumentParser()
@@ -49,3 +51,5 @@ latex2 = r"\end{tabular}" + "\n" + r"\caption{Ratio of links that has been conge
 output_latex_code = latex1 + latex_algs + latex_numbers + latex2
 latex_file = open(args.latex_path, "w")
 latex_file.write(output_latex_code)
+
+overleaf.set_file_text(output_latex_code, "figures/loop_table_all2.tex")
