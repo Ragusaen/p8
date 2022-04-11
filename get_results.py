@@ -2,7 +2,7 @@ import argparse
 import os
 import re
 
-class ResultData:
+class FailureScenarioData:
     def __init__(self, failed_links, total_links, connectivity, failed_links_with_loops, num_flows, successful_flows, connected_flows):
         self.failed_links = failed_links
         self.total_links = total_links
@@ -12,68 +12,59 @@ class ResultData:
         self.successful_flows = successful_flows
         self.connected_flows = connected_flows
 
+class FailureChunkResultData:
+    def __init__(self, chunk_name, failure_scenerio_data):
+        self.failure_chunk_name = chunk_name
+        self.failure_scenario_data = failure_scenerio_data #List of FailureScenarioData
 
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--results_folder", type=str, required=True)
-parser.add_argument("--output_file", type=str, required=True)
-
-dir = os.path.dirname(__file__)
-
-args = parser.parse_args()
-folder =  os.path.join(dir, args.results_folder)
-
-result_path = os.path.join(dir, args.output_file)
-
-class Output():
-    def __init__(self, conf_name, result_path):
-        self.conf_name = conf_name
-        self.result_path = result_path
-        self.connectedness_list = []
-        self.file = open(result_path + conf_name, "w")
+class TopologyResult:
+    def __init__(self, topology_name, failure_chunks, connectedness):
+        self.topology_name = topology_name
+        self.failure_chunks = failure_chunks
+        self.connectedness = connectedness
 
 def compute_probability(f, e, pf=0.001):
     return (pf ** f) * (1 - pf) ** (e - f)
 
-def parse_result_data(line):
-    failed_links = int(re.findall(r'len\(F\):(\d+)', l)[0])
-    total_links = int(re.findall(r'len\(E\):(\d+)', l)[0])
-    connectivity = float(re.findall(r'ratio:(\d+\.\d+)', l)[0])
-    failed_links_with_loops = int(re.findall(r'failed_links\(with_loops\):(\d+)', l)[0])
-    num_flows = int(re.findall(r'num_flows:(\d+)', l)[0])
-    successful_flows = int(re.findall(r'successful_flows:(\d+)', l)[0])
-    connected_flows = int(re.findall(r'connected_flows:(\d+)', l)[0])
-    result_data = ResultData(failed_links, total_links, connectivity, failed_links_with_loops, num_flows,
-                             successful_flows, connected_flows)
-    return result_data
-
-conf_names = ["conf_3", "conf_21"]
-
-outputs = []
-for conf_name in conf_names:
-    outputs.append(Output(conf_name, result_path))
-
-for topology in os.listdir(folder):
-    for output in outputs:
-        connectivity = 0
-        normalisation_sum = 0
-        res_dir = f"{folder}/{topology}/{output.conf_name}"
-        exists = os.path.exists(res_dir)
-        if exists:
+def parse_result_data(result_folder):
+    result_dict = {}
+    for conf_name in os.listdir(result_folder):
+        result_dict[conf_name] = {}
+        for topology in os.listdir(f"{result_folder}/{conf_name}"):
+            failure_chunks = []
+            normalisation_sum = 0
             connectedness = 0
+            res_dir = f"{result_folder}/{conf_name}/{topology}"
             for res_file in os.listdir(res_dir):
+                failure_scenarios = list()
                 with open(f"{res_dir}/{res_file}", "r") as t:
                     l = t.readline()
                     while l:
-                        result_data = parse_result_data(l)
+                        failed_links = int(re.findall(r'len\(F\):(\d+)', l)[0])
+                        total_links = int(re.findall(r'len\(E\):(\d+)', l)[0])
+                        connectivity = float(re.findall(r'ratio:(\d+\.\d+)', l)[0])
+                        failed_links_with_loops = int(re.findall(r'failed_links\(with_loops\):(\d+)', l)[0])
+                        num_flows = int(re.findall(r'num_flows:(\d+)', l)[0])
+                        successful_flows = int(re.findall(r'successful_flows:(\d+)', l)[0])
+                        connected_flows = int(re.findall(r'connected_flows:(\d+)', l)[0])
+                        failure_data = FailureScenarioData(failed_links, total_links, connectivity, failed_links_with_loops,
+                                                 num_flows,
+                                                 successful_flows, connected_flows)
 
-                        p = compute_probability(result_data.failed_links, result_data.total_links)
+                        p = compute_probability(failure_data.failed_links, failure_data.total_links)
                         normalisation_sum += p
 
-                        connectedness += p * (result_data.successful_flows / result_data.connected_flows)
+                        connectedness += p * (failure_data.successful_flows / failure_data.connected_flows)
 
+                        failure_scenarios.append(failure_data)
                         l = t.readline()
+
+                failure_chunks.append(FailureChunkResultData(res_file, failure_scenarios))
 
             # Normalise
             if normalisation_sum > 0:
                 connectedness = connectedness / normalisation_sum
+
+            result_dict[conf_name][topology] = TopologyResult(topology, failure_chunks, connectedness)
+
+    return result_dict
