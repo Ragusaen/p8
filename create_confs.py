@@ -211,10 +211,9 @@ if __name__ == "__main__":
 
     # Generate flows
     flows = []
-    for _ in range(G.number_of_nodes()):
-        f = (random.choice(list(G.nodes)),random.choice(list(G.nodes)))
-        if f not in f:
-            flows.append(f)
+    for src in list(G.nodes):
+        tgt = random.choice(list(set(G.nodes) - {src}))
+        flows.append((src, tgt))
 
     with open(os.path.join(folder, "flows.yml"), "w") as file:
         yaml.dump(flows, file, default_flow_style=True, Dumper=NoAliasDumper)

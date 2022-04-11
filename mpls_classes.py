@@ -16,6 +16,8 @@ from networkx import Graph
 from networkx.algorithms.shortest_paths.weighted import _weight_function, _dijkstra_multisource
 from resource import getrusage, RUSAGE_SELF
 
+from typing import *
+
 # Auxiliary functions
 def rand_name():
     """
@@ -624,7 +626,7 @@ class Network(object):
 
         return net_dict
 
-    def build_flow_table(self, flows: list[tuple[str, str]], verbose = False):
+    def build_flow_table(self, flows: List[Tuple[str, str]], verbose = False):
         # Build dict of flows for each routable FEC the routers know, in the sense
         # of only initiating packets that could actually be generated from the router.
 
@@ -680,6 +682,13 @@ class Network(object):
                 elif fec.fec_type == "hop_distance":
                     good_sources = [fec.value[0]]
                     good_targets = [fec.value[1]]
+
+                elif fec.fec_type == "cfor":
+                    if fec.value["iteration"] == 1:
+                        good_sources = [fec.value["ingress"]]
+                        good_targets = [fec.value["egress"]]
+                    else:
+                        continue
 
                 if src_router not in good_sources or tgt_router not in good_targets:
                     continue  # this router can be the source of a packet to this FEC
@@ -1169,7 +1178,7 @@ class oFEC(object):
         self.value = value
 
     def __hash__(self):
-        return hash((self.fec_type, self.name, self.value))
+        return hash((self.fec_type, self.name, self.value if not isinstance(self.value, dict) else 0))
 
     def __eq__(self, other):
         return isinstance(other, oFEC) and self.value == other.value and self.name == other.name and self.fec_type == other.fec_type
