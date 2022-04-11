@@ -8,13 +8,13 @@ class ForwardingTable:
     def __init__(self):
         self.table: dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]] = {}
 
-    def add_rule(self, key: tuple[str, oFEC], value: tuple[int, str, oFEC]):
+    def add_rule(self, key: Tuple[str, oFEC], value: Tuple[int, str, oFEC]):
         if not self.table.keys().__contains__(key):
             self.table[key] = []
         self.table[key].append(value)
 
 
-def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]]:
+def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
     def label(switch: str, iteration: int):
         return oFEC("cfor", f"v:{switch}, iter:{iteration}", {"ingress": ingress, "egress": egress, "iteration": iteration})
 
