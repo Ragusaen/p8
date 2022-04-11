@@ -122,7 +122,7 @@ def main(conf):
 
     i = 0
 
-    with open(result_file, 'a') as f:
+    with open(result_file, 'w') as f:
         for failed_set in failed_set_chunk:
             simulation(network, failed_set, f, flows)
 
