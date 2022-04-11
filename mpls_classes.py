@@ -683,6 +683,13 @@ class Network(object):
                     good_sources = [fec.value[0]]
                     good_targets = [fec.value[1]]
 
+                elif fec.fec_type == "cfor":
+                    if fec.value["iteration"] == 1:
+                        good_sources = [fec.value["ingress"]]
+                        good_targets = [fec.value["egress"]]
+                    else:
+                        continue
+
                 if src_router not in good_sources or tgt_router not in good_targets:
                     continue  # this router can be the source of a packet to this FEC
 
@@ -789,6 +796,9 @@ class Router(object):
     It is also responsible for computation of the shortest-path from other routers towards itself, that is,
     the directed acyclic graph for node n (how to reach this node).
     """
+
+    def __str__(self):
+        return self.name
 
     def __init__(self, network, name, alternative_names=[], location = None, php = False, dist=None, pred=None, paths=None, first_label=16,
                  max_first_label = 90000, seed=0, numeric_labels=True):
@@ -1168,13 +1178,16 @@ class oFEC(object):
         self.value = value
 
     def __hash__(self):
-        return hash((self.fec_type, self.name, self.value))
+        return hash((self.fec_type, self.name, self.value if not isinstance(self.value, dict) else 0))
 
     def __eq__(self, other):
         return isinstance(other, oFEC) and self.value == other.value and self.name == other.name and self.fec_type == other.fec_type
 
     def __str__(self):
         return "{}({})".format( self.value, self.name, self.fec_type)
+
+    def __repr__(self):
+        return self.__str__()
 
 class ProcRSVPTE(MPLS_Client):
     """
