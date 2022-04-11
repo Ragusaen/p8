@@ -104,7 +104,7 @@ def find_cycles(vertices: Set[str], E: List[Tuple[str, str, int]]) -> List[List[
         DFS_cycle([(v, 0)])
 
     # Canonize the cycles
-    def canonize(cycle: list[str]):
+    def canonize(cycle: List[str]):
         min_element = min(cycle)
         min_idx = cycle.index(min_element)
         return cycle[min_idx:] + cycle[:min_idx]
@@ -149,7 +149,7 @@ def demote_or_remove_loops(vertices: Set[str], ingress: str, E: List[Tuple[str, 
         for f, (s,t,l) in enumerate(outgoing_edges):
             min_failure_edge[(s,t)] = min_failure_reach[v] + f
 
-    def can_promote_to(edge: tuple[str, str]) -> Union[None, int]:
+    def can_promote_to(edge: Tuple[str, str]) -> Union[None, int]:
         ln = edge_to_layer[edge]
 
         # We need to go at least 2 layers above the layer of the next edge in the cycle to break the loop
@@ -172,7 +172,7 @@ def demote_or_remove_loops(vertices: Set[str], ingress: str, E: List[Tuple[str, 
             p = n
             cl = l
         else:
-            def e_comp(e1: tuple[str, str], e2: tuple[str, str]):
+            def e_comp(e1: Tuple[str, str], e2: Tuple[str, str]):
                 if min_failure_edge[e1] == min_failure_edge[e2]:
                     if edge_to_layer[e1] == edge_to_layer[e2]:
                         cpt1 = can_promote_to(e1)

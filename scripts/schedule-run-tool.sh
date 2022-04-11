@@ -7,14 +7,11 @@
 
 
 PD=$(pwd)
-CONFIGREGEX='conf_[0-9]*'
 
-for CONF in $(ls confs/Aarnet) ; do
-    if [[ "$CONF" =~ $CONFIGREGEX ]];then
-        for TOPO in $(ls confs) ; do
-            for FAILCHUNK in $(ls confs/${TOPO}/failure_chunks) ; do
-                sbatch scripts/run-tool.sh ${TOPO} ${CONF} confs/${TOPO}/failure_chunks/${FAILCHUNK}
-            done
+for CONF in $(ls confs/Aarnet/conf_*) ; do
+    for TOPO in $(ls confs) ; do
+        for FAILCHUNK in $(ls confs/${TOPO}/failure_chunks) ; do
+            sbatch scripts/run-tool.sh ${CONF} confs/${TOPO}/failure_chunks/${FAILCHUNK}
         done
-    fi
+    done
 done
