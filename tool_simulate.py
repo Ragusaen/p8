@@ -60,12 +60,10 @@ def main(conf):
     with open(conf["flows_file"],"r") as file:
         flows = yaml.safe_load(file)
 
-    ## Generate MPLS forwarding rules
-    network = generate_fwd_rules(G,
+    network = generate_fwd_rules(G, conf,
                                  enable_PHP=conf["php"],
                                  numeric_labels=False,
                                  enable_LDP=conf["ldp"],
-                                 enable_RSVP=conf["rsvp"],
                                  enable_RMPLS=conf["enable_RMPLS"],
                                  num_lsps=flows,
                                  tunnels_per_pair=conf["rsvp_tunnels_per_pair"],
@@ -73,12 +71,9 @@ def main(conf):
                                  num_services=conf["vpn_num_services"],
                                  PE_s_per_service=conf["vpn_pes_per_services"],
                                  CEs_per_PE=conf["vpn_ces_per_pe"],
-                                 protection=conf["protection"],
-                                 random_seed=conf["random_seed"],
-                                 enable_tba=conf["tba"],
-                                 enable_hd=conf["hd"],
-                                 enable_cfor=conf["cfor"]
+                                 random_seed=conf["random_seed"]
                                  )
+    ## Generate MPLS forwarding rules
 
     # save config
     net_dict = network.to_aalwines_json()
@@ -185,16 +180,12 @@ if __name__ == "__main__":
     p.add_argument("--php", action="store_true", help="Enable Penultimate Hop Popping. Defaults False.")
     p.add_argument("--ldp", action="store_true",
                    help="Enable Label Distribution Protocol (LDP). Defaults False. This doesn't scale well.")
-    p.add_argument("--rsvp", action="store_true",
-                   help="Enable Resource Reservation Protocol with Traffic Engineering extensions (RSVP-TE). Defaults False.")
     p.add_argument("--rsvp_num_lsps", type=int, default=2,
                    help="Number of (random) LSPS to compute for RSVP only, if enabled. Defaults to 2")
     p.add_argument("--rsvp_tunnels_per_pair", type=int, default=5,
                    help="Number of (random) tunnels between same endpoints. RSVP only, if enabled. Defaults to 5")
     p.add_argument("--enable_RMPLS", action="store_true",
                    help="Use experimental RMPLS recursive protection (LFIB post processing). Defaults False")
-    p.add_argument("--protection", type=str, default="facility-node",
-                   help="RSVP protection to implement. facility-node (default), facility-link or None ")
 
     p.add_argument("--vpn", action="store_true", help="Enable MPLS VPN generic services. Defaults False. ")
     p.add_argument("--vpn_num_services", type=int, default=1,
@@ -208,9 +199,17 @@ if __name__ == "__main__":
                    help="Random seed for genrating the data plane. Leave empty to pick a random one.")
     p.add_argument("--random_seed_sim", type=int, default=random.randint(0, 99999999),
                    help="Random seed for simulation execution. Leave empty to pick a random one.")
-    p.add_argument("--tba", action="store_true", help="Use target based arborescences")
-    p.add_argument("--hd", action="store_true", help="Use hop distance routing")
-    p.add_argument("--cfor", action="store_true", help="Use CFor routing")
+
+    method_parser = p.add_subparsers(dest="method", help="Which method for MPLS plane generation")
+
+    hba_parser = method_parser.add_parser("hd")
+
+    tba_parser = method_parser.add_parser("tba")
+
+    cfor_parser = method_parser.add_parser("cfor")
+
+    rsvp_parser = method_parser.add_parser("rsvp")
+    rsvp_parser.add_argument("--protection", choices=['none', 'facility-node', 'facility-link'], help="Protection bypasses to use")
 
 
     p.add_argument("--output_file", type=str, default="",
@@ -228,12 +227,11 @@ if __name__ == "__main__":
     print(args)
     conf = vars(args)  # arguments as dictionary
     conf_overrride = conf.copy()
-    known_parameters = list(conf.keys()).copy()
+#    known_parameters = list(conf.keys()).copy()
 
     # Configuration Load
     if args.conf:
-        print(
-            f"Reading configuration from {args.conf}. Remaining options will override the configuration file contents.")
+        print(f"Reading configuration from {args.conf}. Remaining options will override the configuration file contents.")
         if args.conf.endswith(".yaml") or args.conf.endswith(".yml"):
             with open(args.conf, 'r') as f:
                 conf_new = yaml.safe_load(f)
@@ -273,20 +271,20 @@ if __name__ == "__main__":
     else:
         raise Exception("One (and only one) of topology or random_topology must be selected.")
 
-    if conf["protection"] in ["None", "none"]:
+    if "protection" in conf and conf["protection"] in ["None", "none"]:
         conf["protection"] = None
 
     # raise errors if there is any unknown entry...
-    for a in conf.keys():
-        if a not in known_parameters:
-            raise Exception(f"Unknown argument {a}.")
+    # for a in conf.keys():
+    #     if a not in known_parameters:
+    #         raise Exception(f"Unknown argument {a}.")
 
     # Override config options with cli explicit values
-    for a in known_parameters:
-        for sysarg in sys.argv:
-            # this argument was explicitly overriden!
-            if sysarg == "--" + a:  # max prio
-                conf[a] = conf_overrride[a]
+    # for a in known_parameters:
+    #     for sysarg in sys.argv:
+    #         # this argument was explicitly overriden!
+    #         if sysarg == "--" + a:  # max prio
+    #             conf[a] = conf_overrride[a]
 
     pprint(conf)
     main(conf)

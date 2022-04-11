@@ -114,11 +114,10 @@ def main(conf):
     flows = []
 
     ## Generate MPLS forwarding rules
-    network = generate_fwd_rules(G,
+    network = generate_fwd_rules(G, conf,
                                  enable_PHP = conf["php"],
                                  numeric_labels = False,
                                  enable_LDP = conf["ldp"],
-                                 enable_RSVP = conf["rsvp"],
                                  enable_RMPLS = conf["enable_RMPLS"],
                                  num_lsps = conf["rsvp_num_lsps"],
                                  tunnels_per_pair = conf["rsvp_tunnels_per_pair"],

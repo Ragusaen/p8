@@ -84,75 +84,30 @@ def generate_failures_all(G, division = None, random_seed = 1):
 
 
 def generate_conf(n, conf_type = 0, topofile = None, random_seed = 1):
-    if not topofile or conf_type == 0:
-        base_config = {
-            "random_topology": True,
-            "random_mode": "random.log_degree",
-            "num_routers": n,
-            "random_weight_mode": "random",
-            "random_gen_method": 1,
-            "php": True,
-            "ldp": False,
-            "rsvp": True,
-            "rsvp_num_lsps": int(math.sqrt(n)), #sqrt f(n)
-            "rsvp_tunnels_per_pair": 3,
-            "vpn": True,
-            "vpn_num_services": int(math.sqrt(n)),
-            "vpn_pes_per_services": 4,
-            "vpn_ces_per_pe": 2,
-            "random_seed": random_seed,
-            "flows_file": os.path.join(folder, "flows.yml")
-        }
-    elif topofile:
-        base_config = {
-        #we need extra configuration here!!!!
-            "topology": topofile,
-            "random_weight_mode": "equal",
-            "random_gen_method": 1,
-            "php": False,
-            "ldp": False,
-            "rsvp": True,
-            "rsvp_num_lsps": n, #sqrt f(n)
-            "rsvp_tunnels_per_pair": 1,
-            "vpn": False,
-            "random_seed": random_seed,
-            "result_folder": conf["result_folder"],
-            "flows_file": os.path.join(folder, "flows.yml")
-        }
-        if  conf_type == 1:
-            base_config["enable_RMPLS"] = False
-            base_config["protection"] = None
-        elif  conf_type == 2:
-            base_config["enable_RMPLS"] = True
-            base_config["protection"] = None
-        elif  conf_type == 3:
-            base_config["enable_RMPLS"] = False
-            base_config["protection"] = "facility-node"
-        elif  conf_type == 4:
-            base_config["enable_RMPLS"] = True
-            base_config["protection"] = "facility-node"
-        elif  conf_type == 5:
-            base_config["enable_RMPLS"] = False
-            base_config["rsvp"] = False
-            base_config["ldp"] = True
-        elif  conf_type == 6:
-            base_config["enable_RMPLS"] = True
-            base_config["rsvp"] = False
-            base_config["ldp"] = True
-        elif  conf_type == 7:
-            base_config["enable_RMPLS"] = False
-            base_config["protection"] = "plinko/1"
-        elif  conf_type == 8:
-            base_config["enable_RMPLS"] = False
-            base_config["protection"] = "plinko/2"
-        elif  conf_type == 9:
-            base_config["enable_RMPLS"] = False
-            base_config["protection"] = "plinko/3"
-        elif  conf_type == 10:
-            base_config["enable_RMPLS"] = False
-            base_config["protection"] = "plinko/4"
-        elif  conf_type == 21:
-            base_config["tba"] = True
+    base_config = {
+    #we need extra configuration here!!!!
+        "topology": topofile,
+        "random_weight_mode": "equal",
+        "random_gen_method": 1,
+        "php": False,
+        "ldp": False,
+        "rsvp_tunnels_per_pair": 1,
+        "vpn": False,
+        "random_seed": random_seed,
+        "result_folder": conf["result_folder"],
+        "flows_file": os.path.join(folder, "flows.yml")
+    }
+    if conf_type == 'rsvp-fn':
+        base_config['method'] = 'rsvp'
+        base_config['protection'] = 'facility-node'
+    elif conf_type == "tba":
+        base_config["method"] = "tba"
+    elif conf_type == 'hd':
+        base_config['method'] = 'hd'
+    elif conf_type == 'cfor':
+        base_config['method'] = 'cfor'
+    else:
+        raise f"Conf type {conf_type} not known"
 
     return base_config
 
@@ -225,8 +180,10 @@ if __name__ == "__main__":
         with open(path, "w") as file:
             documents = yaml.dump(dict_conf, file, Dumper=NoAliasDumper)
 
-    create(3)    # conf file with RSVP(FRR), no RMPLS
-    create(21)   # conf file with TBA
+    create('rsvp-fn')    # conf file with RSVP(FRR), no RMPLS
+    create('tba')
+    create('hd')
+    create('cfor')
 
     if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):
         # Generate failures
