@@ -3,9 +3,9 @@ ldp: false
 php: false
 protection: none
 random_seed: 1
-tba: false
+tba: true
 hd: false
-cfor: true
+cfor: false
 rsvp: true
 rsvp_num_lsps: 50
 rsvp_tunnels_per_pair: 1

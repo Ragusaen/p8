@@ -1,34 +1,36 @@
 from mpls_classes import Network
 import networkx as nx
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Set
 
+def create_arborescence(edges: List[Tuple[str, str]], vertices: Set[str], egress: str, edge_to_count):
+    arborescence = []
+
+    nodes_used_distance = {egress: 0}
+
+    for _ in range(len(vertices) - 1):
+        # Best edge by the heuristic: Use least used edge and then longest subtree
+        edges_by_heuristic = sorted(filter(lambda e: e[0] not in nodes_used_distance and e[1] in nodes_used_distance, edges),
+                                    key=lambda e: (-nodes_used_distance[e[1]], edge_to_count[e]))
+
+        for src, tgt in edges_by_heuristic:
+            arborescence.append((src,tgt))
+            edge_to_count[(src, tgt)] += 1
+            nodes_used_distance[src] = nodes_used_distance[tgt] + 1
+            break
+    return arborescence
 
 def find_arborescences(network: Network, egress: str) -> List[List[Tuple[str, str]]]:
     edges: list[tuple[str, str]] = [(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
                                    + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2]
+    vertices = { v for v, _ in edges }
 
     # Find median of linked edges on routers - Placeholder to find amount of arborescences
     router_link_amount = [len([(n1,n2) for (n1,n2) in edges if n1 == router]) for router in network.routers]
     router_link_amount.sort()
-    arborescence_to_find = router_link_amount[len(router_link_amount) // 2]
-
-    edge_to_num_arborescence_appearance = {e: 0 for e in edges}
-
-    arborescence_to_edges = [[] for _ in range(arborescence_to_find)]
-    arborescence_to_nodes = [[egress] for _ in range(arborescence_to_find)]
-    arborescence_to_edges_to_consider = [[(n1, n2) for (n1, n2) in edges if n2 == egress] for _ in range(arborescence_to_find)]
+    arborescences_to_find = router_link_amount[-1]#[len(router_link_amount) // 2]
+    print(f"Arborescences {egress}: {arborescences_to_find}")
 
 
-    for step in range(len(network.topology.nodes) - 1):
-        for arborescence in range(arborescence_to_find):
-            appearances = {e: edge_to_num_arborescence_appearance[e] for e in arborescence_to_edges_to_consider[arborescence]}
-            least_used_edge = min(appearances, key=appearances.get)
+    edge_to_count = {e: 0 for e in edges}
 
-            arborescence_to_edges[arborescence].append(least_used_edge)
-            arborescence_to_nodes[arborescence].append(least_used_edge[0])
-            edge_to_num_arborescence_appearance[least_used_edge] = edge_to_num_arborescence_appearance[least_used_edge] + 1
-
-            new_edges_to_consider = [(n1,n2) for (n1,n2) in edges if n2 == least_used_edge[0] and n1 not in arborescence_to_nodes[arborescence]]
-            arborescence_to_edges_to_consider[arborescence].extend(new_edges_to_consider)
-            arborescence_to_edges_to_consider[arborescence] = [(n1,n2) for (n1,n2) in arborescence_to_edges_to_consider[arborescence] if n1 not in arborescence_to_nodes[arborescence]]
-    return arborescence_to_edges
+    return [create_arborescence(edges, vertices, egress, edge_to_count) for _ in range(arborescences_to_find)]
