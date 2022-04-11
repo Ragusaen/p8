@@ -34,6 +34,7 @@ import argparse
 import sys, os
 from typing import Union, Set, List, Dict, Tuple
 
+from networkx import has_path
 
 from mpls_fwd_gen import *
 
@@ -145,8 +146,13 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
     view = nx.subgraph_view(network.topology, filter_node=filter_node, filter_edge=filter_edge)
     links = len(network.topology.edges)
 
-    # Instantiate simulator object 
+    # Instantiate simulator object
     s = Simulator(network, trace_mode="links", restricted_topology=view, random_seed=conf["random_seed_sim"])
+
+    initially_connected = 0
+    for src, tgt in flows:
+        if nx.has_path(view, src, tgt):
+            initially_connected += 1
 
     verbose=conf["verbose"]
     s.run(flows, verbose=verbose)
@@ -155,7 +161,7 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
 
     loops = codes[1]  # p8: we do not know what this is
     #f.write("attempted: {0}; succeses: {1}; loops: {2}; failed_links: {3}; connectivity: {4}\n".format(total, success, loops, len(F), success/total))
-    f.write(f"len(F):{len(F)} ratio:{successful_flows/total_flows} len(E):{links} failed_links(with_loops):{s.failed_links} num_flows:{total_flows} successful_flows:{successful_flows} connected_flows:{s.count_connected}\n")  # TODO: Fix connectivity
+    f.write(f"len(F):{len(F)} ratio:{successful_flows/total_flows} len(E):{links} failed_links(with_loops):{s.failed_links} num_flows:{total_flows} successful_flows:{successful_flows} connected_flows:{initially_connected}\n")  # TODO: Fix connectivity
     print("SIMULATION FINISHED")
 
 

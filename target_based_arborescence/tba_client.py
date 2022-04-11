@@ -55,6 +55,7 @@ class TargetBasedArborescence(MPLS_Client):
             [(oFEC("arborescence", f"{self.router.name}_{i}", (self.router.name, i, headends)), a) for i, a in enumerate(self.rooted_arborescences)]
 
         for i, (fec, a) in enumerate(fec_arbors):
+            #assert len(fec_arbors) > 1
             bounce_fec, _ = fec_arbors[(i + 1) % len(fec_arbors)]
 
             # Loop over all edges in arborescence
