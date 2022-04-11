@@ -12,7 +12,5 @@ CONFIG_FILE="${1}"
 for TOPO in $(ls confs) ; do
     for FAILCHUNK in $(ls confs/${TOPO}/failure_chunks) ; do
         sbatch scripts/run-tool.sh ${TOPO}/${CONFIG_FILE} confs/${TOPO}/failure_chunks/${FAILCHUNK}
-        break
     done
-    break
 done
