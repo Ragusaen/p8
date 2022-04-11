@@ -1,9 +1,10 @@
 import argparse
 import os
+from get_results import parse_result_data
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--results_folder", type=str, required=True)
-parser.add_argument("--latex_path", type=str, required=False)
+parser.add_argument("--latex_path_table", type=str, required=False)
 args = parser.parse_args()
 
 dir = os.path.dirname(__file__)
@@ -11,49 +12,40 @@ results_folder = os.path.join(dir, args.results_folder)
 
 output_latex_code: str = ""
 
-conf_to_alg_dict = {"conf_3": "FP", "conf_21": "ARB", "conf_22": "HD", "conf_23": "CF"}
 alg_to_res_dict = {}
-for value in conf_to_alg_dict.values():
-    alg_to_res_dict[value] = -1.0
 
+results_data = parse_result_data(results_folder)
 
-def compute_ratio_of_looping_links(num_links: int, num_looping_links: int) -> float:
-    return float(num_looping_links) / num_links
+for alg in results_data:
+    num_links = 0
+    num_looping_links = 0
+    for network in results_data:
+        for flow in network:
+            for failure_scenario in flow:
+                num_links += failure_scenario.total_links
+                num_looping_links += failure_scenario.failed_links_with_loops - failure_scenario.failed_links
 
-for network_folder in os.listdir(results_folder):
-    if os.path.isdir(f"{results_folder}/{network_folder}"):
-        for alg_folder in os.listdir(f"{results_folder}/{network_folder}"):
-            if alg_folder not in conf_to_alg_dict.keys():
-                raise Exception(f"'{alg_folder}' folder name in results is not a recognized algorithm config.")
+    ratio = float(num_looping_links) / float(num_links)
+    alg_to_res_dict[alg] = ratio
 
-            if os.path.isdir(f"{results_folder}/{network_folder}/{alg_folder}"):
-                num_links = 0
-                num_looping_links = 0
-                for results_file in os.listdir(f"{results_folder}/{network_folder}/{alg_folder}"):
-                    with open(f"{results_folder}/{network_folder}/{alg_folder}/{results_file}", "r") as f:
-                        for line in f:
-                            data = None
-                            num_links += data
-                            num_looping_links += data
+latex1 = r"\begin{table}[]" + "\n" + r"\centering" + "\n"
+latex_table_header = r"    \begin{tabular}{c |"
+latex_algs = r"         "
+latex_numbers = r"        loop ratio "
 
-                ratio = compute_ratio_of_looping_links(num_links, num_looping_links)
-                alg_to_res_dict[alg_folder] = ratio
+for (alg, alg_num) in alg_to_res_dict.keys():
+    latex_table_header += " c"
+    latex_algs += f"& {alg}"
+    latex_numbers += f"& {alg_num}"
 
-    else:
-        continue
+latex_algs += r"\\\hline" + "\n"
+latex_table_header += "}\n"
+latex_numbers += r"\\" + "\n"
 
-latex1 = r"""
-\begin{table}[]
-    \centering
-    \begin{tabular}{c | c c c c}"""
-latex_mid = ""
-latex2 = r"""
-    \end{tabular}
-    \caption{Ratio of links that has been congested because of loops. Sum of all links on all networks divided by looping links. }
-    \label{tab:loop_table_all}
-\end{table}
-"""
+latex2 = r"\end{tabular}" + "\n" + r"\caption{Ratio of links that has been congested because of loops. Sum of all " \
+         r"links on all networks divided by looping links. }" + r"\label{" + r"tab:loop_table_all}" + \
+         "\n" + r"\end{table}" + "\n "
 
-output_latex_code = latex1 + latex_mid + latex2
+output_latex_code = latex1 + latex_algs + latex_numbers + latex2
 latex_file = open(args.latex_path, "w")
 latex_file.write(output_latex_code)
