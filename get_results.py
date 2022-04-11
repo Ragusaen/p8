@@ -69,29 +69,11 @@ for topology in os.listdir(folder):
 
                         p = compute_probability(result_data.failed_links, result_data.total_links)
                         normalisation_sum += p
-                        connectedness += p * result_data.connectivity * (result_data.num_flows / result_data.connected_flows) #TODO: This is not right, fix
+
+                        connectedness += p * (result_data.successful_flows / result_data.connected_flows)
 
                         l = t.readline()
 
             # Normalise
             if normalisation_sum > 0:
                 connectedness = connectedness / normalisation_sum
-                output.connectedness_list.append(connectedness)
-                print(connectedness)
-        else:
-            continue
-
-for output in outputs:
-    output.connectedness_list.sort()
-    i = 0
-    for res in output.connectedness_list:
-        output.file.write(f"({i}, {res})\n")
-        i += 1
-    output.file.close()
-
-print("")
-
-
-
-
-
