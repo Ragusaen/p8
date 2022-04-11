@@ -6,7 +6,7 @@ import networkx as nx
 from networkx import Graph
 import matplotlib.pyplot as plt
 
-import graphviz as gv
+#import graphviz as gv
 
 from mpls_classes import MPLS_Client, Network, oFEC, Router
 from target_based_arborescence.arborescences import find_arborescences
