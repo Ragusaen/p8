@@ -157,11 +157,11 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
     verbose=conf["verbose"]
     s.run(flows, verbose=verbose)
 
-    (success, total, codes) = s.success_rate(exit_codes=True)
+    (successful_flows, total_flows, codes) = s.success_rate(exit_codes=True)
 
-    loops = codes[1]
+    loops = codes[1]  # p8: we do not know what this is
     #f.write("attempted: {0}; succeses: {1}; loops: {2}; failed_links: {3}; connectivity: {4}\n".format(total, success, loops, len(F), success/total))
-    f.write(f"{len(F)} {success/total} {links} {s.failed_links} {total} {success} {loops} {initially_connected}\n") # TODO: Fix connectivity
+    f.write(f"len(F):{len(F)} ratio:{successful_flows/total_flows} len(E):{links} failed_links(with_loops):{s.failed_links} num_flows:{total_flows} successful_flows:{successful_flows} connected_flows:{initially_connected}\n")  # TODO: Fix connectivity
     print("SIMULATION FINISHED")
 
 
