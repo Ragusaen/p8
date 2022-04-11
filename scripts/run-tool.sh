@@ -14,8 +14,7 @@ source ~/p8/venv/bin/activate
 
 python3 -m pip install -r requirements.txt
 
-CONFIG_FILE_YML="${1}.yml"
 CONFIG_FILE="${1}"
 FAILCHUNK="$2"
 
-python3 ${PD}/tool_simulate.py --conf confs/${CONFIG_FILE_YML} --failure_chunk_file ${FAILCHUNK} --result_folder "results/${CONFIG_FILE}"
+python3 ${PD}/tool_simulate.py --conf confs/${CONFIG_FILE} --failure_chunk_file ${FAILCHUNK} --result_folder "results/${CONFIG_FILE}"
