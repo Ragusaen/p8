@@ -45,9 +45,9 @@ from resource import getrusage, RUSAGE_SELF
 
 from mpls_classes import *
 
+global global_conf
 
-def generate_fwd_rules(G, enable_PHP = True, numeric_labels = False, enable_LDP = False,
-                       enable_RSVP = False, num_lsps = 10, tunnels_per_pair = 3, protection = 'facility-node',
+def generate_fwd_rules(G, conf, enable_PHP = True, numeric_labels = False, enable_LDP = False, num_lsps = 10, tunnels_per_pair = 3, protection = 'facility-node',
                        enable_services = False, num_services = 2, PE_s_per_service = 3, CEs_per_PE = 1,
                        enable_RMPLS = False, random_seed = random.random(), enable_tba = False, enable_hd = False,
                        enable_cfor = False
@@ -98,6 +98,9 @@ def generate_fwd_rules(G, enable_PHP = True, numeric_labels = False, enable_LDP 
     # Instantiate the network object with topology graph G
     network = Network(G)
 
+    global global_conf
+    global_conf = conf
+
     for n,r in network.routers.items():
         r.php = enable_PHP
         r.numeric_labels = numeric_labels
@@ -117,123 +120,124 @@ def generate_fwd_rules(G, enable_PHP = True, numeric_labels = False, enable_LDP 
 
         print("LDP ready.")
 
-    if enable_RSVP:
-        print("Computing RSVP...")
+    print("Computing RSVP...")
+    random.seed(random_seed)
+    method = conf["method"]
+    if method == 'tba':
+        network.start_client(tba.TargetBasedArborescence)
+        protocol_name = "tba"
+    elif method == 'cfor':
+        network.start_client(cfor.CFor)
+        protocol_name = "cfor"
+    elif method == 'hd':
+        network.start_client(hop_distance_client.HopDistance_Client)
+        protocol_name = "hop_distance"
+    # Start RSVP-TE process in each router
+    elif conf['method'] == 'rsvp' and conf['protection'] is not None and conf['protection'].startswith("plinko"):
+            network.start_client(ProcPlinko)
+            protocol_name = "ProcPlinko"
+    else:
+        network.start_client(ProcRSVPTE)
+        protocol_name = "RSVP-TE"
+
+    # compute  lsps
+    print(f"num_lsps: {num_lsps}")
+    # num_lsps can be:
+    #   an integer: so we generate randomly.
+    #   or a list of tuples (headend, tailend) in order to generate manually.
+    if isinstance(num_lsps, int):
+
+        i = 0  # Counter for pairs of headend, tailend
+        err_cnt = 0 # Counter of already allocated headend,tailend
+        print_thr = 10/num_lsps
+
         random.seed(random_seed)
-        if enable_tba:
-            network.start_client(tba.TargetBasedArborescence)
-            protocol_name = "tba"
-        elif enable_cfor:
-            network.start_client(cfor.CFor)
-            protocol_name = "cfor"
-        elif enable_hd:
-            network.start_client(hop_distance_client.HopDistance_Client)
-            protocol_name = "hop_distance"
-        # Start RSVP-TE process in each router
-        elif protection is not None and protection.startswith("plinko"):
-                network.start_client(ProcPlinko)
-                protocol_name = "ProcPlinko"
-        else:
-            network.start_client(ProcRSVPTE)
-            protocol_name = "RSVP-TE"
+        router_names = list(network.routers.keys())
 
-        # compute  lsps
-        print(f"num_lsps: {num_lsps}")
-        # num_lsps can be:
-        #   an integer: so we generate randomly.
-        #   or a list of tuples (headend, tailend) in order to generate manually.
-        if isinstance(num_lsps, int):
+        tunnels = dict()   # track created (headend, tailend) pairs
 
-            i = 0  # Counter for pairs of headend, tailend
-            err_cnt = 0 # Counter of already allocated headend,tailend
-            print_thr = 10/num_lsps
+        while i < num_lsps:
+            success = False
 
-            random.seed(random_seed)
-            router_names = list(network.routers.keys())
+            tailend = None
+            headend = None
+            # get a tunnel across different nodes
+            while tailend == headend:
+                headend = router_names[random.randint(0,len(G.nodes)-1)]
+                tailend = router_names[random.randint(0,len(G.nodes)-1)]
 
-            tunnels = dict()   # track created (headend, tailend) pairs
+            if (headend, tailend) not in tunnels.keys():
+                tunnels[(headend, tailend)] = 0
 
-            while i < num_lsps:
-                success = False
+            for j in range(tunnels_per_pair):
+                tunnels[(headend, tailend)] += 1  #counter to differentiate tunnels on same (h,t) pair
 
-                tailend = None
-                headend = None
-                # get a tunnel across different nodes
-                while tailend == headend:
-                    headend = router_names[random.randint(0,len(G.nodes)-1)]
-                    tailend = router_names[random.randint(0,len(G.nodes)-1)]
+                try:
+                    if conf['method'] != 'rsvp':
 
-                if (headend, tailend) not in tunnels.keys():
-                    tunnels[(headend, tailend)] = 0
+                        network.routers[tailend].clients[protocol_name].define_demand(headend)
+                    else:
+                        network.routers[headend].clients[protocol_name].define_lsp(tailend,
+                                                                   # tunnel_local_id = j,
+                                                                   tunnel_local_id = tunnels[(headend, tailend)],
+                                                                   weight='weight',
+                                                                   protection=conf['protection'])
+                    success = True
+                except Exception as e:
+                    pprint(e)
+                    # We have already generated the tunnels for this pair of headend, tailend.
+                    err_cnt += 1
+                    if err_cnt > num_lsps*10:
+                        # too many errors, break the loop!
+                        i = num_lsps
+                        break
+            if random.random() < print_thr:
+                print("Tunnel_{}: from {} to {}".format(i,headend,tailend))
+            if success:
+                i += 1
 
-                for j in range(tunnels_per_pair):
-                    tunnels[(headend, tailend)] += 1  #counter to differentiate tunnels on same (h,t) pair
+    elif isinstance(num_lsps, list):
+        #verify that this is a list of pairs:
+        assert all(filter(lambda x: isinstance(x,(list,tuple)) and len(x)==2 ,num_lsps))
+        c = dict()
+        for h,t in num_lsps:
+            print(f"Manually build LSP from {h} to {t}")
+            if (h,t) not in c.keys():
+                c[(h,t)] = 0
+            else:
+                c[(h,t)] += 1
 
-                    try:
-                        if protocol_name == "tba" or protocol_name == "hop_distance":
-                            network.routers[tailend].clients[protocol_name].define_demand(headend)
-                        else:
-                            network.routers[headend].clients[protocol_name].define_lsp(tailend,
-                                                                       # tunnel_local_id = j,
-                                                                       tunnel_local_id = tunnels[(headend, tailend)],
-                                                                       weight='weight',
-                                                                       protection=protection)
-                        success = True
-                    except Exception as e:
-                        pprint(e)
-                        # We have already generated the tunnels for this pair of headend, tailend.
-                        err_cnt += 1
-                        if err_cnt > num_lsps*10:
-                            # too many errors, break the loop!
-                            i = num_lsps
-                            break
-                if random.random() < print_thr:
-                    print("Tunnel_{}: from {} to {}".format(i,headend,tailend))
-                if success:
-                    i += 1
+            if protocol_name == "tba" or protocol_name == "hop_distance" or protocol_name == "cfor":
+                network.routers[t].clients[protocol_name].define_demand(h)
+            else:
+                network.routers[h].clients[protocol_name].define_lsp(t,
+                                                             tunnel_local_id = c[(h,t)],
+                                                             weight='weight',
+                                                             protection=protection)
 
-        elif isinstance(num_lsps, list):
-            #verify that this is a list of pairs:
-            assert all(filter(lambda x: isinstance(x,(list,tuple)) and len(x)==2 ,num_lsps))
-            c = dict()
-            for h,t in num_lsps:
-                print(f"Manually build LSP from {h} to {t}")
-                if (h,t) not in c.keys():
-                    c[(h,t)] = 0
-                else:
-                    c[(h,t)] += 1
+    else:
+        raise Exception("num_lsps has wrong type (must be list of pairs or integer)")
 
-                if protocol_name == "tba" or protocol_name == "hop_distance" or protocol_name == "cfor":
-                    network.routers[t].clients[protocol_name].define_demand(h)
-                else:
-                    network.routers[h].clients[protocol_name].define_lsp(t,
-                                                                 tunnel_local_id = c[(h,t)],
-                                                                 weight='weight',
-                                                                 protection=protection)
+    for n,r in network.routers.items():
+        r.clients[protocol_name].commit_config()
 
-        else:
-            raise Exception("num_lsps has wrong type (must be list of pairs or integer)")
+    for n,r in network.routers.items():
+        r.clients[protocol_name].compute_bypasses()
 
-        for n,r in network.routers.items():
-            r.clients[protocol_name].commit_config()
+    if protection is not None and protection.startswith("plinko"):
+        arguments = protection.split("/")
+        max_resiliency = 4 #default value
+        if len(arguments) > 1:
+                max_resiliency = int(arguments[1])
 
-        for n,r in network.routers.items():
-            r.clients[protocol_name].compute_bypasses()
+        for t in range(1,max_resiliency+1):
+            for n,r in network.routers.items():
+                r.clients[protocol_name].add_protections(t)
 
-        if protection is not None and protection.startswith("plinko"):
-            arguments = protection.split("/")
-            max_resiliency = 4 #default value
-            if len(arguments) > 1:
-                    max_resiliency = int(arguments[1])
+    for n,r in network.routers.items():
+        r.clients[protocol_name].alloc_labels_to_known_resources()
 
-            for t in range(1,max_resiliency+1):
-                for n,r in network.routers.items():
-                    r.clients[protocol_name].add_protections(t)
-
-        for n,r in network.routers.items():
-            r.clients[protocol_name].alloc_labels_to_known_resources()
-
-        print(f"RSVP ready (frr variant={protection}).")
+    print(f"RSVP ready (frr variant={protection}).")
 
     if enable_services:
         print("Computing Services")

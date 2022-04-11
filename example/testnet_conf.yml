@@ -1,12 +1,9 @@
 enable_RMPLS: false
 ldp: false
 php: false
-protection: none
 random_seed: 1
-tba: true
-hd: false
-cfor: false
-rsvp: true
+method: tba
+protection: facility-node
 rsvp_num_lsps: 50
 rsvp_tunnels_per_pair: 1
 vpn: false

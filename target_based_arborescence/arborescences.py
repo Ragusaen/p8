@@ -28,8 +28,6 @@ def find_arborescences(network: Network, egress: str) -> List[List[Tuple[str, st
     router_link_amount = [len([(n1,n2) for (n1,n2) in edges if n1 == router]) for router in network.routers]
     router_link_amount.sort()
     arborescences_to_find = router_link_amount[-1]#[len(router_link_amount) // 2]
-    print(f"Arborescences {egress}: {arborescences_to_find}")
-
 
     edge_to_count = {e: 0 for e in edges}
 
