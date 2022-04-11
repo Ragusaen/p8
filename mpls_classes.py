@@ -2926,7 +2926,7 @@ class Simulator(object):
         self.trace_mode= trace_mode
         self.random_seed = random_seed
         self.count_connected = 0
-        self.failed_links = 0
+        self.looping_links = 0
 
         if restricted_topology is not None:
             self.topology = restricted_topology
@@ -3024,7 +3024,7 @@ class Simulator(object):
             self.traces = dict()
             self.run(flows)
 
-        self.failed_links = self.initial_links - len(self.topology.edges)
+        self.looping_links = self.initial_links - len(self.topology.edges)
 
 
 

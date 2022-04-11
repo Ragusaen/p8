@@ -4,6 +4,7 @@
 /networks
 /confs
 /overleaf
+/latex
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
