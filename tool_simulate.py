@@ -149,15 +149,19 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
     # Instantiate simulator object
     s = Simulator(network, trace_mode="links", restricted_topology=view, random_seed=conf["random_seed_sim"])
 
+    initially_connected = 0
+    for src, tgt in flows:
+        if nx.has_path(view, src, tgt):
+            initially_connected += 1
+
     verbose=conf["verbose"]
     s.run(flows, verbose=verbose)
-
 
     (success, total, codes) = s.success_rate(exit_codes=True)
 
     loops = codes[1]
     #f.write("attempted: {0}; succeses: {1}; loops: {2}; failed_links: {3}; connectivity: {4}\n".format(total, success, loops, len(F), success/total))
-    f.write(f"{len(F)} {success/total} {links} {s.failed_links} {total} {success} {loops} {s.count_connected}\n") # TODO: Fix connectivity
+    f.write(f"{len(F)} {success/total} {links} {s.failed_links} {total} {success} {loops} {initially_connected}\n") # TODO: Fix connectivity
     print("SIMULATION FINISHED")
 
 
