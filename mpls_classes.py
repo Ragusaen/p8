@@ -676,8 +676,11 @@ class Network(object):
                         good_sources.append(srv_inst.router.name)
 
                 elif fec.fec_type == "arborescence":
-                    good_sources = list(fec.value[2])
-                    good_targets = [fec.value[0]]
+                    if fec.value[3]:
+                        good_sources = list(fec.value[2])
+                        good_targets = [fec.value[0]]
+                    else:
+                        continue
 
                 elif fec.fec_type == "hop_distance":
                     good_sources = [fec.value[0]]
@@ -699,7 +702,7 @@ class Network(object):
                     continue
 
                 # I have good_sources and good_targets in memory currently...
-                labeled_flows[src_router][in_label] = (good_sources,good_targets)
+                labeled_flows[src_router][in_label] = ([src_router],[tgt_router])
                 break # Successfully found flow
             else:
                 print(f"ERROR: Could not find flow from {src_router} to {tgt_router}", file=sys.stderr)
@@ -2634,7 +2637,7 @@ class MPLS_packet(object):
     This is just a proof of concept, must be further developed.
     """
 
-    def __init__(self, network, init_router, init_stack = [], restricted_topology = None, mode="packet", max_ttl = 255, verbose = False):
+    def __init__(self, network, init_router, targets, init_stack = [], restricted_topology = None, mode="packet", max_ttl = 255, verbose = False):
         self.network = network
         self.ttl = max_ttl
         if restricted_topology is not None:
@@ -2663,6 +2666,7 @@ class MPLS_packet(object):
         self.cause = ""
         self.exit_code = None     # 0 means success, None is not finished yet, other are errors.
         self.success = None
+        self.targets = targets
 
     def info(self):
         print(".....INFO.....")
@@ -2741,6 +2745,8 @@ class MPLS_packet(object):
             self.cause = " FORWARDING Complete: No available forwarding rules at router {} for label {}, yet MPLS stack is not empty".format(curr_r.name, outer_lbl)
             self.exit_code = 2
             if self.verbose:
+                if self.targets is not None:
+                    print("WAS CONNECTED" if any([nx.has_path(self.topology, self.init_router, tgt) for tgt in self.targets]) else "WAS NOT CONNECTED")
                 print(self.cause)
             if self.mode == "pathfinder":
                 return (False, [])
@@ -2789,6 +2795,9 @@ class MPLS_packet(object):
                     self.cause = " FORWARDING Complete: Exiting the MPLS domain at router {} for label {}".format(curr_r.name, outer_lbl)
                     self.exit_code = 3
                     if self.verbose:
+                        if self.targets is not None:
+                            print("WAS CONNECTED" if any([nx.has_path(self.topology, self.init_router, tgt) for tgt in
+                                                           self.targets]) else "WAS NOT CONNECTED")
                         print(self.cause)
                     if self.mode == "pathfinder":
                         return (True, [])
@@ -2801,9 +2810,12 @@ class MPLS_packet(object):
         # If we couldn't find a rule that is the end of the story.
         if not rule_list:
             self.state = "finished"
-            self.cause = " FORWARDING Complete: Can't find a forwarding rule at router {} for label {}".format(curr_r.name, outer_lbl)
+            self.cause = " FORWARDING Complete: Can't find a forwarding rule at router {} for label {}.".format(curr_r.name, outer_lbl)
             self.exit_code = 4
             if self.verbose:
+                if self.targets is not None:
+                    print("WAS CONNECTED" if any([nx.has_path(self.topology, self.init_router.name, tgt) for tgt in
+                                                   self.targets]) else "WAS NOT CONNECTED")
                 print(self.cause)
             if self.mode == "pathfinder":
                 return (False, [])
@@ -2928,7 +2940,7 @@ class Simulator(object):
         for router_name, r in self.network.routers.items():
             self.traces[router_name] = dict()
             for in_label in r.LFIB:
-                p = MPLS_packet(self.network, init_router = router_name, init_stack = [in_label], verbose = True)
+                p = MPLS_packet(self.network, init_router = router_name, targets = None, init_stack = [in_label], verbose = True)
                 res = p.fwd()
                 self.traces[router_name][in_label] = [{"trace": p, "result": res}]
 
@@ -2953,7 +2965,7 @@ class Simulator(object):
                 if verbose:
                     print(f"\n processing router {router_name} with flow {good_sources} to {good_targets}")
 
-                p = MPLS_packet(self.network, init_router = router_name, init_stack = [in_label],
+                p = MPLS_packet(self.network, init_router = router_name, targets = good_targets, init_stack = [in_label],
                                 verbose = verbose, restricted_topology = self.topology)
                 res = p.fwd()
 
