@@ -58,7 +58,7 @@ class TargetBasedArborescence(MPLS_Client):
         headends = tuple(set(map(lambda x: x[0], self.demands.values()))) #lists cannot be hashed :|
         self.rooted_arborescences = find_arborescences(self.router.network, self.router.name)
 
-        #Create graph for debugging
+        '''#Create graph for debugging
         g = gv.Digraph(format="svg")
 
         colors = ['blue', 'green', 'red', 'purple', 'orange', 'cyan']
@@ -67,6 +67,7 @@ class TargetBasedArborescence(MPLS_Client):
                 g.edge(src, tgt, color=color)
 
         g.render(f"arborescence_{self.router.name}", "gen")
+        '''
 
         fec_arbors: list[tuple[oFEC, list[tuple[str, str]]]] =\
             [(oFEC("arborescence", f"{self.router.name}_{i}_{ab}", (self.router.name, i, headends, i == 0 and ab == 'a')), a)

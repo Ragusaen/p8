@@ -5,7 +5,7 @@
 PD=$(pwd)
 
 EXECUTOR="sbatch"
-if [ $1 = "no" ]; then
+if [ "$1" = "no" ]; then
   EXECUTOR=""
 fi
 
