@@ -11,7 +11,7 @@ for TOPO in $(ls confs) ; do
     if [ $count -le $AMOUNT_TO_TEST ]
     then
         for FAILCHUNK in $(ls confs/${TOPO}/failure_chunks) ; do
-            python3 ${PD}/tool_simulate.py --conf "confs/${TOPO}/${CONFIG_FILE}.yml" --failure_chunk_file "confs/${TOPO}/failure_chunks/${FAILCHUNK}" --result_folder "results/${TOPO}/${CONFIG_FILE}"
+            python3 ${PD}/tool_simulate.py --conf "confs/${TOPO}/${CONFIG_FILE}.yml" --failure_chunk_file "confs/${TOPO}/failure_chunks/${FAILCHUNK}" --result_folder "results/${CONFIG_FILE}/${TOPO}"
         done
     fi
     (( count++ ))
