@@ -83,7 +83,7 @@ def generate_failures_all(G, division = None, random_seed = 1):
     return [all_of_em]
 
 
-def generate_conf(n, conf_type = 0, topofile = None, random_seed = 1):
+def generate_conf(n, conf_type: str, topofile = None, random_seed = 1):
     base_config = {
     #we need extra configuration here!!!!
         "topology": topofile,
@@ -94,7 +94,7 @@ def generate_conf(n, conf_type = 0, topofile = None, random_seed = 1):
         "rsvp_tunnels_per_pair": 1,
         "vpn": False,
         "random_seed": random_seed,
-        "result_folder": conf["result_folder"],
+        "result_folder": os.path.join(conf["result_folder"], conf_type, topofile.split('/')[-1].split('.')[0]),
         "flows_file": os.path.join(folder, "flows.yml")
     }
     if conf_type == 'rsvp-fn':
