@@ -57,7 +57,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
             for k in range(1, len(path)):
                 if is_last_switch:
                     if k == len(path)-1:
-                        forwarding_table.add_rule((path[k-1], label(v, 1)), (2, path[k], label(path[k], 1)))
+                        forwarding_table.add_rule((path[k-1], label(v, 1)), (2, path[k], label(path[k], 2)))
                     else:
                         forwarding_table.add_rule((path[k-1], label(v, 1)), (2, path[k], label(v, 1)))
                 else:

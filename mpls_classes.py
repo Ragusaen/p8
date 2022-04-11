@@ -2951,7 +2951,7 @@ class Simulator(object):
                 good_sources, good_targets = tup
 
                 if verbose:
-                    print(f"\n processing router {router_name}")
+                    print(f"\n processing router {router_name} with flow {good_sources} to {good_targets}")
 
                 p = MPLS_packet(self.network, init_router = router_name, init_stack = [in_label],
                                 verbose = verbose, restricted_topology = self.topology)
