@@ -1,3 +1,5 @@
+import networkx.exception
+
 from mpls_classes import *
 from functools import *
 from networkx import shortest_path
@@ -16,11 +18,11 @@ class ForwardingTable:
 
 def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
     def label(switch: str, iteration: int):
-        return oFEC("cfor", f"v:{switch}, iter:{iteration}", {"ingress": ingress, "egress": egress, "iteration": iteration})
+        return oFEC("cfor", f"{ingress}_to_{egress}_at_{switch}_it_{iteration}", {"ingress": ingress, "egress": egress, "iteration": iteration, "switch": switch})
 
     edges: set[tuple[str, str]] = set([(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
                                       + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2])
-    network.compute_dijkstra()
+    network.compute_dijkstra(weight=1)
     layers: dict[int, list[str]] = {layer: [] for layer in range(0, network.routers[ingress].dist[egress] + 1)}
 
     for v in network.routers.values():
@@ -52,8 +54,12 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
 
             subgraph = network.topology.subgraph(subgraph_switches)
 
-            # check if path exists
-            path = list(shortest_path(subgraph, v, v_next))
+            # check if path exists, if not drop packet
+            try:
+                path = list(shortest_path(subgraph, v, v_next))
+            except networkx.exception.NetworkXNoPath:
+                continue
+
             for k in range(1, len(path)):
                 if is_last_switch:
                     if k == len(path)-1:
