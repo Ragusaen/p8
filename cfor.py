@@ -1,3 +1,5 @@
+import networkx.exception
+
 from mpls_classes import *
 from functools import *
 from networkx import shortest_path
@@ -52,8 +54,12 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
 
             subgraph = network.topology.subgraph(subgraph_switches)
 
-            # check if path exists
-            path = list(shortest_path(subgraph, v, v_next))
+            # check if path exists, if not drop packet
+            try:
+                path = list(shortest_path(subgraph, v, v_next))
+            except networkx.exception.NetworkXNoPath:
+                continue
+
             for k in range(1, len(path)):
                 if is_last_switch:
                     if k == len(path)-1:
