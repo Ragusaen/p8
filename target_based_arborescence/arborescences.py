@@ -8,7 +8,7 @@ def create_arborescence(edges: List[Tuple[str, str]], vertices: Set[str], egress
     nodes_used_distance = {egress: 0}
 
     for _ in range(len(vertices) - 1):
-        # Best edge by the heuristic: Use least used edge and then longest subtree
+        # Best edge by the heuristic: Sort by longest subtree then by least used edge
         edges_by_heuristic = sorted(filter(lambda e: e[0] not in nodes_used_distance and e[1] in nodes_used_distance, edges),
                                     key=lambda e: (-nodes_used_distance[e[1]], edge_to_count[e]))
 
