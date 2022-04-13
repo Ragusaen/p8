@@ -81,7 +81,7 @@ def shortest_path_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoin
     try:
         path = list(shortest_path(G, src, tgt, weight=1))
     except networkx.exception.NetworkXNoPath:
-        return
+        return ft
 
     for src, tgt in zip(path[:-2], path[1:-1]):
         ft.add_rule((src, ingoing_label), (2, tgt, ingoing_label))
@@ -96,7 +96,13 @@ def arborescence_path_generator(G: Graph, src: str, tgt: str, ingoing_label: oFE
     ft = ForwardingTable()
     arborescences = find_arborescences(G, tgt)
 
-    if src == tgt or len(arborescences) < 1:
+    try:
+        if not nx.has_path(G, src, tgt):
+            return ft
+    except:
+        return ft
+
+    if src == tgt or not any([len(arb) > 0 for arb in arborescences]):
         return ft
 
     fec_arbs = [(oFEC('cfor_arb', ingoing_label.name + f"_to_{tgt}_arb{i}{ab}", {'egress':ingoing_label.value['egress']}), a) for ab, (i, a)  in itertools.product(['a', 'b'], enumerate(arborescences))]
@@ -147,7 +153,7 @@ class CFor(MPLS_Client):
                 remote_label = self.get_remote_label(next_hop, swap_fec)
                 assert(remote_label is not None)
 
-                yield (local_label, {'out': next_hop, 'ops': [{'swap': remote_label}], 'weight': priority})
+                yield (local_label, {'out': next_hop if next_hop != self.router.name else self.LOCAL_LOOKUP, 'ops': [{'swap': remote_label}], 'weight': priority})
 
     # Defines a demand for a headend to this one
     def define_demand(self, headend: str):
@@ -176,4 +182,4 @@ class CFor(MPLS_Client):
             yield fec
 
     def self_sourced(self, fec: oFEC):
-        return fec.fec_type == 'cfor' and fec.value["egress"] == self.router.name
+        return 'cfor' in fec.fec_type and fec.value["egress"] == self.router.name

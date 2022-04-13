@@ -104,8 +104,12 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1):
         base_config["method"] = "tba"
     elif conf_type == 'hd':
         base_config['method'] = 'hd'
-    elif conf_type == 'cfor':
+    elif conf_type == 'cfor-short':
         base_config['method'] = 'cfor'
+        base_config['path'] = 'shortest'
+    elif conf_type == 'cfor-arb':
+        base_config['method'] = 'cfor'
+        base_config['path'] = 'arborescence'
     else:
         raise f"Conf type {conf_type} not known"
 
@@ -183,7 +187,8 @@ if __name__ == "__main__":
     create('rsvp-fn')    # conf file with RSVP(FRR), no RMPLS
     create('tba')
     create('hd')
-    create('cfor')
+    create('cfor-short')
+    create('cfor-arb')
 
     if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):
         # Generate failures
