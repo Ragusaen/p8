@@ -1,0 +1,2219 @@
+{
+	"network": {
+		"links": [
+			{
+				"bidirectional": true,
+				"from_interface": 1,
+				"from_router": 0,
+				"to_interface": 0,
+				"to_router": 1
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 2,
+				"from_router": 0,
+				"to_interface": 0,
+				"to_router": 2
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 3,
+				"from_router": 0,
+				"to_interface": 0,
+				"to_router": 3
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 4,
+				"from_router": 0,
+				"to_interface": 0,
+				"to_router": 4
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 5,
+				"from_router": 0,
+				"to_interface": 0,
+				"to_router": 5
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 6,
+				"from_router": 0,
+				"to_interface": 0,
+				"to_router": 6
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 0,
+				"from_router": 1,
+				"to_interface": 1,
+				"to_router": 0
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 11,
+				"from_router": 1,
+				"to_interface": 1,
+				"to_router": 11
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 17,
+				"from_router": 1,
+				"to_interface": 1,
+				"to_router": 17
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 23,
+				"from_router": 1,
+				"to_interface": 1,
+				"to_router": 23
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 34,
+				"from_router": 1,
+				"to_interface": 1,
+				"to_router": 34
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 0,
+				"from_router": 2,
+				"to_interface": 2,
+				"to_router": 0
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 9,
+				"from_router": 2,
+				"to_interface": 2,
+				"to_router": 9
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 19,
+				"from_router": 2,
+				"to_interface": 2,
+				"to_router": 19
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 22,
+				"from_router": 2,
+				"to_interface": 2,
+				"to_router": 22
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 32,
+				"from_router": 2,
+				"to_interface": 2,
+				"to_router": 32
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 0,
+				"from_router": 3,
+				"to_interface": 3,
+				"to_router": 0
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 8,
+				"from_router": 3,
+				"to_interface": 3,
+				"to_router": 8
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 20,
+				"from_router": 3,
+				"to_interface": 3,
+				"to_router": 20
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 24,
+				"from_router": 3,
+				"to_interface": 3,
+				"to_router": 24
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 31,
+				"from_router": 3,
+				"to_interface": 3,
+				"to_router": 31
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 0,
+				"from_router": 4,
+				"to_interface": 4,
+				"to_router": 0
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 12,
+				"from_router": 4,
+				"to_interface": 4,
+				"to_router": 12
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 16,
+				"from_router": 4,
+				"to_interface": 4,
+				"to_router": 16
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 27,
+				"from_router": 4,
+				"to_interface": 4,
+				"to_router": 27
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 29,
+				"from_router": 4,
+				"to_interface": 4,
+				"to_router": 29
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 0,
+				"from_router": 5,
+				"to_interface": 5,
+				"to_router": 0
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 10,
+				"from_router": 5,
+				"to_interface": 5,
+				"to_router": 10
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 18,
+				"from_router": 5,
+				"to_interface": 5,
+				"to_router": 18
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 26,
+				"from_router": 5,
+				"to_interface": 5,
+				"to_router": 26
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 30,
+				"from_router": 5,
+				"to_interface": 5,
+				"to_router": 30
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 0,
+				"from_router": 6,
+				"to_interface": 6,
+				"to_router": 0
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 13,
+				"from_router": 6,
+				"to_interface": 6,
+				"to_router": 13
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 15,
+				"from_router": 6,
+				"to_interface": 6,
+				"to_router": 15
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 25,
+				"from_router": 6,
+				"to_interface": 6,
+				"to_router": 25
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 33,
+				"from_router": 6,
+				"to_interface": 6,
+				"to_router": 33
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 8,
+				"from_router": 7,
+				"to_interface": 7,
+				"to_router": 8
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 9,
+				"from_router": 7,
+				"to_interface": 7,
+				"to_router": 9
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 10,
+				"from_router": 7,
+				"to_interface": 7,
+				"to_router": 10
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 11,
+				"from_router": 7,
+				"to_interface": 7,
+				"to_router": 11
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 12,
+				"from_router": 7,
+				"to_interface": 7,
+				"to_router": 12
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 13,
+				"from_router": 7,
+				"to_interface": 7,
+				"to_router": 13
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 3,
+				"from_router": 8,
+				"to_interface": 8,
+				"to_router": 3
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 7,
+				"from_router": 8,
+				"to_interface": 8,
+				"to_router": 7
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 19,
+				"from_router": 8,
+				"to_interface": 8,
+				"to_router": 19
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 22,
+				"from_router": 8,
+				"to_interface": 8,
+				"to_router": 22
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 29,
+				"from_router": 8,
+				"to_interface": 8,
+				"to_router": 29
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 2,
+				"from_router": 9,
+				"to_interface": 9,
+				"to_router": 2
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 7,
+				"from_router": 9,
+				"to_interface": 9,
+				"to_router": 7
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 18,
+				"from_router": 9,
+				"to_interface": 9,
+				"to_router": 18
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 25,
+				"from_router": 9,
+				"to_interface": 9,
+				"to_router": 25
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 31,
+				"from_router": 9,
+				"to_interface": 9,
+				"to_router": 31
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 5,
+				"from_router": 10,
+				"to_interface": 10,
+				"to_router": 5
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 7,
+				"from_router": 10,
+				"to_interface": 10,
+				"to_router": 7
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 17,
+				"from_router": 10,
+				"to_interface": 10,
+				"to_router": 17
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 24,
+				"from_router": 10,
+				"to_interface": 10,
+				"to_router": 24
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 32,
+				"from_router": 10,
+				"to_interface": 10,
+				"to_router": 32
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 1,
+				"from_router": 11,
+				"to_interface": 11,
+				"to_router": 1
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 7,
+				"from_router": 11,
+				"to_interface": 11,
+				"to_router": 7
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 20,
+				"from_router": 11,
+				"to_interface": 11,
+				"to_router": 20
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 27,
+				"from_router": 11,
+				"to_interface": 11,
+				"to_router": 27
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 34,
+				"from_router": 11,
+				"to_interface": 11,
+				"to_router": 34
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 4,
+				"from_router": 12,
+				"to_interface": 12,
+				"to_router": 4
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 7,
+				"from_router": 12,
+				"to_interface": 12,
+				"to_router": 7
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 16,
+				"from_router": 12,
+				"to_interface": 12,
+				"to_router": 16
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 26,
+				"from_router": 12,
+				"to_interface": 12,
+				"to_router": 26
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 30,
+				"from_router": 12,
+				"to_interface": 12,
+				"to_router": 30
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 6,
+				"from_router": 13,
+				"to_interface": 13,
+				"to_router": 6
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 7,
+				"from_router": 13,
+				"to_interface": 13,
+				"to_router": 7
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 15,
+				"from_router": 13,
+				"to_interface": 13,
+				"to_router": 15
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 23,
+				"from_router": 13,
+				"to_interface": 13,
+				"to_router": 23
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 33,
+				"from_router": 13,
+				"to_interface": 13,
+				"to_router": 33
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 15,
+				"from_router": 14,
+				"to_interface": 14,
+				"to_router": 15
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 16,
+				"from_router": 14,
+				"to_interface": 14,
+				"to_router": 16
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 17,
+				"from_router": 14,
+				"to_interface": 14,
+				"to_router": 17
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 18,
+				"from_router": 14,
+				"to_interface": 14,
+				"to_router": 18
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 19,
+				"from_router": 14,
+				"to_interface": 14,
+				"to_router": 19
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 20,
+				"from_router": 14,
+				"to_interface": 14,
+				"to_router": 20
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 6,
+				"from_router": 15,
+				"to_interface": 15,
+				"to_router": 6
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 13,
+				"from_router": 15,
+				"to_interface": 15,
+				"to_router": 13
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 14,
+				"from_router": 15,
+				"to_interface": 15,
+				"to_router": 14
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 23,
+				"from_router": 15,
+				"to_interface": 15,
+				"to_router": 23
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 34,
+				"from_router": 15,
+				"to_interface": 15,
+				"to_router": 34
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 4,
+				"from_router": 16,
+				"to_interface": 16,
+				"to_router": 4
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 12,
+				"from_router": 16,
+				"to_interface": 16,
+				"to_router": 12
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 14,
+				"from_router": 16,
+				"to_interface": 16,
+				"to_router": 14
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 25,
+				"from_router": 16,
+				"to_interface": 16,
+				"to_router": 25
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 31,
+				"from_router": 16,
+				"to_interface": 16,
+				"to_router": 31
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 1,
+				"from_router": 17,
+				"to_interface": 17,
+				"to_router": 1
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 10,
+				"from_router": 17,
+				"to_interface": 17,
+				"to_router": 10
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 14,
+				"from_router": 17,
+				"to_interface": 17,
+				"to_router": 14
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 22,
+				"from_router": 17,
+				"to_interface": 17,
+				"to_router": 22
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 29,
+				"from_router": 17,
+				"to_interface": 17,
+				"to_router": 29
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 5,
+				"from_router": 18,
+				"to_interface": 18,
+				"to_router": 5
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 9,
+				"from_router": 18,
+				"to_interface": 18,
+				"to_router": 9
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 14,
+				"from_router": 18,
+				"to_interface": 18,
+				"to_router": 14
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 26,
+				"from_router": 18,
+				"to_interface": 18,
+				"to_router": 26
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 33,
+				"from_router": 18,
+				"to_interface": 18,
+				"to_router": 33
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 2,
+				"from_router": 19,
+				"to_interface": 19,
+				"to_router": 2
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 8,
+				"from_router": 19,
+				"to_interface": 19,
+				"to_router": 8
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 14,
+				"from_router": 19,
+				"to_interface": 19,
+				"to_router": 14
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 27,
+				"from_router": 19,
+				"to_interface": 19,
+				"to_router": 27
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 32,
+				"from_router": 19,
+				"to_interface": 19,
+				"to_router": 32
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 3,
+				"from_router": 20,
+				"to_interface": 20,
+				"to_router": 3
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 11,
+				"from_router": 20,
+				"to_interface": 20,
+				"to_router": 11
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 14,
+				"from_router": 20,
+				"to_interface": 20,
+				"to_router": 14
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 24,
+				"from_router": 20,
+				"to_interface": 20,
+				"to_router": 24
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 30,
+				"from_router": 20,
+				"to_interface": 20,
+				"to_router": 30
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 22,
+				"from_router": 21,
+				"to_interface": 21,
+				"to_router": 22
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 23,
+				"from_router": 21,
+				"to_interface": 21,
+				"to_router": 23
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 24,
+				"from_router": 21,
+				"to_interface": 21,
+				"to_router": 24
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 25,
+				"from_router": 21,
+				"to_interface": 21,
+				"to_router": 25
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 26,
+				"from_router": 21,
+				"to_interface": 21,
+				"to_router": 26
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 27,
+				"from_router": 21,
+				"to_interface": 21,
+				"to_router": 27
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 2,
+				"from_router": 22,
+				"to_interface": 22,
+				"to_router": 2
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 8,
+				"from_router": 22,
+				"to_interface": 22,
+				"to_router": 8
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 17,
+				"from_router": 22,
+				"to_interface": 22,
+				"to_router": 17
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 21,
+				"from_router": 22,
+				"to_interface": 22,
+				"to_router": 21
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 31,
+				"from_router": 22,
+				"to_interface": 22,
+				"to_router": 31
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 1,
+				"from_router": 23,
+				"to_interface": 23,
+				"to_router": 1
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 13,
+				"from_router": 23,
+				"to_interface": 23,
+				"to_router": 13
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 15,
+				"from_router": 23,
+				"to_interface": 23,
+				"to_router": 15
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 21,
+				"from_router": 23,
+				"to_interface": 23,
+				"to_router": 21
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 34,
+				"from_router": 23,
+				"to_interface": 23,
+				"to_router": 34
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 3,
+				"from_router": 24,
+				"to_interface": 24,
+				"to_router": 3
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 10,
+				"from_router": 24,
+				"to_interface": 24,
+				"to_router": 10
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 20,
+				"from_router": 24,
+				"to_interface": 24,
+				"to_router": 20
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 21,
+				"from_router": 24,
+				"to_interface": 24,
+				"to_router": 21
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 30,
+				"from_router": 24,
+				"to_interface": 24,
+				"to_router": 30
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 6,
+				"from_router": 25,
+				"to_interface": 25,
+				"to_router": 6
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 9,
+				"from_router": 25,
+				"to_interface": 25,
+				"to_router": 9
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 16,
+				"from_router": 25,
+				"to_interface": 25,
+				"to_router": 16
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 21,
+				"from_router": 25,
+				"to_interface": 25,
+				"to_router": 21
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 29,
+				"from_router": 25,
+				"to_interface": 25,
+				"to_router": 29
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 5,
+				"from_router": 26,
+				"to_interface": 26,
+				"to_router": 5
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 12,
+				"from_router": 26,
+				"to_interface": 26,
+				"to_router": 12
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 18,
+				"from_router": 26,
+				"to_interface": 26,
+				"to_router": 18
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 21,
+				"from_router": 26,
+				"to_interface": 26,
+				"to_router": 21
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 33,
+				"from_router": 26,
+				"to_interface": 26,
+				"to_router": 33
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 4,
+				"from_router": 27,
+				"to_interface": 27,
+				"to_router": 4
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 11,
+				"from_router": 27,
+				"to_interface": 27,
+				"to_router": 11
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 19,
+				"from_router": 27,
+				"to_interface": 27,
+				"to_router": 19
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 21,
+				"from_router": 27,
+				"to_interface": 27,
+				"to_router": 21
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 32,
+				"from_router": 27,
+				"to_interface": 27,
+				"to_router": 32
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 29,
+				"from_router": 28,
+				"to_interface": 28,
+				"to_router": 29
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 30,
+				"from_router": 28,
+				"to_interface": 28,
+				"to_router": 30
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 31,
+				"from_router": 28,
+				"to_interface": 28,
+				"to_router": 31
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 32,
+				"from_router": 28,
+				"to_interface": 28,
+				"to_router": 32
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 33,
+				"from_router": 28,
+				"to_interface": 28,
+				"to_router": 33
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 34,
+				"from_router": 28,
+				"to_interface": 28,
+				"to_router": 34
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 4,
+				"from_router": 29,
+				"to_interface": 29,
+				"to_router": 4
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 8,
+				"from_router": 29,
+				"to_interface": 29,
+				"to_router": 8
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 17,
+				"from_router": 29,
+				"to_interface": 29,
+				"to_router": 17
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 25,
+				"from_router": 29,
+				"to_interface": 29,
+				"to_router": 25
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 28,
+				"from_router": 29,
+				"to_interface": 29,
+				"to_router": 28
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 5,
+				"from_router": 30,
+				"to_interface": 30,
+				"to_router": 5
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 12,
+				"from_router": 30,
+				"to_interface": 30,
+				"to_router": 12
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 20,
+				"from_router": 30,
+				"to_interface": 30,
+				"to_router": 20
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 24,
+				"from_router": 30,
+				"to_interface": 30,
+				"to_router": 24
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 28,
+				"from_router": 30,
+				"to_interface": 30,
+				"to_router": 28
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 3,
+				"from_router": 31,
+				"to_interface": 31,
+				"to_router": 3
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 9,
+				"from_router": 31,
+				"to_interface": 31,
+				"to_router": 9
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 16,
+				"from_router": 31,
+				"to_interface": 31,
+				"to_router": 16
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 22,
+				"from_router": 31,
+				"to_interface": 31,
+				"to_router": 22
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 28,
+				"from_router": 31,
+				"to_interface": 31,
+				"to_router": 28
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 2,
+				"from_router": 32,
+				"to_interface": 32,
+				"to_router": 2
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 10,
+				"from_router": 32,
+				"to_interface": 32,
+				"to_router": 10
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 19,
+				"from_router": 32,
+				"to_interface": 32,
+				"to_router": 19
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 27,
+				"from_router": 32,
+				"to_interface": 32,
+				"to_router": 27
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 28,
+				"from_router": 32,
+				"to_interface": 32,
+				"to_router": 28
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 6,
+				"from_router": 33,
+				"to_interface": 33,
+				"to_router": 6
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 13,
+				"from_router": 33,
+				"to_interface": 33,
+				"to_router": 13
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 18,
+				"from_router": 33,
+				"to_interface": 33,
+				"to_router": 18
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 26,
+				"from_router": 33,
+				"to_interface": 33,
+				"to_router": 26
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 28,
+				"from_router": 33,
+				"to_interface": 33,
+				"to_router": 28
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 1,
+				"from_router": 34,
+				"to_interface": 34,
+				"to_router": 1
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 11,
+				"from_router": 34,
+				"to_interface": 34,
+				"to_router": 11
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 15,
+				"from_router": 34,
+				"to_interface": 34,
+				"to_router": 15
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 23,
+				"from_router": 34,
+				"to_interface": 34,
+				"to_router": 23
+			},
+			{
+				"bidirectional": true,
+				"from_interface": 28,
+				"from_router": 34,
+				"to_interface": 34,
+				"to_router": 28
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 0,
+				"to_interface": "loop_back",
+				"to_router": 0
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 1,
+				"to_interface": "loop_back",
+				"to_router": 1
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 2,
+				"to_interface": "loop_back",
+				"to_router": 2
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 3,
+				"to_interface": "loop_back",
+				"to_router": 3
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 4,
+				"to_interface": "loop_back",
+				"to_router": 4
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 5,
+				"to_interface": "loop_back",
+				"to_router": 5
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 6,
+				"to_interface": "loop_back",
+				"to_router": 6
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 7,
+				"to_interface": "loop_back",
+				"to_router": 7
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 8,
+				"to_interface": "loop_back",
+				"to_router": 8
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 9,
+				"to_interface": "loop_back",
+				"to_router": 9
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 10,
+				"to_interface": "loop_back",
+				"to_router": 10
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 11,
+				"to_interface": "loop_back",
+				"to_router": 11
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 12,
+				"to_interface": "loop_back",
+				"to_router": 12
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 13,
+				"to_interface": "loop_back",
+				"to_router": 13
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 14,
+				"to_interface": "loop_back",
+				"to_router": 14
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 15,
+				"to_interface": "loop_back",
+				"to_router": 15
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 16,
+				"to_interface": "loop_back",
+				"to_router": 16
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 17,
+				"to_interface": "loop_back",
+				"to_router": 17
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 18,
+				"to_interface": "loop_back",
+				"to_router": 18
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 19,
+				"to_interface": "loop_back",
+				"to_router": 19
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 20,
+				"to_interface": "loop_back",
+				"to_router": 20
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 21,
+				"to_interface": "loop_back",
+				"to_router": 21
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 22,
+				"to_interface": "loop_back",
+				"to_router": 22
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 23,
+				"to_interface": "loop_back",
+				"to_router": 23
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 24,
+				"to_interface": "loop_back",
+				"to_router": 24
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 25,
+				"to_interface": "loop_back",
+				"to_router": 25
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 26,
+				"to_interface": "loop_back",
+				"to_router": 26
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 27,
+				"to_interface": "loop_back",
+				"to_router": 27
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 28,
+				"to_interface": "loop_back",
+				"to_router": 28
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 29,
+				"to_interface": "loop_back",
+				"to_router": 29
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 30,
+				"to_interface": "loop_back",
+				"to_router": 30
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 31,
+				"to_interface": "loop_back",
+				"to_router": 31
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 32,
+				"to_interface": "loop_back",
+				"to_router": 32
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 33,
+				"to_interface": "loop_back",
+				"to_router": 33
+			},
+			{
+				"from_interface": "local_lookup",
+				"from_router": 34,
+				"to_interface": "loop_back",
+				"to_router": 34
+			}
+		],
+		"name": "idcugu",
+		"routers": [
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i0",
+							"1",
+							"2",
+							"3",
+							"4",
+							"5",
+							"6",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "0"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i1",
+							"0",
+							"11",
+							"17",
+							"23",
+							"34",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "1"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i2",
+							"0",
+							"9",
+							"19",
+							"22",
+							"32",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "2"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i3",
+							"0",
+							"8",
+							"20",
+							"24",
+							"31",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "3"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i4",
+							"0",
+							"12",
+							"16",
+							"27",
+							"29",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "4"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i5",
+							"0",
+							"10",
+							"18",
+							"26",
+							"30",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "5"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i6",
+							"0",
+							"13",
+							"15",
+							"25",
+							"33",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "6"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i7",
+							"8",
+							"9",
+							"10",
+							"11",
+							"12",
+							"13",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "7"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i8",
+							"3",
+							"7",
+							"19",
+							"22",
+							"29",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "8"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i9",
+							"2",
+							"7",
+							"18",
+							"25",
+							"31",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "9"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i10",
+							"5",
+							"7",
+							"17",
+							"24",
+							"32",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "10"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i11",
+							"1",
+							"7",
+							"20",
+							"27",
+							"34",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "11"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i12",
+							"4",
+							"7",
+							"16",
+							"26",
+							"30",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "12"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i13",
+							"6",
+							"7",
+							"15",
+							"23",
+							"33",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "13"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i14",
+							"15",
+							"16",
+							"17",
+							"18",
+							"19",
+							"20",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "14"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i15",
+							"6",
+							"13",
+							"14",
+							"23",
+							"34",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "15"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i16",
+							"4",
+							"12",
+							"14",
+							"25",
+							"31",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "16"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i17",
+							"1",
+							"10",
+							"14",
+							"22",
+							"29",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "17"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i18",
+							"5",
+							"9",
+							"14",
+							"26",
+							"33",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "18"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i19",
+							"2",
+							"8",
+							"14",
+							"27",
+							"32",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "19"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i20",
+							"3",
+							"11",
+							"14",
+							"24",
+							"30",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "20"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i21",
+							"22",
+							"23",
+							"24",
+							"25",
+							"26",
+							"27",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "21"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i22",
+							"2",
+							"8",
+							"17",
+							"21",
+							"31",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "22"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i23",
+							"1",
+							"13",
+							"15",
+							"21",
+							"34",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "23"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i24",
+							"3",
+							"10",
+							"20",
+							"21",
+							"30",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "24"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i25",
+							"6",
+							"9",
+							"16",
+							"21",
+							"29",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "25"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i26",
+							"5",
+							"12",
+							"18",
+							"21",
+							"33",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "26"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i27",
+							"4",
+							"11",
+							"19",
+							"21",
+							"32",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "27"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i28",
+							"29",
+							"30",
+							"31",
+							"32",
+							"33",
+							"34",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "28"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i29",
+							"4",
+							"8",
+							"17",
+							"25",
+							"28",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "29"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i30",
+							"5",
+							"12",
+							"20",
+							"24",
+							"28",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "30"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i31",
+							"3",
+							"9",
+							"16",
+							"22",
+							"28",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "31"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i32",
+							"2",
+							"10",
+							"19",
+							"27",
+							"28",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "32"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i33",
+							"6",
+							"13",
+							"18",
+							"26",
+							"28",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "33"
+			},
+			{
+				"interfaces": [
+					{
+						"names": [
+							"i34",
+							"1",
+							"11",
+							"15",
+							"23",
+							"28",
+							"loop_back"
+						],
+						"routing_table": {}
+					},
+					{
+						"name": "local_lookup",
+						"routing_table": {}
+					}
+				],
+				"name": "34"
+			}
+		]
+	}
+}
