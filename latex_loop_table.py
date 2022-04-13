@@ -28,7 +28,7 @@ def latex_loop_table(results_data) -> str:
     latex_numbers += r"\\" + "\n"
 
     latex2 = r"\end{tabular}" + "\n" + r"\caption{Ratio of links that has been congested because of loops. Sum of all " \
-             r"links on all networks divided by looping links. }" + "\n" + r"\label{" + r"tab:loop_table_all}" + \
+             r"links on all networks divided by looping links. }" + "\n" + r"\label{" + r"tab:results_loop_table_all}" + \
              "\n" + r"\end{table}" + "\n "
 
     return latex1 + latex_table_header + latex_algs + latex_numbers + latex2
