@@ -11,6 +11,7 @@ alg_full_name_dict = {
     "keepf": "Keep Forwarding",
 }
 
+
 class FailureScenarioData:
     def __init__(self, failed_links, total_links, connectivity, looping_links, num_flows, successful_flows, connected_flows):
         self.failed_links = failed_links
@@ -21,10 +22,12 @@ class FailureScenarioData:
         self.successful_flows = successful_flows
         self.connected_flows = connected_flows
 
+
 class FailureChunkResultData:
     def __init__(self, chunk_name, failure_scenerio_data):
         self.failure_chunk_name = chunk_name
         self.failure_scenario_data = failure_scenerio_data #List of FailureScenarioData
+
 
 class TopologyResult:
     def __init__(self, topology_name, failure_chunks, connectedness):
@@ -32,17 +35,15 @@ class TopologyResult:
         self.failure_chunks = failure_chunks
         self.connectedness = connectedness
 
-def compute_probability(f, e, pf=0.5):
+
+def compute_probability(f, e, pf=0.001):
     return (pf ** f) * (1 - pf) ** (e - f)
+
 
 def parse_result_data(result_folder):
     result_dict = {}
     conf_progress = 1
-    hello = 0
     for conf_name in os.listdir(result_folder):
-        if hello > 6:
-            continue
-        hello += 1
         print(f"\nParsing results from algorithm {alg_full_name_dict[conf_name]} - {conf_progress}/{len(os.listdir(result_folder))}")
         conf_progress += 1
         result_dict[conf_name] = {}
