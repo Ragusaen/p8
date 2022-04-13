@@ -2,7 +2,8 @@ enable_RMPLS: false
 ldp: false
 php: false
 random_seed: 1
-method: tba
+method: cfor
+path: arborescence
 protection: facility-node
 rsvp_num_lsps: 50
 rsvp_tunnels_per_pair: 1

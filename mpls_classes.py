@@ -1187,7 +1187,7 @@ class oFEC(object):
         return isinstance(other, oFEC) and self.value == other.value and self.name == other.name and self.fec_type == other.fec_type
 
     def __str__(self):
-        return "{}({})".format( self.value, self.name, self.fec_type)
+        return "{}".format(self.name)
 
     def __repr__(self):
         return self.__str__()
