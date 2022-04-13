@@ -207,6 +207,7 @@ if __name__ == "__main__":
     tba_parser = method_parser.add_parser("tba")
 
     cfor_parser = method_parser.add_parser("cfor")
+    cfor_parser.add_argument('--path', choices=['shortest', 'arborescence'], default='shortest', help='Method for generating paths between switches on same layer')
 
     rsvp_parser = method_parser.add_parser("rsvp")
     rsvp_parser.add_argument("--protection", choices=['none', 'facility-node', 'facility-link'], help="Protection bypasses to use")

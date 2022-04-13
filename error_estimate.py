@@ -3,7 +3,7 @@ from mpmath import *
 
 mp.dps = 250
 
-def error_estimate(n: int, k: int, p_f: float = 0.001):
+def error_estimate(n: int, k: int, p_f: float = 0.5):
     sum = mpf('0')
     p_f = mpf(p_f)
     for i in range(k + 1, n + 1):
