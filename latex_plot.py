@@ -1,8 +1,7 @@
-import os
 from get_results import alg_full_name_dict
 
 
-def latex_plot(results_data, max_points):
+def latex_plot(results_data, max_points) -> str:
     latex1 = r"\begin{tikzpicture}" + "\n" + r"\begin{axis}[" + "\n" + r"ylabel={Connectedness}, legend pos= {south east}, " \
              r"legend style = {legend cell align=left}, tick label style={font=\scriptsize}, " \
              r"minor y tick style = {draw = none}, y label style = {yshift = -5pt}, legend style = {font=\scriptsize}, " \
@@ -35,15 +34,4 @@ def latex_plot(results_data, max_points):
 
     latex_end = r"\end{axis}" + "\n" r"\end{tikzpicture}" + "\n"
 
-    output_latex_code = latex1 + latex_plot_legend + latex_plot_data + latex_end
-
-    latex_folder = os.path.join(os.path.dirname(__file__), "latex")
-    if not (os.path.exists(latex_folder) and os.path.isdir(latex_folder)):
-        os.mkdir(latex_folder)
-
-    latex_file = open(os.path.join(os.path.dirname(__file__), "latex/plot.tex"), "w")
-    latex_file.write(output_latex_code)
-
-
-    # overleaf.set_file_text(output_latex_code, "figures/loop_table_all2.tex")
-    # print("Created and uploaded loop table to overleaf")
+    return latex1 + latex_plot_legend + latex_plot_data + latex_end

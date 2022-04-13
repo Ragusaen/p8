@@ -9,6 +9,7 @@ def synchronize():
     else:
         os.system("cd overleaf; git stash; git pull --rebase; cd ..")
 
+
 def set_file_text(text: str, fname: str):
     synchronize()
     with open(f"overleaf/{fname}", "w") as file:

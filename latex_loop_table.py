@@ -1,8 +1,4 @@
-import os
-import overleaf
-
-
-def latex_loop_table(results_data):
+def latex_loop_table(results_data) -> str:
     alg_to_res_dict = {}
 
     for alg in results_data.keys():
@@ -35,14 +31,4 @@ def latex_loop_table(results_data):
              r"links on all networks divided by looping links. }" + "\n" + r"\label{" + r"tab:loop_table_all}" + \
              "\n" + r"\end{table}" + "\n "
 
-    output_latex_code = latex1 + latex_table_header + latex_algs + latex_numbers + latex2
-
-    latex_folder = os.path.join(os.path.dirname(__file__), "latex")
-    if not (os.path.exists(latex_folder) and os.path.isdir(latex_folder)):
-        os.mkdir(latex_folder)
-
-    latex_file = open(os.path.join(os.path.dirname(__file__), "latex/loop_table.tex"), "w")
-    latex_file.write(output_latex_code)
-
-    # overleaf.set_file_text(output_latex_code, "figures/loop_table_all2.tex")
-    # print("Created and uploaded loop table to overleaf")
+    return latex1 + latex_table_header + latex_algs + latex_numbers + latex2
