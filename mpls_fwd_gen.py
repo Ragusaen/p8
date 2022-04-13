@@ -127,7 +127,7 @@ def generate_fwd_rules(G, conf, enable_PHP = True, numeric_labels = False, enabl
         network.start_client(tba.TargetBasedArborescence)
         protocol_name = "tba"
     elif method == 'cfor':
-        network.start_client(cfor.CFor)
+        network.start_client(cfor.CFor, path_generator=conf['path'])
         protocol_name = "cfor"
     elif method == 'hd':
         network.start_client(hop_distance_client.HopDistance_Client)

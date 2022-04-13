@@ -11,11 +11,10 @@ args = parser.parse_args()
 results_folder = os.path.join(os.path.dirname(__file__), "results")
 results_data = parse_result_data(results_folder)
 
-from get_results import parse_result_data
-max_points = 0
-if "max_points" in args:
+max_points = 1000000
+if args.max_points is not None:
     max_points = args.max_points
 
-latex_plot(results_data, 50)
+latex_plot(results_data, max_points)
 latex_loop_table(results_data)
 

@@ -56,7 +56,7 @@ class TargetBasedArborescence(MPLS_Client):
             return
 
         headends = tuple(set(map(lambda x: x[0], self.demands.values()))) #lists cannot be hashed :|
-        self.rooted_arborescences = find_arborescences(self.router.network, self.router.name)
+        self.rooted_arborescences = find_arborescences(self.router.network.topology, self.router.name)
 
         '''#Create graph for debugging
         g = gv.Digraph(format="svg")

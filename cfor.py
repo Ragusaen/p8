@@ -1,10 +1,12 @@
+import itertools
+
 import networkx.exception
 
 from mpls_classes import *
 from functools import *
 from networkx import shortest_path
 
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Callable
 
 class ForwardingTable:
     def __init__(self):
@@ -15,10 +17,16 @@ class ForwardingTable:
             self.table[key] = []
         self.table[key].append(value)
 
+    def extend(self, other):
+        for lhs, rhs_list in other.table.items():
+            for rhs in rhs_list:
+                self.add_rule(lhs, rhs)
 
-def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
+
+def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str, path_generator: Callable[[Graph, str, str, oFEC, oFEC], ForwardingTable]) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
     def label(switch: str, iteration: int):
         return oFEC("cfor", f"{ingress}_to_{egress}_at_{switch}_it_{iteration}", {"ingress": ingress, "egress": egress, "iteration": iteration, "switch": switch})
+
 
     edges: set[tuple[str, str]] = set([(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
                                       + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2])
@@ -54,27 +62,60 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
 
             subgraph = network.topology.subgraph(subgraph_switches)
 
-            # check if path exists, if not drop packet
-            try:
-                path = list(shortest_path(subgraph, v, v_next))
-            except networkx.exception.NetworkXNoPath:
-                continue
+            if not is_last_switch:
+                sub_ft = path_generator(subgraph, v, v_next, label(v, 1), label(v_next, 1))
+                sub_ft.extend(path_generator(subgraph, v, v_next, label(v, 2), label(v_next, 2)))
+            else:
+                sub_ft = path_generator(subgraph, v, v_next, label(v, 1), label(v_next, 2))
 
-            for k in range(1, len(path)):
-                if is_last_switch:
-                    if k == len(path)-1:
-                        forwarding_table.add_rule((path[k-1], label(v, 1)), (2, path[k], label(path[k], 2)))
-                    else:
-                        forwarding_table.add_rule((path[k-1], label(v, 1)), (2, path[k], label(v, 1)))
-                else:
-                    if k == len(path)-1:
-                        forwarding_table.add_rule((path[k-1], label(v, 1)), (2, path[k], label(path[k], 1)))
-                        forwarding_table.add_rule((path[k-1], label(v, 2)), (2, path[k], label(path[k], 2)))
-                    else:
-                        forwarding_table.add_rule((path[k-1], label(v, 1)), (2, path[k], label(v, 1)))
-                        forwarding_table.add_rule((path[k-1], label(v, 2)), (2, path[k], label(v, 2)))
+            forwarding_table.extend(sub_ft)
+
 
     return forwarding_table.table
+
+def shortest_path_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoing_label):
+    ft = ForwardingTable()
+    if src == tgt:
+        return ft
+
+    try:
+        path = list(shortest_path(G, src, tgt, weight=1))
+    except networkx.exception.NetworkXNoPath:
+        return
+
+    for src, tgt in zip(path[:-2], path[1:-1]):
+        ft.add_rule((src, ingoing_label), (2, tgt, ingoing_label))
+
+    src, tgt = path[-2:]
+    ft.add_rule((src, ingoing_label), (2, tgt, outgoing_label))
+    return ft
+
+def arborescence_path_generator(G: Graph, src: str, tgt: str, ingoing_label: oFEC, outgoing_label: oFEC):
+    from target_based_arborescence.arborescences import find_arborescences
+
+    ft = ForwardingTable()
+    arborescences = find_arborescences(G, tgt)
+
+    if src == tgt or len(arborescences) < 1:
+        return ft
+
+    fec_arbs = [(oFEC('cfor_arb', ingoing_label.name + f"_to_{tgt}_arb{i}{ab}", {'egress':ingoing_label.value['egress']}), a) for ab, (i, a)  in itertools.product(['a', 'b'], enumerate(arborescences))]
+
+    # Create ingoing local lookup rule
+    ft.add_rule((src, ingoing_label), (2, src, fec_arbs[0][0]))
+
+    for i, (fec, a) in enumerate(fec_arbs):
+        bounce_fec = None if i >= len(fec_arbs) - 1 else fec_arbs[i + 1][0]
+
+        # Add outgoing local lookup rules
+        ft.add_rule((tgt, fec), (0, tgt, outgoing_label))
+
+        for s, t in a:
+            ft.add_rule((s, fec), (1, t, fec))
+            if bounce_fec is not None:
+                ft.add_rule((s, fec), (2, s, bounce_fec))
+
+    return ft
 
 
 class CFor(MPLS_Client):
@@ -88,6 +129,11 @@ class CFor(MPLS_Client):
 
         # Partial forwarding table containing only rules for this router
         self.partial_forwarding_table: dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]] = {}
+
+        self.path_generator = {
+            'shortest': shortest_path_generator,
+            'arborescence': arborescence_path_generator
+        }[kwargs['path_generator']]
 
 
     def LFIB_compute_entry(self, fec: oFEC, single=False):
@@ -109,7 +155,7 @@ class CFor(MPLS_Client):
 
     def commit_config(self):
         for demand, (ingress, egress) in self.demands.items():
-            ft = generate_pseudo_forwarding_table(self.router.network, ingress, egress)
+            ft = generate_pseudo_forwarding_table(self.router.network, ingress, egress, self.path_generator)
 
             for (src, fec), entries in ft.items():
                 src_client: CFor = self.router.network.routers[src].clients["cfor"]

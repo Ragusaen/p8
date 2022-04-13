@@ -21,10 +21,12 @@ class FailureScenarioData:
         self.successful_flows = successful_flows
         self.connected_flows = connected_flows
 
+
 class FailureChunkResultData:
     def __init__(self, chunk_name, failure_scenerio_data):
         self.failure_chunk_name = chunk_name
         self.failure_scenario_data = failure_scenerio_data #List of FailureScenarioData
+
 
 class TopologyResult:
     def __init__(self, topology_name, failure_chunks, connectedness):
@@ -65,7 +67,6 @@ def __parse_single_line_in_failure_scenario(line):
             continue
     return FailureScenarioData(failed_links, total_links, connectivity, looping_links, num_flows,
                                        successful_flows, connected_flows)
-
 
 def parse_result_data(result_folder):
     result_dict = {}

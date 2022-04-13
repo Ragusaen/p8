@@ -4,7 +4,7 @@ from get_results import alg_full_name_dict
 
 def latex_plot(results_data, max_points):
     latex1 = r"\begin{tikzpicture}" + "\n" + r"\begin{axis}[" + "\n" + r"ylabel={Connectedness}, legend pos= {south east}, " \
-             r"legend style = {legend cell align=left}, ymode = {log}, tick label style={font=\scriptsize}, " \
+             r"legend style = {legend cell align=left}, tick label style={font=\scriptsize}, " \
              r"minor y tick style = {draw = none}, y label style = {yshift = -5pt}, legend style = {font=\scriptsize}, " \
              r"width=\linewidth, height=5cm" + "\n]\n"
     latex_plot_legend = r"\legend{"
@@ -18,11 +18,9 @@ def latex_plot(results_data, max_points):
     for alg in results_data.keys():
         cactus_data = sorted(results_data[alg].values(), key=lambda topology: topology.connectedness)
 
-        skip_number = 1
-        if max_points > 0:
-            skip_number = len(cactus_data) / max_points
-            if skip_number < 1:
-                skip_number = 1
+        skip_number = len(cactus_data) / max_points
+        if skip_number < 1:
+            skip_number = 1
 
         latex_plot_data += r"\addplot[mark=none, color=" + colour_iterator[colour_index] + r", thick] coordinates{" + "\n"
         colour_index += 1
