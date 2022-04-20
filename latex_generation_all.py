@@ -2,7 +2,7 @@ import os
 import argparse
 from get_results import parse_result_data
 from latex_loop_table import latex_loop_table
-from latex_plot import latex_plot
+from latex_connectedness_plot import latex_connectedness_plot
 import overleaf
 
 parser = argparse.ArgumentParser()
@@ -23,7 +23,7 @@ if args.auto_overleaf is not None:
     overleaf_upload = args.auto_overleaf
 
 print("Creating performance plot from data in results folder")
-plot = latex_plot(results_data, max_points)
+plot = latex_connectedness_plot(results_data, max_points)
 
 print("Creating loop table from data in results folder")
 table = latex_loop_table(results_data)
@@ -32,16 +32,18 @@ latex_folder = os.path.join(os.path.dirname(__file__), "latex")
 if not (os.path.exists(latex_folder) and os.path.isdir(latex_folder)):
     os.mkdir(latex_folder)
 
-print(r"Writing latex plot to file: 'latex/results_plot_all.tex'")
-latex_file_plot = open(os.path.join(os.path.dirname(__file__), "latex/results_plot_all.tex"), "w")
+plot_file_name = r"results_connectedness_plot_data.tex"
+table_file_name = r"results_loop_table_data.tex"
+print(f"Writing latex plot to file: 'latex/{plot_file_name}'")
+latex_file_plot = open(os.path.join(os.path.dirname(__file__), f"latex/{plot_file_name}"), "w")
 latex_file_plot.write(plot)
-print(r"Writing latex loop table to file: 'latex/results_loop_table_all.tex'")
-latex_file_table = open(os.path.join(os.path.dirname(__file__), "latex/results_loop_table_all.tex.tex"), "w")
+print(f"Writing latex loop table to file: 'latex/{table_file_name}'")
+latex_file_table = open(os.path.join(os.path.dirname(__file__), f"latex/{table_file_name}"), "w")
 latex_file_table.write(table)
 
 if overleaf_upload:
-    print(r"Uploading latex plot to Overleaf at: 'figures/results_plot_all.tex'")
-    overleaf.set_file_text(plot, "figures/results_plot_all.tex")
-    print(r"Uploading latex plot to Overleaf at: 'figures/results_loop_table_all.tex'")
-    overleaf.set_file_text(table, "figures/results_loop_table_all.tex")
+    print(f"Uploading latex plot to Overleaf at: 'figures/{plot_file_name}'")
+    overleaf.set_file_text(plot, f"figures/{plot_file_name}")
+    print(f"Uploading latex plot to Overleaf at: 'figures/{table_file_name}'")
+    overleaf.set_file_text(table, f"figures/{table_file_name}")
 print("Latex results generation finished")

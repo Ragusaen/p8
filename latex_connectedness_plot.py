@@ -1,18 +1,14 @@
 from get_results import alg_full_name_dict
 
 
-def latex_plot(results_data, max_points) -> str:
-    latex1 = r"\begin{tikzpicture}" + "\n" + r"\begin{axis}[" + "\n" + r"ylabel={Connectedness}, legend pos= {south east}, " \
-             r"legend style = {legend cell align=left}, tick label style={font=\scriptsize}, " \
-             r"minor y tick style = {draw = none}, y label style = {yshift = -5pt}, legend style = {font=\scriptsize}, " \
-             r"width=\linewidth, height=5cm" + "\n]\n"
+def latex_connectedness_plot(results_data, max_points) -> str:
     latex_plot_legend = r"\legend{"
     for alg in results_data.keys():
         latex_plot_legend += f"{alg_full_name_dict[alg]}, "
     latex_plot_legend += "}\n"
 
     colour_index = 0
-    colour_iterator = ["blue", "red", "green", "cyan", "purple"]
+    colour_iterator = ["blue", "red", "green", "cyan", "purple", "yellow"]
     latex_plot_data = ""
     for alg in results_data.keys():
         cactus_data = sorted(results_data[alg].values(), key=lambda topology: topology.connectedness)
@@ -32,6 +28,4 @@ def latex_plot(results_data, max_points) -> str:
             counter += 1
         latex_plot_data += r"};" + "\n"
 
-    latex_end = r"\end{axis}" + "\n" r"\end{tikzpicture}" + "\n"
-
-    return latex1 + latex_plot_legend + latex_plot_data + latex_end
+    return latex_plot_legend + latex_plot_data
