@@ -11,6 +11,7 @@ alg_full_name_dict = {
     "keepf": "Keep Forwarding",
 }
 
+
 class FailureScenarioData:
     def __init__(self, failed_links, total_links, connectivity, looping_links, num_flows, successful_flows, connected_flows):
         self.failed_links = failed_links
@@ -34,8 +35,10 @@ class TopologyResult:
         self.failure_chunks = failure_chunks
         self.connectedness = connectedness
 
-def __compute_probability(f, e, pf=0.5):
+
+def __compute_probability(f, e, pf=0.001):
     return (pf ** f) * (1 - pf) ** (e - f)
+
 
 def __parse_single_line_in_failure_scenario(line):
     parts = line.split(' ')
@@ -67,6 +70,7 @@ def __parse_single_line_in_failure_scenario(line):
             continue
     return FailureScenarioData(failed_links, total_links, connectivity, looping_links, num_flows,
                                        successful_flows, connected_flows)
+
 
 def parse_result_data(result_folder):
     result_dict = {}
