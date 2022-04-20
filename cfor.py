@@ -96,7 +96,13 @@ def arborescence_path_generator(G: Graph, src: str, tgt: str, ingoing_label: oFE
     ft = ForwardingTable()
     arborescences = find_arborescences(G, tgt)
 
-    if src == tgt or len(arborescences) < 1:
+    try:
+        if not nx.has_path(G, src, tgt):
+            return ft
+    except:
+        return ft
+
+    if src == tgt or not any([len(arb) > 0 for arb in arborescences]):
         return ft
 
     fec_arbs = [(oFEC('cfor_arb', ingoing_label.name + f"_to_{tgt}_arb{i}{ab}", {'egress':ingoing_label.value['egress']}), a) for ab, (i, a)  in itertools.product(['a', 'b'], enumerate(arborescences))]
