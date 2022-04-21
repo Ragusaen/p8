@@ -2,6 +2,7 @@ import argparse
 import os
 import re
 from tqdm import tqdm
+from ast import literal_eval
 
 alg_full_name_dict = {
     "cfor": "Continue Forwarding",
@@ -13,14 +14,14 @@ alg_full_name_dict = {
 
 
 class FailureScenarioData:
-    def __init__(self, failed_links, total_links, connectivity, looping_links, num_flows, successful_flows, connected_flows):
+    def __init__(self, failed_links, total_links, looping_links, num_flows, successful_flows, connected_flows, max_memory):
         self.failed_links = failed_links
         self.total_links = total_links
-        self.connectivity = connectivity
         self.looping_links = looping_links
         self.num_flows = num_flows
         self.successful_flows = successful_flows
         self.connected_flows = connected_flows
+        self.max_memory = max_memory
 
 
 class FailureChunkResultData:
@@ -53,9 +54,6 @@ def __parse_single_line_in_failure_scenario(line):
         if (prop_name == 'len(E)'):
             total_links = int(value)
             continue
-        if (prop_name == 'ratio'):
-            connectivity = float(value)
-            continue
         if (prop_name == 'looping_links'):
             looping_links = int(value)
             continue
@@ -68,8 +66,11 @@ def __parse_single_line_in_failure_scenario(line):
         if (prop_name == 'connected_flows'):
             connected_flows = int(value)
             continue
-    return FailureScenarioData(failed_links, total_links, connectivity, looping_links, num_flows,
-                                       successful_flows, connected_flows)
+        if (prop_name == 'memory'):
+            memory = max(literal_eval(value))
+            continue
+    return FailureScenarioData(failed_links, total_links, looping_links, num_flows,
+                                       successful_flows, connected_flows, memory)
 
 
 def parse_result_data(result_folder):

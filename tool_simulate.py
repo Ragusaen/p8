@@ -38,7 +38,7 @@ from networkx import has_path
 
 from mpls_fwd_gen import *
 
-
+stats = {}
 
 def main(conf):
     if conf["random_topology"]:
@@ -60,6 +60,8 @@ def main(conf):
     with open(conf["flows_file"],"r") as file:
         flows = yaml.safe_load(file)
 
+    before_fwd_gen = time.time_ns()
+
     network = generate_fwd_rules(G, conf,
                                  enable_PHP=conf["php"],
                                  numeric_labels=False,
@@ -74,6 +76,8 @@ def main(conf):
                                  random_seed=conf["random_seed"]
                                  )
     ## Generate MPLS forwarding rules
+
+    stats['fwd_gen_time'] = time.time_ns() - before_fwd_gen
 
     # save config
     net_dict = network.to_aalwines_json()
@@ -154,9 +158,12 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
 
     (successful_flows, total_flows, codes) = s.success_rate(exit_codes=True)
 
+    routers: List[Router] = network.routers.values()
+    router_memory = [len([rule for rule in router.LFIB.values()]) for router in routers]
+
     loops = codes[1]  # p8: we do not know what this is
     #f.write("attempted: {0}; succeses: {1}; loops: {2}; failed_links: {3}; connectivity: {4}\n".format(total, success, loops, len(F), success/total))
-    f.write(f"len(F):{len(F)} len(E):{links} looping_links:{s.looping_links} num_flows:{total_flows} successful_flows:{successful_flows} connected_flows:{initially_connected} ratio:{successful_flows / total_flows}\n")  # TODO: Fix connectivity
+    f.write(f"len(F):{len(F)} len(E):{links} looping_links:{s.looping_links} num_flows:{total_flows} successful_flows:{successful_flows} connected_flows:{initially_connected} fwd_gen_time:{stats['fwd_gen_time']} memory:{str(router_memory)}\n")
     print("SIMULATION FINISHED")
 
 
@@ -281,11 +288,10 @@ if __name__ == "__main__":
     #         raise Exception(f"Unknown argument {a}.")
 
     # Override config options with cli explicit values
-    # for a in known_parameters:
-    #     for sysarg in sys.argv:
-    #         # this argument was explicitly overriden!
-    #         if sysarg == "--" + a:  # max prio
-    #             conf[a] = conf_overrride[a]
+    for sysarg in sys.argv:
+        # this argument was explicitly overriden!
+        if sysarg.startswith('--'):
+            conf[sysarg[2:]] = conf_overrride[sysarg[2:]]
 
     pprint(conf)
     main(conf)
