@@ -2,9 +2,8 @@ enable_RMPLS: false
 ldp: false
 php: false
 random_seed: 1
-method: cfor
-path: arborescence
-protection: facility-node
+method: kf
+protection: none
 rsvp_num_lsps: 50
 rsvp_tunnels_per_pair: 1
 vpn: false
