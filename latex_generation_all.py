@@ -57,13 +57,13 @@ def generate_all_latex():
         filtered_data = remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(results_data, len_f)
 
         compute_connectedness(filtered_data)
-        output_latex_content(f"results_connectedness_plot_data_lenf={len_f}.tex",
+        output_latex_content(f"connectedness_plot_data_lenf={len_f}.tex",
                              latex_connectedness_plot(filtered_data, max_points),
                              f"connectedness plot for |F| = {len_f}")
 
-    output_latex_content("results_connectedness_plot_data.tex", latex_connectedness_plot(results_data, max_points), "connectedness plot")
-    output_latex_content("results_memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
-    output_latex_content("results_loop_table_data.tex", latex_loop_table(results_data), "loop table")
+    output_latex_content("connectedness_plot_data.tex", latex_connectedness_plot(results_data, max_points), "connectedness plot")
+    output_latex_content("memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
+    output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
 
     print(f"Time taken to generate latex: {time.time()-start_time}")
 
@@ -89,7 +89,7 @@ def remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(data: {
         for topology in topologies:
             topology: TopologyResult
             failure_scenarios = list(filter(lambda scenario: scenario.failed_links == lenf, topology.failure_scenarios))
-            filtered_data[conf].append(TopologyResult(topology.topology_name, failure_scenarios, -1, topology.max_memory))
+            filtered_data[conf].append(TopologyResult(topology.topology_name, topology.total_links, topology.num_flows, failure_scenarios, -1, topology.fwd_gen_time, topology.max_memory))
 
     return filtered_data
 
@@ -133,9 +133,10 @@ def latex_loop_table(data) -> str:
         num_looping_links = 0
         for topology in data[alg]:
             topology: TopologyResult
+            num_links += topology.total_links
+
             for failure_scenario in topology.failure_scenarios:
                 failure_scenario: FailureScenarioData
-                num_links += failure_scenario.total_links
                 num_looping_links += failure_scenario.looping_links
 
         ratio = float(num_looping_links) / float(num_links)

@@ -160,11 +160,15 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
 
     routers: List[Router] = network.routers.values()
     router_memory = [len([rule for rule in router.LFIB.values()]) for router in routers]
-    router_memory_str = str(router_memory).replace(" ", "")
+    router_memory_str = str(router_memory).replace(' ', '')
 
     loops = codes[1]  # p8: we do not know what this is
     #f.write("attempted: {0}; succeses: {1}; loops: {2}; failed_links: {3}; connectivity: {4}\n".format(total, success, loops, len(F), success/total))
-    f.write(f"len(F):{len(F)} len(E):{links} looping_links:{s.looping_links} num_flows:{total_flows} successful_flows:{successful_flows} connected_flows:{initially_connected} fwd_gen_time:{stats['fwd_gen_time']} memory:{router_memory_str}\n")
+    f.write(f"len(F):{len(F)} looping_links:{s.looping_links} successful_flows:{successful_flows} connected_flows:{initially_connected}\n")
+    if len(F) == 0:
+        common = open(os.path.join(os.path.dirname(f.name), "common"), "w")
+        common.write(f"len(E):{links} num_flows:{total_flows} fwd_gen_time:{stats['fwd_gen_time']} memory:{router_memory_str}")
+
     print("SIMULATION FINISHED")
 
 

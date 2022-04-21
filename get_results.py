@@ -2,22 +2,31 @@ import os
 from tqdm import tqdm
 from ast import literal_eval
 
+
 class FailureScenarioData:
-    def __init__(self, failed_links, total_links, looping_links, num_flows, successful_flows, connected_flows, max_memory):
+    def __init__(self, failed_links, looping_links, successful_flows, connected_flows):
         self.failed_links = failed_links
-        self.total_links = total_links
         self.looping_links = looping_links
-        self.num_flows = num_flows
         self.successful_flows = successful_flows
         self.connected_flows = connected_flows
+
+
+class CommonResultData:
+    def __init__(self, total_links, num_flows, fwd_gen_time, max_memory):
+        self.total_links = total_links
+        self.num_flows = num_flows
+        self.fwd_gen_time = fwd_gen_time
         self.max_memory = max_memory
 
 
 class TopologyResult:
-    def __init__(self, topology_name, failure_scenarios, connectedness, max_memory):
+    def __init__(self, topology_name, total_links, num_flows, failure_scenarios, connectedness, fwd_gen_time, max_memory):
         self.topology_name = topology_name
+        self.total_links = total_links
+        self.num_flows = num_flows
         self.failure_scenarios = failure_scenarios
         self.connectedness = connectedness
+        self.fwd_gen_time = fwd_gen_time
         self.max_memory = max_memory
 
 
@@ -25,7 +34,30 @@ def __compute_probability(f, e, pf=0.001):
     return (pf ** f) * (1 - pf) ** (e - f)
 
 
-def __parse_single_line_in_failure_scenario(line):
+def __parse_line_in_common(line: str):
+    parts = line.split(' ')
+    for part in parts:
+        prop_name, value = part.split(':')
+
+        if (prop_name == 'len(E)'):
+            total_links = int(value)
+            continue
+        if (prop_name == 'num_flows'):
+            num_flows = int(value)
+            continue
+        if (prop_name == 'fwd_gen_time'):
+            fwd_gen_time = int(value)
+            continue
+        if (prop_name == 'memory'):
+            max_memory = int(max(literal_eval(value)))
+            continue
+
+    return CommonResultData(total_links, num_flows, fwd_gen_time, max_memory)
+
+def __parse_single_line_in_failure_scenario(line: str):
+    # remove spaces in memory list
+    # line = line.replace(", ", ",")
+
     parts = line.split(' ')
     for part in parts:
         prop_name, value = part.split(':')
@@ -33,14 +65,8 @@ def __parse_single_line_in_failure_scenario(line):
         if (prop_name == 'len(F)'): #No match/case in this version :(
             failed_links = int(value)
             continue
-        if (prop_name == 'len(E)'):
-            total_links = int(value)
-            continue
         if (prop_name == 'looping_links'):
             looping_links = int(value)
-            continue
-        if (prop_name == 'num_flows'):
-            num_flows = int(value)
             continue
         if (prop_name == 'successful_flows'):
             successful_flows = int(value)
@@ -48,11 +74,8 @@ def __parse_single_line_in_failure_scenario(line):
         if (prop_name == 'connected_flows'):
             connected_flows = int(value)
             continue
-        if (prop_name == 'memory'):
-            memory = max(literal_eval(value))
-            continue
-    return FailureScenarioData(failed_links, total_links, looping_links, num_flows,
-                                       successful_flows, connected_flows, memory)
+
+    return FailureScenarioData(failed_links, looping_links, successful_flows, connected_flows)
 
 
 def parse_result_data(result_folder):
@@ -64,18 +87,24 @@ def parse_result_data(result_folder):
         result_dict[conf_name] = []
         for topology in tqdm(os.listdir(f"{result_folder}/{conf_name}")):
             failure_scenarios = []
-            max_memory = -1
+            total_links, num_flows, fwd_gen_time, max_memory = 0, 0, 0, 0
             res_dir = f"{result_folder}/{conf_name}/{topology}"
             for failure_chunk_file in os.listdir(res_dir):
                 with open(f"{res_dir}/{failure_chunk_file}", "r") as t:
                     lines = t.readlines()
-                    for line in lines:
-                        failure_data = __parse_single_line_in_failure_scenario(line)
-                        failure_scenarios.append(failure_data)
-                        if max_memory < failure_data.max_memory:
-                            max_memory = failure_data.max_memory
 
-            result_dict[conf_name].append(TopologyResult(topology, failure_scenarios, -1, max_memory))
+                    if str(failure_chunk_file) == "common":
+                        common_data = __parse_line_in_common(lines[0])
+                        total_links = common_data.total_links
+                        num_flows = common_data.num_flows
+                        fwd_gen_time = common_data.fwd_gen_time
+                        max_memory = common_data.max_memory
+                    else:
+                        for line in lines:
+                            failure_data = __parse_single_line_in_failure_scenario(line)
+                            failure_scenarios.append(failure_data)
+
+            result_dict[conf_name].append(TopologyResult(topology, total_links, num_flows, failure_scenarios, -1, fwd_gen_time, max_memory))
 
     compute_connectedness(result_dict)
     return result_dict
@@ -90,7 +119,7 @@ def compute_connectedness(result_data: dict) -> {}:
             connectedness = 0
             for failure_scenario in topology.failure_scenarios:
                 failure_scenario: FailureScenarioData
-                p = __compute_probability(failure_scenario.failed_links, failure_scenario.total_links)
+                p = __compute_probability(failure_scenario.failed_links, topology.total_links)
                 normalisation_sum += p
 
                 if failure_scenario.connected_flows != 0:
