@@ -692,6 +692,10 @@ class Network(object):
                         good_targets = [fec.value["egress"]]
                     else:
                         continue
+
+                elif fec.fec_type == 'kf':
+                    good_sources = [fec.value['ingress']]
+                    good_targets = [fec.value['egress']]
                 else:
                     continue
 
