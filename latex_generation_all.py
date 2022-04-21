@@ -88,7 +88,6 @@ def remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(data: {
         for topology in topologies:
             topology: TopologyResult
             failure_scenarios = list(filter(lambda scenario: scenario.failed_links == lenf, topology.failure_scenarios))
-            #if len(failure_scenarios) > 0:
             filtered_data[conf].append(TopologyResult(topology.topology_name, failure_scenarios, -1))
 
     return filtered_data

@@ -53,6 +53,7 @@ def __parse_single_line_in_failure_scenario(line):
     return FailureScenarioData(failed_links, total_links, looping_links, num_flows,
                                        successful_flows, connected_flows, 0)#, memory)
 
+
 def parse_result_data(result_folder):
     result_dict: dict[str:TopologyResult] = {}
     conf_progress = 1
@@ -96,5 +97,8 @@ def compute_connectedness(result_data: dict) -> {}:
             # Normalise
             if normalisation_sum > 0:
                 connectedness = connectedness / normalisation_sum
+            if len(topology.failure_scenarios) == 0:
+                # this should never happen
+                raise Exception("Topology had connectivity of 0.. very likely bug")
 
             topology.connectedness = connectedness
