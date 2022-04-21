@@ -14,10 +14,11 @@ class FailureScenarioData:
 
 
 class TopologyResult:
-    def __init__(self, topology_name, failure_scenarios, connectedness):
+    def __init__(self, topology_name, failure_scenarios, connectedness, max_memory):
         self.topology_name = topology_name
         self.failure_scenarios = failure_scenarios
         self.connectedness = connectedness
+        self.max_memory = max_memory
 
 
 def __compute_probability(f, e, pf=0.001):
@@ -51,7 +52,7 @@ def __parse_single_line_in_failure_scenario(line):
             memory = max(literal_eval(value))
             continue
     return FailureScenarioData(failed_links, total_links, looping_links, num_flows,
-                                       successful_flows, connected_flows, 0)#, memory)
+                                       successful_flows, connected_flows, memory)
 
 
 def parse_result_data(result_folder):
@@ -63,6 +64,7 @@ def parse_result_data(result_folder):
         result_dict[conf_name] = []
         for topology in tqdm(os.listdir(f"{result_folder}/{conf_name}")):
             failure_scenarios = []
+            max_memory = -1
             res_dir = f"{result_folder}/{conf_name}/{topology}"
             for failure_chunk_file in os.listdir(res_dir):
                 with open(f"{res_dir}/{failure_chunk_file}", "r") as t:
@@ -70,8 +72,10 @@ def parse_result_data(result_folder):
                     for line in lines:
                         failure_data = __parse_single_line_in_failure_scenario(line)
                         failure_scenarios.append(failure_data)
+                        if max_memory < failure_data.max_memory:
+                            max_memory = failure_data.max_memory
 
-            result_dict[conf_name].append(TopologyResult(topology, failure_scenarios, -1))
+            result_dict[conf_name].append(TopologyResult(topology, failure_scenarios, -1, max_memory))
 
     compute_connectedness(result_dict)
     return result_dict
@@ -98,7 +102,8 @@ def compute_connectedness(result_data: dict) -> {}:
             if normalisation_sum > 0:
                 connectedness = connectedness / normalisation_sum
             if len(topology.failure_scenarios) == 0:
+                connectedness = 1.2
                 # this should never happen
-                raise Exception("Topology had connectivity of 0.. very likely bug")
+                # raise Exception("Topology had connectivity of 0.. very likely bug")
 
             topology.connectedness = connectedness
