@@ -37,6 +37,7 @@ import numpy as np
 
 import cfor
 import hop_distance_client
+import grafting_client
 import target_based_arborescence.tba_client as tba
 from mpls_classes import MPLS_Client
 
@@ -50,7 +51,7 @@ global global_conf
 def generate_fwd_rules(G, conf, enable_PHP = True, numeric_labels = False, enable_LDP = False, num_lsps = 10, tunnels_per_pair = 3, protection = 'facility-node',
                        enable_services = False, num_services = 2, PE_s_per_service = 3, CEs_per_PE = 1,
                        enable_RMPLS = False, random_seed = random.random(), enable_tba = False, enable_hd = False,
-                       enable_cfor = False
+                       enable_cfor = False, enable_gft= False
                       ):
     """
     Generates MPLS forwarding rules for a given topology.
@@ -132,6 +133,9 @@ def generate_fwd_rules(G, conf, enable_PHP = True, numeric_labels = False, enabl
     elif method == 'hd':
         network.start_client(hop_distance_client.HopDistance_Client)
         protocol_name = "hop_distance"
+    elif method == 'gft':
+        network.start_client(grafting_client.Grafting_Client)
+        protocol_name = "gft"
     # Start RSVP-TE process in each router
     elif conf['method'] == 'rsvp' and conf['protection'] is not None and conf['protection'].startswith("plinko"):
             network.start_client(ProcPlinko)
@@ -207,7 +211,7 @@ def generate_fwd_rules(G, conf, enable_PHP = True, numeric_labels = False, enabl
             else:
                 c[(h,t)] += 1
 
-            if protocol_name == "tba" or protocol_name == "hop_distance" or protocol_name == "cfor":
+            if protocol_name == "tba" or protocol_name == "hop_distance" or protocol_name == "cfor" or protocol_name == "gft":
                 network.routers[t].clients[protocol_name].define_demand(h)
             else:
                 network.routers[h].clients[protocol_name].define_lsp(t,

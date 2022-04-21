@@ -213,6 +213,8 @@ if __name__ == "__main__":
 
     tba_parser = method_parser.add_parser("tba")
 
+    gft_parser = method_parser.add_parser("gft")
+
     cfor_parser = method_parser.add_parser("cfor")
     cfor_parser.add_argument('--path', choices=['shortest', 'arborescence'], default='shortest', help='Method for generating paths between switches on same layer')
 
