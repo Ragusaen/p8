@@ -16,6 +16,7 @@ class AlgorithmPlotConfiguration:
 
 alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "cfor": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dotted"),
+    "cfor-short": AlgorithmPlotConfiguration("Continue Forwarding, short", "magenta", "loosely dashed"),
     "tba": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "dashed"),
     "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "red", "dashdotted"),
     "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "solid"),
@@ -61,7 +62,7 @@ def generate_all_latex():
                              f"connectedness plot for |F| = {len_f}")
 
     output_latex_content("results_connectedness_plot_data.tex", latex_connectedness_plot(results_data, max_points), "connectedness plot")
-    # output_latex_content("results_memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
+    output_latex_content("results_memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
     output_latex_content("results_loop_table_data.tex", latex_loop_table(results_data), "loop table")
 
     print(f"Time taken to generate latex: {time.time()-start_time}")
@@ -88,8 +89,7 @@ def remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(data: {
         for topology in topologies:
             topology: TopologyResult
             failure_scenarios = list(filter(lambda scenario: scenario.failed_links == lenf, topology.failure_scenarios))
-            #if len(failure_scenarios) > 0:
-            filtered_data[conf].append(TopologyResult(topology.topology_name, failure_scenarios, -1))
+            filtered_data[conf].append(TopologyResult(topology.topology_name, failure_scenarios, -1, topology.max_memory))
 
     return filtered_data
 
@@ -165,8 +165,8 @@ def latex_memory_plot(data, _max_points) -> str:
     latex_plot_legend += "}\n"
 
     latex_plot_data = ""
-    for alg in data.keys():
-        cactus_data = sorted(data[alg].values(), key=lambda topology: topology.max_memory)
+    for (alg, topologies) in data.items():
+        cactus_data = sorted(topologies, key=lambda topology: topology.max_memory)
 
         skip_number = len(cactus_data) / _max_points
         if skip_number < 1:
