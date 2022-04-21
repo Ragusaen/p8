@@ -2,25 +2,17 @@ import argparse
 import os
 import re
 from tqdm import tqdm
-
-alg_full_name_dict = {
-    "cfor": "Continue Forwarding",
-    "tba": "Circular Arborescence",
-    "rsvp-fn": "RSVP Facility Node Protection",
-    "hd": "Hop Distance",
-    "keepf": "Keep Forwarding",
-}
-
+from ast import literal_eval
 
 class FailureScenarioData:
-    def __init__(self, failed_links, total_links, connectivity, looping_links, num_flows, successful_flows, connected_flows):
+    def __init__(self, failed_links, total_links, looping_links, num_flows, successful_flows, connected_flows, max_memory):
         self.failed_links = failed_links
         self.total_links = total_links
-        self.connectivity = connectivity
         self.looping_links = looping_links
         self.num_flows = num_flows
         self.successful_flows = successful_flows
         self.connected_flows = connected_flows
+        self.max_memory = max_memory
 
 
 class TopologyResult:
@@ -47,9 +39,6 @@ def __parse_single_line_in_failure_scenario(line):
         if (prop_name == 'len(E)'):
             total_links = int(value)
             continue
-        if (prop_name == 'ratio'):
-            connectivity = float(value)
-            continue
         if (prop_name == 'looping_links'):
             looping_links = int(value)
             continue
@@ -62,15 +51,18 @@ def __parse_single_line_in_failure_scenario(line):
         if (prop_name == 'connected_flows'):
             connected_flows = int(value)
             continue
-    return FailureScenarioData(failed_links, total_links, connectivity, looping_links, num_flows,
-                                       successful_flows, connected_flows)
+        if (prop_name == 'memory'):
+            memory = max(literal_eval(value))
+            continue
+    return FailureScenarioData(failed_links, total_links, looping_links, num_flows,
+                                       successful_flows, connected_flows, 0)#, memory)
 
 
 def parse_result_data(result_folder):
     result_dict: dict[str:TopologyResult] = {}
     conf_progress = 1
     for conf_name in os.listdir(result_folder):
-        print(f"\nParsing results from algorithm {alg_full_name_dict[conf_name]} - {conf_progress}/{len(os.listdir(result_folder))}")
+        print(f"\nParsing results from algorithm {conf_name} - {conf_progress}/{len(os.listdir(result_folder))}")
         conf_progress += 1
         result_dict[conf_name] = []
         for topology in tqdm(os.listdir(f"{result_folder}/{conf_name}")):
@@ -90,7 +82,6 @@ def parse_result_data(result_folder):
 
 
 def compute_connectedness(result_data: dict) -> {}:
-    print("Computing connectedness...")
     for conf_name in result_data.keys():
         conf_name: str
         for topology in result_data[conf_name]:
