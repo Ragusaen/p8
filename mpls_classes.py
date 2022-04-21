@@ -1078,7 +1078,6 @@ class Router(object):
         owner = get_FEC_owner(fec)
         if not owner:
             return False
-
         try:
             return owner.self_sourced(fec)
         except:
