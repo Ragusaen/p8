@@ -1,6 +1,4 @@
-import argparse
 import os
-import re
 from tqdm import tqdm
 
 alg_full_name_dict = {
@@ -43,9 +41,7 @@ def __compute_probability(f, e, pf=0.001):
 def __parse_single_line_in_failure_scenario(line):
     parts = line.split(' ')
     for part in parts:
-        split = part.split(':')
-        prop_name = split[0]
-        value = split[1]
+        prop_name, value = part.split(':')
 
         if (prop_name == 'len(F)'): #No match/case in this version :(
             failed_links = int(value)
@@ -68,6 +64,7 @@ def __parse_single_line_in_failure_scenario(line):
         if (prop_name == 'connected_flows'):
             connected_flows = int(value)
             continue
+
     return FailureScenarioData(failed_links, total_links, connectivity, looping_links, num_flows,
                                        successful_flows, connected_flows)
 
