@@ -1,3 +1,6 @@
+from get_results import TopologyResult, FailureScenarioData
+
+
 def latex_loop_table(results_data) -> str:
     alg_to_res_dict = {}
 
@@ -5,10 +8,11 @@ def latex_loop_table(results_data) -> str:
         num_links = 0
         num_looping_links = 0
         for topology in results_data[alg]:
-            for chunk_data in results_data[alg][topology].failure_chunks:
-                for failure_scenario_data in chunk_data.failure_scenario_data:
-                    num_links += failure_scenario_data.total_links
-                    num_looping_links += failure_scenario_data.looping_links
+            topology: TopologyResult
+            for failure_scenario in topology.failure_scenarios:
+                failure_scenario: FailureScenarioData
+                num_links += failure_scenario.total_links
+                num_looping_links += failure_scenario.looping_links
 
         ratio = float(num_looping_links) / float(num_links)
         alg_to_res_dict[alg] = ratio

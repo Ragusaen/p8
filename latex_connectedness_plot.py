@@ -13,7 +13,7 @@ def latex_connectedness_plot(results_data, max_points) -> str:
 
     latex_plot_data = ""
     for alg in results_data.keys():
-        cactus_data = sorted(results_data[alg].values(), key=lambda topology: topology.connectedness)
+        cactus_data = sorted(results_data[alg], key=lambda topology: topology.connectedness)
 
         skip_number = len(cactus_data) / max_points
         if skip_number < 1:

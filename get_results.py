@@ -23,16 +23,10 @@ class FailureScenarioData:
         self.connected_flows = connected_flows
 
 
-class FailureChunkResultData:
-    def __init__(self, chunk_name, failure_scenerio_data):
-        self.failure_chunk_name = chunk_name
-        self.failure_scenario_data = failure_scenerio_data #List of FailureScenarioData
-
-
 class TopologyResult:
-    def __init__(self, topology_name, failure_chunks, connectedness):
+    def __init__(self, topology_name, failure_scenarios, connectedness):
         self.topology_name = topology_name
-        self.failure_chunks = failure_chunks
+        self.failure_scenarios = failure_scenarios
         self.connectedness = connectedness
 
 
@@ -73,40 +67,48 @@ def __parse_single_line_in_failure_scenario(line):
 
 
 def parse_result_data(result_folder):
-    result_dict = {}
+    result_dict: dict[str:TopologyResult] = {}
     conf_progress = 1
     for conf_name in os.listdir(result_folder):
         print(f"\nParsing results from algorithm {alg_full_name_dict[conf_name]} - {conf_progress}/{len(os.listdir(result_folder))}")
         conf_progress += 1
-        result_dict[conf_name] = {}
+        result_dict[conf_name] = []
         for topology in tqdm(os.listdir(f"{result_folder}/{conf_name}")):
-            failure_chunks = []
-            normalisation_sum = 0
-            connectedness = 0
+            failure_scenarios = []
             res_dir = f"{result_folder}/{conf_name}/{topology}"
-            for res_file in os.listdir(res_dir):
-                failure_scenarios = list()
-                with open(f"{res_dir}/{res_file}", "r") as t:
+            for failure_chunk_file in os.listdir(res_dir):
+                with open(f"{res_dir}/{failure_chunk_file}", "r") as t:
                     lines = t.readlines()
                     for line in lines:
                         failure_data = __parse_single_line_in_failure_scenario(line)
-
-                        p = __compute_probability(failure_data.failed_links, failure_data.total_links)
-                        normalisation_sum += p
-
-                        if failure_data.connected_flows != 0:
-                            connectedness += p * (failure_data.successful_flows / failure_data.connected_flows)
-                        else:
-                            connectedness += p
-
                         failure_scenarios.append(failure_data)
 
-                failure_chunks.append(FailureChunkResultData(res_file, failure_scenarios))
+            result_dict[conf_name].append(TopologyResult(topology, failure_scenarios, -1))
+
+    compute_connectedness(result_dict)
+    return result_dict
+
+
+def compute_connectedness(result_data: dict) -> {}:
+    print("Computing connectedness...")
+    for conf_name in result_data.keys():
+        conf_name: str
+        for topology in result_data[conf_name]:
+            topology: TopologyResult
+            normalisation_sum = 0
+            connectedness = 0
+            for failure_scenario in topology.failure_scenarios:
+                failure_scenario: FailureScenarioData
+                p = __compute_probability(failure_scenario.failed_links, failure_scenario.total_links)
+                normalisation_sum += p
+
+                if failure_scenario.connected_flows != 0:
+                    connectedness += p * (failure_scenario.successful_flows / failure_scenario.connected_flows)
+                else:
+                    connectedness += p
 
             # Normalise
             if normalisation_sum > 0:
                 connectedness = connectedness / normalisation_sum
 
-            result_dict[conf_name][topology] = TopologyResult(topology, failure_chunks, connectedness)
-
-    return result_dict
+            topology.connectedness = connectedness
