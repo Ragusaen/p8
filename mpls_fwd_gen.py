@@ -124,7 +124,10 @@ def generate_fwd_rules(G, conf, enable_PHP = True, numeric_labels = False, enabl
     print("Computing RSVP...")
     random.seed(random_seed)
     method = conf["method"]
-    protection = conf['protection']
+    try:
+        protection = conf['protection']
+    except:
+        protection = None
     if method == 'tba':
         network.start_client(tba.TargetBasedArborescence)
         protocol_name = "tba"
