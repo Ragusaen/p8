@@ -1,5 +1,3 @@
-import itertools
-import queue
 import random
 from functools import cmp_to_key
 from typing import Union, Set, List, Dict, Tuple
@@ -9,8 +7,6 @@ from networkx import Graph
 import matplotlib.pyplot as plt
 
 from mpls_classes import MPLS_Client, Network, oFEC, Router
-from target_based_arborescence.arborescences import find_arborescences
-
 
 def find_partial_arborescences(graph: Graph, egress: str) -> List[List[Tuple[str, str]]]:
     edges: list[tuple[str, str]] = [(n1, n2) for (n1, n2) in graph.edges if n1 != n2] \
@@ -95,13 +91,14 @@ class Grafting_Client(MPLS_Client):
 
     # Abstract functions to be implemented by each client subclass.
     def LFIB_compute_entry(self, fec: oFEC, single=False):
+
         _, next_hop, bounce_fec_name = self.arborescence_next_hop[fec.name]
 
         local_label = self.get_local_label(fec)
         assert(local_label is not None)
 
         # If final hop, pop the label
-        if next_hop == fec.value[0]:
+        if next_hop == fec.value["egress"]:
             main_entry = {"out": next_hop, "ops": [{"pop" : ""}], "weight" : 0}
         else:
             remote_label = self.get_remote_label(next_hop, fec)
@@ -110,7 +107,11 @@ class Grafting_Client(MPLS_Client):
         yield (local_label, main_entry)
 
         if bounce_fec_name is not None:
-            bounce_fec, bounce_next_hop, _ = self.arborescence_next_hop[bounce_fec_name]
+            bounce_fec, bounce_next_hop, bounce_fec_name = self.arborescence_next_hop[bounce_fec_name]
+
+            while bounce_fec is None: #Keep bouncing until we find an arborescence that can continue.
+                bounce_fec, bounce_next_hop, bounce_fec_name = self.arborescence_next_hop[bounce_fec_name]
+
             remote_bounce_label = self.get_remote_label(self.router.name, bounce_fec)
             assert(remote_bounce_label is not None)
 
@@ -133,19 +134,38 @@ class Grafting_Client(MPLS_Client):
         headends = tuple(set(map(lambda x: x[0], self.demands.values())))
 
         fec_arbors: list[tuple[oFEC, list[tuple[str, str]]]] =\
-            [(oFEC("arborescence", f"{self.router.name}_{i}_{ab}", (self.router.name, i, headends, i == 0 and ab == 'a')), a)
-                for ab, (i, a) in itertools.product(['a', 'b'], enumerate(self.arborescences))]
+            [(oFEC("gft", f"{self.router.name}_{i}", {"ingress": headends, "egress": self.router.name}), a)
+                for (i, a) in enumerate(self.arborescences)]
 
         for i, (fec, a) in enumerate(fec_arbors):
             #assert len(fec_arbors) > 1
-            bounce_fec_name = None if i + 1 >= len(fec_arbors) else fec_arbors[i + 1][0].name
+            bounce_fec_name = fec_arbors[(i + 1) % len(fec_arbors)][0].name
 
             # Loop over all edges in arborescence
             for src, tgt in a:
                 # Add an arborescence next-hop for this FEC to the routers in the arborescence
                 src_router = self.router.network.routers[src].clients["gft"]
                 src_router.arborescence_next_hop[fec.name] = (fec, tgt, bounce_fec_name)
-        print()
+
+            srcs = [src for src, tgt in a]
+            for router in self.router.network.routers:
+                if router not in srcs:
+                    src_router = self.router.network.routers[router].clients["gft"]
+                    src_router.arborescence_next_hop[fec.name] = (None, None, bounce_fec_name)
+
+
+        # options = {
+        #     'node_color': 'blue',
+        #     'node_size': 20,
+        #     'width': 2,
+        #     'arrowstyle': '-|>',
+        #     'arrowsize': 8,
+        # }
+        # test = nx.DiGraph(self.arborescences[0])
+        # nx.draw_networkx(test, arrows=True, **options)
+        #
+        # plt.show()
+        # print()
 
     def compute_bypasses(self):
         pass
@@ -155,7 +175,8 @@ class Grafting_Client(MPLS_Client):
 
     def known_resources(self):
         for _, v in self.arborescence_next_hop.items():
-            yield v[0]
+            if v[0] is not None:
+                yield v[0]
 
     def self_sourced(self, fec: oFEC):
         return fec.fec_type == 'gft' and fec.value[0] == self.router.name
