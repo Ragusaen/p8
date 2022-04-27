@@ -169,7 +169,7 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
         common = open(os.path.join(os.path.dirname(f.name), "common"), "w")
         common.write(f"len(E):{links} num_flows:{total_flows} fwd_gen_time:{stats['fwd_gen_time']} memory:{router_memory_str}")
 
-    print("SIMULATION FINISHED")
+    print(f"SIMULATION FINISHED - FAILED: {initially_connected - successful_flows}")
 
 
 if __name__ == "__main__":
