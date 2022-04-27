@@ -1056,11 +1056,6 @@ class Router(object):
                             # If fec exists and is managed by this client, allocate the routing entry.
                             self.LFIB_alloc(label, routing_entry)
 
-        if mpls_client_name == "gft":
-            for rules in self.LFIB.values():
-                if len(rules) > 2:
-                    print() #TODO: This never happens?
-
     def LFIB_weights_to_priorities(self):
         # Compute the priority of each route entry, remove weight, cast label as string...
         for label in self.LFIB.keys():
