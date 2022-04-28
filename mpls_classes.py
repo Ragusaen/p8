@@ -415,7 +415,7 @@ class MPLS_Client(object):
             del self.router.LFIB[l2]
 
         for neighbour in to_rerefine:
-            neighbour.clients['cfor'].LFIB_fullrefine()
+            neighbour.clients[self.protocol].LFIB_fullrefine()
 
     def known_resources(self):
         # Returns a generator to iterate over all resources managed by the client.
@@ -726,7 +726,7 @@ class Network(object):
                     good_targets = [fec.value[1]]
 
                 elif fec.fec_type == "cfor":
-                    if fec.value["iteration"] == 1:
+                    if 'iteration' in fec.value and fec.value["iteration"] == 1:
                         good_sources = fec.value["ingress"]
                         good_targets = fec.value["egress"]
                     else:
@@ -1301,8 +1301,8 @@ class ProcRSVPTE(MPLS_Client):
                             # before starting to negotiate tunnels.
     protocol = "RSVP-TE"
 
-    def __init__(self, router, max_hops = 3):
-        super().__init__(router)
+    def __init__(self, router, max_hops = 3, **kwargs):
+        super().__init__(router, **kwargs)
 #         self.protocol = "RSVP-TE"
         self.build_order = 100
 
@@ -2802,7 +2802,7 @@ class MPLS_packet(object):
             self.exit_code = 2
             if self.verbose:
                 if self.targets is not None:
-                    print("WAS CONNECTED" if any([except_false(lambda: nx.has_path(self.topology, self.init_router, tgt)) for tgt in self.targets]) else "WAS NOT CONNECTED")
+                    print("WAS CONNECTED" if any([except_false(lambda: nx.has_path(self.topology, self.init_router.name, tgt)) for tgt in self.targets]) else "WAS NOT CONNECTED")
                 print(self.cause)
             if self.mode == "pathfinder":
                 return (False, [])
@@ -2852,8 +2852,7 @@ class MPLS_packet(object):
                     self.exit_code = 3
                     if self.verbose:
                         if self.targets is not None:
-                            print("WAS CONNECTED" if any([except_false(nx.has_path(self.topology, self.init_router, tgt) for tgt in
-                                                           self.targets)]) else "WAS NOT CONNECTED")
+                            print("WAS CONNECTED" if any([except_false(lambda: nx.has_path(self.topology, self.init_router.name, tgt)) for tgt in self.targets]) else "WAS NOT CONNECTED")
                         print(self.cause)
                     if self.mode == "pathfinder":
                         return (True, [])
@@ -2870,8 +2869,7 @@ class MPLS_packet(object):
             self.exit_code = 4
             if self.verbose:
                 if self.targets is not None:
-                    print("WAS CONNECTED" if any([except_false(nx.has_path(self.topology, self.init_router.name, tgt) for tgt in
-                                                   self.targets)]) else "WAS NOT CONNECTED")
+                    print("WAS CONNECTED" if any([except_false(lambda: nx.has_path(self.topology, self.init_router.name, tgt)) for tgt in self.targets]) else "WAS NOT CONNECTED")
                 print(self.cause)
             if self.mode == "pathfinder":
                 return (False, [])
