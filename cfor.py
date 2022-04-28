@@ -6,6 +6,8 @@ from mpls_classes import *
 from functools import *
 from networkx import shortest_path
 
+from itertools import islice
+
 from typing import Dict, Tuple, List, Callable
 
 class ForwardingTable:
@@ -23,19 +25,21 @@ class ForwardingTable:
                 self.add_rule(lhs, rhs)
 
 
-def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str, path_generator: Callable[[Graph, str, str, oFEC, oFEC], ForwardingTable]) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
+def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: str, path_generator: Callable[[Graph, str, str, oFEC, oFEC], ForwardingTable]) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
     def label(switch: str, iteration: int):
-        return oFEC("cfor", f"{ingress}_to_{egress}_at_{switch}_it_{iteration}", {"ingress": ingress, "egress": egress, "iteration": iteration, "switch": switch})
+        return oFEC("cfor", f"{ingress}_to_{egress}_at_{switch}_it_{iteration}", {"ingress": ingress, "egress": [egress], "iteration": iteration, "switch": switch})
 
 
     edges: set[tuple[str, str]] = set([(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
                                       + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2])
     network.compute_dijkstra(weight=1)
-    layers: dict[int, list[str]] = {layer: [] for layer in range(0, network.routers[ingress].dist[egress] + 1)}
+
+    max_ingress_distance = max([network.routers[v].dist[egress] for v in ingress])
+    layers: dict[int, list[str]] = {layer: [] for layer in range(0, max_ingress_distance + 1)}
 
     for v in network.routers.values():
         dist = v.dist[egress]
-        if v.dist[egress] <= network.routers[ingress].dist[egress]:
+        if dist <= max_ingress_distance:
             layers[dist].append(v.name)
 
     forwarding_table = ForwardingTable()
@@ -128,7 +132,7 @@ class CFor(MPLS_Client):
     protocol = "cfor"
 
     def __init__(self, router: Router, **kwargs):
-        super().__init__(router)
+        super().__init__(router, **kwargs)
 
         # The demands where this router is the tailend
         self.demands: dict[str, tuple[str, str]] = {}
@@ -139,7 +143,7 @@ class CFor(MPLS_Client):
         self.path_generator = {
             'shortest': shortest_path_generator,
             'arborescence': arborescence_path_generator
-        }[kwargs['path_generator']]
+        }[kwargs['path']]
 
 
     def LFIB_compute_entry(self, fec: oFEC, single=False):
@@ -147,7 +151,7 @@ class CFor(MPLS_Client):
             local_label = self.get_local_label(fec)
             assert(local_label is not None)
 
-            if fec.value["egress"] == next_hop:
+            if next_hop in fec.value["egress"]:
                 yield (local_label, {'out': next_hop, 'ops': [{'pop': ''}], 'weight': priority})
             else:
                 remote_label = self.get_remote_label(next_hop, swap_fec)
@@ -160,16 +164,18 @@ class CFor(MPLS_Client):
         self.demands[f"{len(self.demands.items())}_{headend}_to_{self.router.name}"] = (headend, self.router.name)
 
     def commit_config(self):
-        for demand, (ingress, egress) in self.demands.items():
-            ft = generate_pseudo_forwarding_table(self.router.network, ingress, egress, self.path_generator)
+        headends = list(map(lambda x: x[0], self.demands.values()))
+        if len(headends) == 0:
+            return
+        ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.path_generator)
 
-            for (src, fec), entries in ft.items():
-                src_client: CFor = self.router.network.routers[src].clients["cfor"]
+        for (src, fec), entries in ft.items():
+            src_client: CFor = self.router.network.routers[src].clients["cfor"]
 
-                if (src, fec) not in src_client.partial_forwarding_table:
-                    src_client.partial_forwarding_table[(src, fec)] = []
+            if (src, fec) not in src_client.partial_forwarding_table:
+                src_client.partial_forwarding_table[(src, fec)] = []
 
-                src_client.partial_forwarding_table[(src, fec)].extend(entries)
+            src_client.partial_forwarding_table[(src, fec)].extend(entries)
 
     def compute_bypasses(self):
         pass
@@ -182,4 +188,4 @@ class CFor(MPLS_Client):
             yield fec
 
     def self_sourced(self, fec: oFEC):
-        return 'cfor' in fec.fec_type and fec.value["egress"] == self.router.name
+        return 'cfor' in fec.fec_type and fec.value["egress"][0] == self.router.name

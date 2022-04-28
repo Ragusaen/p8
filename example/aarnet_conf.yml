@@ -3,6 +3,7 @@ ldp: false
 php: false
 random_seed: 1
 method: cfor
+rule_reduction: true
 path: shortest
 protection: none
 rsvp_num_lsps: 50
