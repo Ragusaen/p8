@@ -51,8 +51,8 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
         for j in range(0, len(layers[i])):
             v = layers[i][j]
             for v_down in filter(lambda edge: edge[0] == v and edge[1] in layers[i - 1], edges):
-                forwarding_table.add_rule((v, label(v, 1)), (1, v_down[1], label(v_down[1], 1)))
-                forwarding_table.add_rule((v, label(v, 2)), (1, v_down[1], label(v_down[1], 1)))
+                forwarding_table.add_rule((v, label(v, 1)), (0, v_down[1], label(v_down[1], 1)))
+                forwarding_table.add_rule((v, label(v, 2)), (0, v_down[1], label(v_down[1], 1)))
 
             if len(layers[i]) == 1:
                 continue
@@ -148,46 +148,30 @@ def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoi
 
     path_labels: list[oFEC] = []
     for i in range(len(dist_paths)):
-        path_labels.append(oFEC("cfor", f"{ingoing_label.name}_subpath_{i}", ingoing_label.value))
+        path_labels.append(oFEC("cfor", f"{ingoing_label.name}_subpath_{i}", {'ingress': ingoing_label.value['ingress'], 'egress': ingoing_label.value['egress']}))
 
-    i = -1
-    for path in dist_paths:
-        i += 1
+    # Initially, try subpath 0
+    ft.add_rule((src, ingoing_label), (2, src, path_labels[0]))
 
-        first, second = path[:2]
+    # If at tgt from any subpath, go to outgoing_label
+    for l in path_labels:
+        ft.add_rule((tgt, l), (0, tgt, outgoing_label))
 
-        if len(path) < 3:
-            # add forwarding straight to target not using path label
-            ft.add_rule((first, ingoing_label), (2+i, second, outgoing_label))
-            ft.add_rule((first, path_labels[i]), (1, second, outgoing_label))
-            continue
+    for i, path in enumerate(dist_paths):
 
-        # If not first path: forward if routed reverse from previous path
-        if i != 0:
-            ft.add_rule((first, path_labels[i]), (1, second, path_labels[i]))
-
-        # set of switches used to determine switches are eligible for backwarding
-        used_switches = set()
-
-        # if path is longer than 2, start path creation
-        ft.add_rule((first, ingoing_label), (2+i, second, path_labels[i]))
-
-        # for each edge in path that is not the first or last edge
-        for s, t in zip(path[1:-2], path[2:-1]):
+        # for each edge in path
+        for s, t in zip(path[:-1], path[1:]):
             # create forwarding using the path label
             ft.add_rule((s, path_labels[i]), (1, t, path_labels[i]))
 
-        # on path end, push the outgoing label
-        second_last, last = path[-2:]
-        ft.add_rule((second_last, path_labels[i]), (1, last, outgoing_label))
+            # if not last subpath
+            if i < len(path_labels) - 1:
+                # if link failed, bounce to next subpath
+                ft.add_rule((s, path_labels[i]), (2, s, path_labels[i+1]))
 
-        # if it is not the last path,
-        # create backwarding using next label to at some point meet the other path (possibly at src)
-        if i != 0:
-            for s, t in zip(dist_paths[i-1][1:-2], dist_paths[i-1][2:-1]):
-                if t not in used_switches:
-                    pass
-                    # ft.add_rule((t, path_labels[i]), (2, s, path_labels[i]))
+                # create backtracking rules for next subpath
+                if t not in dist_paths[i+1]:
+                    ft.add_rule((t, path_labels[i+1]), (1, s, path_labels[i+1]))
 
     return ft
 
