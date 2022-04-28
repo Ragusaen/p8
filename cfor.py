@@ -8,6 +8,7 @@ from networkx import shortest_path
 
 from typing import Dict, Tuple, List, Callable
 
+
 class ForwardingTable:
     def __init__(self):
         self.table: dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]] = {}
@@ -26,7 +27,6 @@ class ForwardingTable:
 def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str, path_generator: Callable[[Graph, str, str, oFEC, oFEC], ForwardingTable]) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
     def label(switch: str, iteration: int):
         return oFEC("cfor", f"{ingress}_to_{egress}_at_{switch}_it_{iteration}", {"ingress": ingress, "egress": egress, "iteration": iteration, "switch": switch})
-
 
     edges: set[tuple[str, str]] = set([(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
                                       + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2])
@@ -50,11 +50,16 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
                 forwarding_table.add_rule((v, label(v, 1)), (1, v_down[1], label(v_down[1], 1)))
                 forwarding_table.add_rule((v, label(v, 2)), (1, v_down[1], label(v_down[1], 1)))
 
+            if len(layers[i]) == 1:
+                continue
+            # Start calculating cycling path between switches in given layer
+            # Create subgraph omitting switches that are lower wrt. layer level
             subtract_switches = set()
             for k in range(0, i):
                 subtract_switches = subtract_switches.union(set(layers[k]))
             subgraph_switches = set(network.topology.nodes).difference(subtract_switches)
 
+            # Find the next switch to route to in cycling path
             is_last_switch = v == layers[i][-1]
             v_next = layers[i][0]
             if not is_last_switch:
@@ -62,6 +67,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
 
             subgraph = network.topology.subgraph(subgraph_switches)
 
+            # Generate path between two switches
             if not is_last_switch:
                 sub_ft = path_generator(subgraph, v, v_next, label(v, 1), label(v_next, 1))
                 sub_ft.extend(path_generator(subgraph, v, v_next, label(v, 2), label(v_next, 2)))
@@ -70,8 +76,8 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
 
             forwarding_table.extend(sub_ft)
 
-
     return forwarding_table.table
+
 
 def shortest_path_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoing_label):
     ft = ForwardingTable()
@@ -89,6 +95,7 @@ def shortest_path_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoin
     src, tgt = path[-2:]
     ft.add_rule((src, ingoing_label), (2, tgt, outgoing_label))
     return ft
+
 
 def arborescence_path_generator(G: Graph, src: str, tgt: str, ingoing_label: oFEC, outgoing_label: oFEC):
     from target_based_arborescence.arborescences import find_arborescences
@@ -124,6 +131,80 @@ def arborescence_path_generator(G: Graph, src: str, tgt: str, ingoing_label: oFE
     return ft
 
 
+def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoing_label, num_paths=2):
+    # Try to use underlying auxiliary graph for all pairs edge_disjoint_paths
+    ft = ForwardingTable()
+    if src == tgt:
+        return ft
+
+    try:
+        dist_paths: List[List] = compute_disjoint_paths_by_shortest_path_weight_increase(G, src, tgt, num_paths)
+    except networkx.exception.NetworkXNoPath:
+        return ft
+
+    path_labels: list[oFEC] = []
+    for i in range(len(dist_paths)):
+        path_labels.append(oFEC("cfor", f"{ingoing_label.name}_subpath_{i}", ingoing_label.value))
+
+    i = -1
+    for path in dist_paths:
+        i += 1
+
+        first, second = path[:2]
+
+        if len(path) < 3:
+            # add forwarding straight to target not using path label
+            ft.add_rule((first, ingoing_label), (2+i, second, outgoing_label))
+            ft.add_rule((first, path_labels[i]), (1, second, outgoing_label))
+            continue
+
+        # If not first path: forward if routed reverse from previous path
+        if i != 0:
+            ft.add_rule((first, path_labels[i]), (1, second, path_labels[i]))
+
+        # set of switches used to determine switches are eligible for backwarding
+        used_switches = set()
+
+        # if path is longer than 2, start path creation
+        ft.add_rule((first, ingoing_label), (2+i, second, path_labels[i]))
+
+        # for each edge in path that is not the first or last edge
+        for s, t in zip(path[1:-2], path[2:-1]):
+            # create forwarding using the path label
+            ft.add_rule((s, path_labels[i]), (1, t, path_labels[i]))
+
+        # on path end, push the outgoing label
+        second_last, last = path[-2:]
+        ft.add_rule((second_last, path_labels[i]), (1, last, outgoing_label))
+
+        # if it is not the last path,
+        # create backwarding using next label to at some point meet the other path (possibly at src)
+        if i != 0:
+            for s, t in zip(dist_paths[i-1][1:-2], dist_paths[i-1][2:-1]):
+                if t not in used_switches:
+                    pass
+                    # ft.add_rule((t, path_labels[i]), (2, s, path_labels[i]))
+
+    return ft
+
+
+def compute_disjoint_paths_by_shortest_path_weight_increase(G: Graph, src: str, tgt: str, num_paths) -> List[List[str]]:
+    weight_graph = G.copy()
+    for u, v, d in weight_graph.edges(data=True):
+        d["weight"] = 1
+    paths = []
+
+    for _ in range(num_paths):
+        path = shortest_path(weight_graph, src, tgt, "weight")
+        if path not in paths:
+            paths.append(path)
+
+        for i in (range(len(path) - 1)):
+            weight_graph[path[i]][path[i+1]]["weight"] += 1000
+
+    return paths
+
+
 class CFor(MPLS_Client):
     protocol = "cfor"
 
@@ -138,7 +219,8 @@ class CFor(MPLS_Client):
 
         self.path_generator = {
             'shortest': shortest_path_generator,
-            'arborescence': arborescence_path_generator
+            'arborescence': arborescence_path_generator,
+            'disjoint': disjoint_paths_generator
         }[kwargs['path_generator']]
 
 
