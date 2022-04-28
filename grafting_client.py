@@ -2,6 +2,7 @@ import random
 from functools import cmp_to_key
 from typing import Union, Set, List, Dict, Tuple
 
+import networkx
 import networkx as nx
 from networkx import Graph
 import matplotlib.pyplot as plt
@@ -85,38 +86,44 @@ class Grafting_Client(MPLS_Client):
         # The arborescences that are rooted in this router
         self.arborescences: list[list[tuple[str, str]]] = []
 
-        # The FECs this router is a non-tailend part of. fec_name -> (fec, next_hop, bounce_fec_name)
-        self.arborescence_next_hop: dict[str, tuple[oFEC, str, str]] = {}
+        # The FECs this router is a non-tailend part of. fec_name -> list[(fec, next_hop, bounce_fec_name)]
+        self.arborescence_next_hops: dict[str, list[tuple[oFEC, str, str]]] = {}
 
 
     # Abstract functions to be implemented by each client subclass.
     def LFIB_compute_entry(self, fec: oFEC, single=False):
 
-        _, next_hop, bounce_fec_name = self.arborescence_next_hop[fec.name]
+        def sort_by_dist_to_egress(e):
+            return networkx.shortest_path_length(self.router.network.topology, source=e, target=self.router.name)
 
-        local_label = self.get_local_label(fec)
-        assert(local_label is not None)
+        l = [r[1] for r in self.arborescence_next_hops[fec.name] if r[1] is not None]
+        l.sort(key=sort_by_dist_to_egress)
+        hop_to_priority = {hop:idx for idx,hop in enumerate(l)}
 
-        # If final hop, pop the label
-        if next_hop == fec.value["egress"]:
-            main_entry = {"out": next_hop, "ops": [{"pop" : ""}], "weight" : 0}
-        else:
-            remote_label = self.get_remote_label(next_hop, fec)
-            assert(remote_label is not None)
-            main_entry = {"out": next_hop, "ops": [{"swap" : remote_label}], "weight" : 0}
-        yield (local_label, main_entry)
+        for _, next_hop, bounce_fec_name in self.arborescence_next_hops[fec.name]:
+            local_label = self.get_local_label(fec)
+            assert(local_label is not None)
 
-        if bounce_fec_name is not None:
-            bounce_fec, bounce_next_hop, bounce_fec_name = self.arborescence_next_hop[bounce_fec_name]
+            # If final hop, pop the label
+            if next_hop == fec.value["egress"]:
+                main_entry = {"out": next_hop, "ops": [{"pop" : ""}], "weight" : 0}
+            else:
+                remote_label = self.get_remote_label(next_hop, fec)
+                assert(remote_label is not None)
+                main_entry = {"out": next_hop, "ops": [{"swap" : remote_label}], "weight" : hop_to_priority[next_hop]}
+            yield (local_label, main_entry)
 
-            while bounce_fec is None: #Keep bouncing until we find an arborescence that can continue.
-                bounce_fec, bounce_next_hop, bounce_fec_name = self.arborescence_next_hop[bounce_fec_name]
+            if bounce_fec_name is not None:
+                bounce_fec, _, bounce_fec_name = self.arborescence_next_hops[bounce_fec_name][0]
 
-            remote_bounce_label = self.get_remote_label(self.router.name, bounce_fec)
-            assert(remote_bounce_label is not None)
+                while bounce_fec is None: #Keep bouncing until we find an arborescence that can continue.
+                    bounce_fec, _, bounce_fec_name = self.arborescence_next_hops[bounce_fec_name][0]
 
-            bounce_entry = {"out": self.LOCAL_LOOKUP, "ops": [{"swap" : remote_bounce_label}], "weight" : 1}
-            yield (local_label, bounce_entry)
+                remote_bounce_label = self.get_remote_label(self.router.name, bounce_fec)
+                assert(remote_bounce_label is not None)
+
+                bounce_entry = {"out": self.LOCAL_LOOKUP, "ops": [{"swap" : remote_bounce_label}], "weight" : len(hop_to_priority.keys())}
+                yield (local_label, bounce_entry)
 
 
     # Defines a demand for a headend to this one
@@ -145,27 +152,20 @@ class Grafting_Client(MPLS_Client):
             for src, tgt in a:
                 # Add an arborescence next-hop for this FEC to the routers in the arborescence
                 src_router = self.router.network.routers[src].clients["gft"]
-                src_router.arborescence_next_hop[fec.name] = (fec, tgt, bounce_fec_name)
+                if fec.name in src_router.arborescence_next_hops.keys():
+                    src_router.arborescence_next_hops[fec.name].append((fec, tgt, bounce_fec_name))
+                else:
+                    src_router.arborescence_next_hops[fec.name] = [(fec, tgt, bounce_fec_name)]
 
             srcs = [src for src, tgt in a]
             for router in self.router.network.routers:
                 if router not in srcs:
                     src_router = self.router.network.routers[router].clients["gft"]
-                    src_router.arborescence_next_hop[fec.name] = (None, None, bounce_fec_name)
+                    if fec.name in src_router.arborescence_next_hops.keys():
+                        src_router.arborescence_next_hops[fec.name].append((None, None, bounce_fec_name))
+                    else:
+                        src_router.arborescence_next_hops[fec.name] = [(None, None, bounce_fec_name)]
 
-
-        # options = {
-        #     'node_color': 'blue',
-        #     'node_size': 20,
-        #     'width': 2,
-        #     'arrowstyle': '-|>',
-        #     'arrowsize': 8,
-        # }
-        # test = nx.DiGraph(self.arborescences[0])
-        # nx.draw_networkx(test, arrows=True, **options)
-        #
-        # plt.show()
-        # print()
 
     def compute_bypasses(self):
         pass
@@ -174,9 +174,10 @@ class Grafting_Client(MPLS_Client):
         pass
 
     def known_resources(self):
-        for _, v in self.arborescence_next_hop.items():
-            if v[0] is not None:
-                yield v[0]
+        for _, v in self.arborescence_next_hops.items():
+            for r in v:
+                if r[0] is not None:
+                    yield r[0]
 
     def self_sourced(self, fec: oFEC):
         return fec.fec_type == 'gft' and fec.value[0] == self.router.name
