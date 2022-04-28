@@ -21,7 +21,8 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "tba": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "dashed"),
     "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "red", "dashdotted"),
     "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "solid"),
-    "keepf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted")
+    "keepf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted"),
+    "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashdotted")
 }
 
 parser = argparse.ArgumentParser()

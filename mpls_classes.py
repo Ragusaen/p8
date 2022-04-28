@@ -9,7 +9,7 @@ import json
 import math
 import copy
 from pprint import pprint
-from itertools import chain, count
+from itertools import chain, count, islice
 import numpy as np
 from networkx import Graph
 
@@ -318,11 +318,12 @@ class MPLS_Client(object):
     EXPLICIT_IPV6_NULL = 2
     IMPLICIT_NULL = 3
 
-    def __init__(self, router, build_order = 100):
-        self.router = router
+    def __init__(self, router, build_order = 100, **kwargs):
+        self.router: Router = router
         self.build_order = build_order
         self.LOCAL_LOOKUP = router.LOCAL_LOOKUP
         self.comm_count = 0
+        self.do_rule_reduction = kwargs['rule_reduction'] if 'rule_reduction' in kwargs else False
 
     # Common functionality
     def get_comm_count(self):
@@ -377,6 +378,44 @@ class MPLS_Client(object):
     def LFIB_refine(self, label):
         # Some process might require a refinement of the LFIB.
         pass
+
+    def LFIB_fullrefine(self):
+        if not self.do_rule_reduction:
+            return
+
+        to_remove: Set[Tuple[str, str]] = set()
+        to_remove_aux: Set[str] = set()
+        to_rerefine: Set[Router] = set()
+
+        for i, (l1, r1) in enumerate(self.router.LFIB.items()):
+            if l1 in to_remove_aux:
+                continue
+            for l2, r2 in islice(self.router.LFIB.items(), i + 1, len(self.router.LFIB)):
+                if r1 == r2:
+                    to_remove.add((l1, l2))
+                    to_remove_aux.add(l2)
+
+                    #print(f'Removed tau({self.router.name}, {l2})')
+
+                    for n in self.router.topology.neighbors(self.router.name):
+                        neighbour: Router = self.router.network.routers[n]
+
+                        for l3, r3 in neighbour.LFIB.items():
+                            for rd in r3:
+                                if rd['out'] == self.router.name and [{'swap': l2}] == rd['ops']:
+                                    pre_rd = str(rd)
+                                    rd['ops'] = [{'swap': l1}]
+                                    #print(f'Changed tau({neighbour.name}, {l3}) entry from {pre_rd} to {rd}')
+                                    to_rerefine.add(neighbour)
+
+        label_to_fec: Dict[str, oFEC] = {v['local_label']: fec for fec, v in self.router.LIB.items()}
+
+        for l1, l2 in to_remove:
+            label_to_fec[l1].value["ingress"] = label_to_fec[l1].value["ingress"] + label_to_fec[l2].value['ingress']
+            del self.router.LFIB[l2]
+
+        for neighbour in to_rerefine:
+            neighbour.clients['cfor'].LFIB_fullrefine()
 
     def known_resources(self):
         # Returns a generator to iterate over all resources managed by the client.
@@ -688,14 +727,19 @@ class Network(object):
 
                 elif fec.fec_type == "cfor":
                     if fec.value["iteration"] == 1:
-                        good_sources = [fec.value["ingress"]]
-                        good_targets = [fec.value["egress"]]
+                        good_sources = fec.value["ingress"]
+                        good_targets = fec.value["egress"]
                     else:
                         continue
 
                 elif fec.fec_type == 'kf':
                     good_sources = [fec.value['ingress']]
                     good_targets = [fec.value['egress']]
+
+                elif fec.fec_type == "gft":
+                    good_sources = fec.value['ingress']
+                    good_targets = [fec.value['egress']]
+
                 else:
                     continue
 
@@ -813,7 +857,7 @@ class Router(object):
                  max_first_label = 90000, seed=0, numeric_labels=True):
         self.name = name
         self.network = network
-        self.topology = network.topology
+        self.topology: Graph = network.topology
         self.location = location  # "location": {"latitude": 25.7743, "longitude": -80.1937 }
         self.alternative_names = alternative_names
         self.PHP = php   # Activate Penultimate Hop Popping
@@ -833,8 +877,8 @@ class Router(object):
         self.LOOPBACK = "loop_back"
 
         # Initialize tables
-        self.LFIB = dict()
-        self.LIB = dict()
+        self.LFIB: Dict[str, List[Dict[str, Any]]] = dict()
+        self.LIB: Dict[oFEC, Dict[str, Any]] = dict()
         self.clients = dict()
         self.label_managers = dict()
         self.main_label_manager = Label_Manager(first_label=16,
@@ -1062,6 +1106,7 @@ class Router(object):
     def LFIB_refine(self):
         # Proc to refine (post-process) the LFIB
         for mpls_client_name, mpls_client in self.clients.items():    #iterate through all registered clients
+            mpls_client.LFIB_fullrefine()
             for label in self.LFIB.keys():
                 new_rules = mpls_client.LFIB_refine(label)
                 if new_rules:

@@ -104,6 +104,8 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1):
         base_config["method"] = "tba"
     elif conf_type == 'hd':
         base_config['method'] = 'hd'
+    elif conf_type == 'gft':
+        base_config['method'] = 'gft'
     elif conf_type == 'cfor-short':
         base_config['method'] = 'cfor'
         base_config['path'] = 'shortest'
@@ -193,6 +195,7 @@ if __name__ == "__main__":
     create('cfor-short')
     create('cfor-arb')
     create('cfor-disjoint')
+    create('gft')
 
     if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):
         # Generate failures

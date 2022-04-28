@@ -129,26 +129,26 @@ def generate_fwd_rules(G, conf, enable_PHP = True, numeric_labels = False, enabl
     except:
         protection = None
     if method == 'tba':
-        network.start_client(tba.TargetBasedArborescence)
+        network.start_client(tba.TargetBasedArborescence, **conf)
         protocol_name = "tba"
     elif method == 'cfor':
-        network.start_client(cfor.CFor, path_generator=conf['path'])
+        network.start_client(cfor.CFor, **conf)
         protocol_name = "cfor"
     elif method == 'hd':
-        network.start_client(hop_distance_client.HopDistance_Client)
+        network.start_client(hop_distance_client.HopDistance_Client, **conf)
         protocol_name = "hop_distance"
     elif method == 'gft':
-        network.start_client(grafting_client.Grafting_Client)
+        network.start_client(grafting_client.Grafting_Client, **conf)
         protocol_name = "gft"
     elif method == 'kf':
-        network.start_client(keep_forwarding_client.KeepForwarding)
+        network.start_client(keep_forwarding_client.KeepForwarding, **conf)
         protocol_name = 'kf'
     # Start RSVP-TE process in each router
     elif conf['method'] == 'rsvp' and conf['protection'] is not None and conf['protection'].startswith("plinko"):
             network.start_client(ProcPlinko)
             protocol_name = "ProcPlinko"
     else:
-        network.start_client(ProcRSVPTE)
+        network.start_client(ProcRSVPTE, **conf)
         protocol_name = "RSVP-TE"
 
     # compute  lsps
