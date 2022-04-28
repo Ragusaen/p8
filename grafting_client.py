@@ -167,19 +167,6 @@ class Grafting_Client(MPLS_Client):
                         src_router.arborescence_next_hops[fec.name] = [(None, None, bounce_fec_name)]
 
 
-        # options = {
-        #     'node_color': 'blue',
-        #     'node_size': 20,
-        #     'width': 2,
-        #     'arrowstyle': '-|>',
-        #     'arrowsize': 8,
-        # }
-        # test = nx.DiGraph(self.arborescences[0])
-        # nx.draw_networkx(test, arrows=True, **options)
-        #
-        # plt.show()
-        # print()
-
     def compute_bypasses(self):
         pass
 
@@ -187,7 +174,7 @@ class Grafting_Client(MPLS_Client):
         pass
 
     def known_resources(self):
-        for _, v in self.arborescence_next_hops.items(): #TODO: Check if this works
+        for _, v in self.arborescence_next_hops.items():
             for r in v:
                 if r[0] is not None:
                     yield r[0]
