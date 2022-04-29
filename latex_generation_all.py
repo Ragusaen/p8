@@ -16,8 +16,8 @@ class AlgorithmPlotConfiguration:
 
 alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "cfor": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dotted"),
-    "cfor-short": AlgorithmPlotConfiguration("Continue Forwarding, short", "magenta", "loosely dashed"),
-    "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding, disjoint", "grey", "loosely dotted"),
+    "cfor-short": AlgorithmPlotConfiguration("Continue Forwarding - shortest", "magenta", "loosely dashed"),
+    "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding - disjoint", "grey", "loosely dotted"),
     "tba": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "dashed"),
     "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "red", "dashdotted"),
     "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "solid"),

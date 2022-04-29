@@ -135,7 +135,7 @@ def arborescence_path_generator(G: Graph, src: str, tgt: str, ingoing_label: oFE
     return ft
 
 
-def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoing_label, num_paths=2):
+def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoing_label, num_paths=4):
     # Try to use underlying auxiliary graph for all pairs edge_disjoint_paths
     ft = ForwardingTable()
     if src == tgt:
