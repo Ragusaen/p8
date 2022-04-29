@@ -3,7 +3,7 @@ ldp: false
 php: false
 random_seed: 1
 method: cfor
-path: disjoint
+path: shortest
 protection: none
 rsvp_num_lsps: 50
 rsvp_tunnels_per_pair: 1
