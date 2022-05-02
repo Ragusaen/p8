@@ -8,10 +8,11 @@
 
 PD=$(pwd)
 
-for CONF in $(ls confs/Aarnet/conf_*) ; do
-    for TOPO in $(ls confs) ; do
-        for FAILCHUNK in $(ls confs/${TOPO}/failure_chunks) ; do
-            sbatch scripts/run-tool.sh ${CONF} confs/${TOPO}/failure_chunks/${FAILCHUNK}
-        done
+CONF=${1}
+
+for TOPO in $(ls confs) ; do
+    #for CONF in $(ls confs/${TOPO}/conf_*) ; do
+    for FAILCHUNK in $(ls confs/${TOPO}/failure_chunks) ; do
+        sbatch scripts/run-tool.sh ${TOPO} ${CONF} confs/${TOPO}/failure_chunks/${FAILCHUNK}
     done
 done
