@@ -183,7 +183,7 @@ def latex_memory_plot(data, _max_points) -> str:
         for i in range(0, len(cactus_data), int(skip_number)):
             if counter > _max_points:
                 break
-            latex_plot_data += f"({counter}, {cactus_data[i].max_memory})\n"
+            latex_plot_data += f"({counter}, {cactus_data[i].max_memory}) %{cactus_data[i].topology_name}\n"
             counter += 1
         latex_plot_data += r"};" + "\n"
 

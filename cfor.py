@@ -50,9 +50,13 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
     for i in range(1, len(layers)):
         for j in range(0, len(layers[i])):
             v = layers[i][j]
+            # for v_down in filter(lambda edge: edge[0] == v and edge[1] in layers[i - 1], edges):
+            #     forwarding_table.add_rule((v, label(v, 1)), (0, v_down[1], label(v_down[1], 1)))
+            #     forwarding_table.add_rule((v, label(v, 2)), (0, v_down[1], label(v_down[1], 1)))
+
             for v_down in filter(lambda edge: edge[0] == v and edge[1] in layers[i - 1], edges):
-                forwarding_table.add_rule((v, label(v, 1)), (0, v_down[1], label(v_down[1], 1)))
-                forwarding_table.add_rule((v, label(v, 2)), (0, v_down[1], label(v_down[1], 1)))
+                forwarding_table.extend(disjoint_paths_generator(network.topology, v, v_down[1], label(v, 1), label(v_down[1], 1), 0, "godown", num_paths=2))
+                forwarding_table.extend(disjoint_paths_generator(network.topology, v, v_down[1], label(v, 2), label(v_down[1], 1), 0, "godown", num_paths=2))
 
             if len(layers[i]) == 1:
                 continue
@@ -73,10 +77,10 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
 
             # Generate path between two switches
             if not is_last_switch:
-                sub_ft = path_generator(subgraph, v, v_next, label(v, 1), label(v_next, 1))
-                sub_ft.extend(path_generator(subgraph, v, v_next, label(v, 2), label(v_next, 2)))
+                sub_ft = disjoint_paths_generator(subgraph, v, v_next, label(v, 1), label(v_next, 1), 2, "subpath", num_paths=4)
+                sub_ft.extend(disjoint_paths_generator(subgraph, v, v_next, label(v, 2), label(v_next, 2), 2, "subpath", num_paths=4))
             else:
-                sub_ft = path_generator(subgraph, v, v_next, label(v, 1), label(v_next, 2))
+                sub_ft = disjoint_paths_generator(subgraph, v, v_next, label(v, 1), label(v_next, 2), 2, "subpath", num_paths=4)
 
             forwarding_table.extend(sub_ft)
 
@@ -135,7 +139,7 @@ def arborescence_path_generator(G: Graph, src: str, tgt: str, ingoing_label: oFE
     return ft
 
 
-def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoing_label, num_paths=4):
+def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoing_label, priority, type, num_paths=4):
     # Try to use underlying auxiliary graph for all pairs edge_disjoint_paths
     ft = ForwardingTable()
     if src == tgt:
@@ -148,10 +152,11 @@ def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoi
 
     path_labels: list[oFEC] = []
     for i in range(len(dist_paths)):
-        path_labels.append(oFEC("cfor", f"{ingoing_label.name}_subpath_{i}", {'ingress': ingoing_label.value['ingress'], 'egress': ingoing_label.value['egress']}))
+        path_labels.append(oFEC("cfor", f"{ingoing_label.name}_{type}_{i}", {'ingress': ingoing_label.value['ingress'], 'egress': ingoing_label.value['egress']}))
+
 
     # Initially, try subpath 0
-    ft.add_rule((src, ingoing_label), (2, src, path_labels[0]))
+    ft.add_rule((src, ingoing_label), (priority, src, path_labels[0]))
 
     # If at tgt from any subpath, go to outgoing_label
     for l in path_labels:
