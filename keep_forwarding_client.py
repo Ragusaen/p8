@@ -12,19 +12,21 @@ from typing import Dict, Tuple, List, Callable
 
 def build_kf_traversal(network: Network) -> Dict[str, str]:
     G: nx.DiGraph = network.topology.copy().to_directed()
-    used_nodes = set()
+    node_use = {}
 
     def cycle(start: str, current: str, depth: int):
-        used_nodes.add(current)
+        if current not in node_use:
+            node_use[current] = 0
+        node_use[current] += 1
         if start == current and depth > 0:
             return []
 
-        next = sorted(list(G.neighbors(current)), key=lambda x: 1 if x in used_nodes else 0)[0]
+        next = sorted(list(G.neighbors(current)), key=lambda x: node_use[x] if x in node_use else 0)[0]
         return [(current, next)] + cycle(start, next, depth + 1)
 
     s = list(G.nodes())[0]
     traversal = [s]
-    while len(used_nodes) != G.number_of_nodes():
+    while len(node_use) != G.number_of_nodes():
         c = cycle(s, s, 0)
 
         subtraversal = [t for _,t in c]
@@ -34,12 +36,12 @@ def build_kf_traversal(network: Network) -> Dict[str, str]:
         G.remove_edges_from(c)
 
         # Find next node s.t. it has a remaining edge
-        for n in used_nodes:
+        for n in node_use.keys():
             if len(list(G.neighbors(n))) != 0:
                 s = n
                 break
         else:
-            assert(len(used_nodes) == G.number_of_nodes())
+            assert(len(node_use) == G.number_of_nodes())
 
     trav_dict = {s: t for s,t in zip(traversal[:-1], traversal[1:])}
     return trav_dict
@@ -88,7 +90,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
             add_ordered_rules([(s,t) for s,t in out_edges if D[t] > D[s] and true_sink((s,t)) != true_sink((src, tgt))])
             add_ordered_rules([(s,t) for s,t in out_edges if D[t] > D[s] and network.topology.degree[t] > 2])
         elif D[src] < D[tgt]:
-            add_ordered_rules([(s,t) for s,t in out_edges if D[t] < D[s] and true_sink((s,t)) != true_sink((src, tgt))])
+            add_ordered_rules([(s,t) for s,t in out_edges if D[t] < D[s] and true_sink((s,t)) != true_sink((tgt, src))])
             add_ordered_rules([(s,t) for s,t in out_edges if D[t] == D[s] and tgt != t])
             add_ordered_rules([(s,t) for s,t in out_edges if D[t] > D[s]])
         else:

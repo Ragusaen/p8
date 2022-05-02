@@ -2786,11 +2786,25 @@ class MPLS_packet(object):
             self.state = "finished"
             self.cause = " FORWARDING Aborted: Time to live expired!"
             self.exit_code = 1
+            if self.verbose:
+                print(self.cause)
             if self.mode == "pathfinder":
                 return (False, [])
             return False  # Time to live expired; possible loop.
         else:
            self.ttl -= 1
+
+        if self.trace[-1] in self.trace[:-1]:
+            self.state = "finished"
+            self.cause = " FORWARDING Aborted: Loop detected!"
+            self.exit_code = 5
+            if self.verbose:
+                if self.targets is not None:
+                    print("WAS CONNECTED" if any([except_false(lambda: nx.has_path(self.topology, self.init_router.name, tgt)) for tgt in self.targets]) else "WAS NOT CONNECTED")
+                print(self.cause)
+            if self.mode == "pathfinder":
+                return (False, [])
+            return False  # Time to live expired; possible loop.
 
         # gather the forwarding rules.
         if outer_lbl in curr_r.LFIB:

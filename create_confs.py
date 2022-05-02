@@ -115,6 +115,8 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1):
     elif conf_type == 'cfor-disjoint':
         base_config['method'] = 'cfor'
         base_config['path'] = 'disjoint'
+    elif conf_type == 'kf':
+        base_config['method'] = 'kf'
     else:
         raise f"Conf type {conf_type} not known"
 
@@ -196,6 +198,7 @@ if __name__ == "__main__":
     create('cfor-arb')
     create('cfor-disjoint')
     create('gft')
+    create('kf')
 
     if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):
         # Generate failures
