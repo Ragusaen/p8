@@ -16,11 +16,13 @@ class AlgorithmPlotConfiguration:
 
 alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "cfor": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dotted"),
-    "cfor-short": AlgorithmPlotConfiguration("Continue Forwarding, short", "magenta", "loosely dashed"),
+    "cfor-short": AlgorithmPlotConfiguration("Continue Forwarding - shortest", "magenta", "loosely dashed"),
+    "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding - disjoint", "grey", "loosely dotted"),
     "tba": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "dashed"),
     "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "red", "dashdotted"),
     "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "solid"),
-    "keepf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted")
+    "keepf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted"),
+    "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashdotted")
 }
 
 parser = argparse.ArgumentParser()
@@ -118,7 +120,7 @@ def latex_connectedness_plot(data: dict, _max_points) -> str:
         for i in range(0, len(cactus_data), int(skip_number)):
             if counter > _max_points:
                 break
-            latex_plot_data += f"({counter}, {cactus_data[i].connectedness})\n"
+            latex_plot_data += f"({counter}, {cactus_data[i].connectedness}) %{cactus_data[i].topology_name}\n"
             counter += 1
         latex_plot_data += r"};" + "\n"
 
@@ -139,8 +141,7 @@ def latex_loop_table(data) -> str:
                 failure_scenario: FailureScenarioData
                 num_looping_links += failure_scenario.looping_links
 
-        ratio = float(num_looping_links) / float(num_links)
-        alg_to_res_dict[alg] = ratio
+        alg_to_res_dict[alg] = num_looping_links
 
     latex_tabular_header = r"\begin{tabular}{c |"
     latex_algs = r"     "
@@ -149,7 +150,7 @@ def latex_loop_table(data) -> str:
     for (alg, alg_num) in alg_to_res_dict.items():
         latex_tabular_header += " c"
         latex_algs += f"& {alg} "
-        latex_numbers += f"& " + "{:.6f}".format(alg_num)
+        latex_numbers += f"& {alg_num}"
 
     latex_algs += r"\\\hline" + "\n"
     latex_tabular_header += "}\n"

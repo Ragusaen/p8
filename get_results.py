@@ -78,7 +78,7 @@ def __parse_single_line_in_failure_scenario(line: str):
     return FailureScenarioData(failed_links, looping_links, successful_flows, connected_flows)
 
 
-def parse_result_data(result_folder):
+def parse_result_data(result_folder) -> dict[str, TopologyResult]:
     result_dict: dict[str:TopologyResult] = {}
     conf_progress = 1
     for conf_name in os.listdir(result_folder):
@@ -136,3 +136,8 @@ def compute_connectedness(result_data: dict) -> {}:
                 # raise Exception("Topology had connectivity of 0.. very likely bug")
 
             topology.connectedness = connectedness
+
+if __name__ == '__main__':
+    data = parse_result_data('results')
+
+    print("hello")

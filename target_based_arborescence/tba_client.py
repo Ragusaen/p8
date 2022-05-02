@@ -10,7 +10,7 @@ class TargetBasedArborescence(MPLS_Client):
     protocol = "tba"
 
     def __init__(self, router: Router, **kwargs):
-        super().__init__(router)
+        super().__init__(router, **kwargs)
 
         # The demands where this router is the tailend
         self.demands: dict[str, tuple[str, str]] = {}

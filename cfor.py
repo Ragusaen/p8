@@ -6,7 +6,10 @@ from mpls_classes import *
 from functools import *
 from networkx import shortest_path
 
+from itertools import islice
+
 from typing import Dict, Tuple, List, Callable
+
 
 class ForwardingTable:
     def __init__(self):
@@ -23,19 +26,20 @@ class ForwardingTable:
                 self.add_rule(lhs, rhs)
 
 
-def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str, path_generator: Callable[[Graph, str, str, oFEC, oFEC], ForwardingTable]) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
+def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: str, path_generator: Callable[[Graph, str, str, oFEC, oFEC], ForwardingTable]) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
     def label(switch: str, iteration: int):
-        return oFEC("cfor", f"{ingress}_to_{egress}_at_{switch}_it_{iteration}", {"ingress": ingress, "egress": egress, "iteration": iteration, "switch": switch})
-
+        return oFEC("cfor", f"{ingress}_to_{egress}_at_{switch}_it_{iteration}", {"ingress": ingress, "egress": [egress], "iteration": iteration, "switch": switch})
 
     edges: set[tuple[str, str]] = set([(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
                                       + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2])
     network.compute_dijkstra(weight=1)
-    layers: dict[int, list[str]] = {layer: [] for layer in range(0, network.routers[ingress].dist[egress] + 1)}
+
+    max_ingress_distance = max([network.routers[v].dist[egress] for v in ingress])
+    layers: dict[int, list[str]] = {layer: [] for layer in range(0, max_ingress_distance + 1)}
 
     for v in network.routers.values():
         dist = v.dist[egress]
-        if v.dist[egress] <= network.routers[ingress].dist[egress]:
+        if dist <= max_ingress_distance:
             layers[dist].append(v.name)
 
     forwarding_table = ForwardingTable()
@@ -47,14 +51,19 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
         for j in range(0, len(layers[i])):
             v = layers[i][j]
             for v_down in filter(lambda edge: edge[0] == v and edge[1] in layers[i - 1], edges):
-                forwarding_table.add_rule((v, label(v, 1)), (1, v_down[1], label(v_down[1], 1)))
-                forwarding_table.add_rule((v, label(v, 2)), (1, v_down[1], label(v_down[1], 1)))
+                forwarding_table.add_rule((v, label(v, 1)), (0, v_down[1], label(v_down[1], 1)))
+                forwarding_table.add_rule((v, label(v, 2)), (0, v_down[1], label(v_down[1], 1)))
 
+            if len(layers[i]) == 1:
+                continue
+            # Start calculating cycling path between switches in given layer
+            # Create subgraph omitting switches that are lower wrt. layer level
             subtract_switches = set()
             for k in range(0, i):
                 subtract_switches = subtract_switches.union(set(layers[k]))
             subgraph_switches = set(network.topology.nodes).difference(subtract_switches)
 
+            # Find the next switch to route to in cycling path
             is_last_switch = v == layers[i][-1]
             v_next = layers[i][0]
             if not is_last_switch:
@@ -62,6 +71,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
 
             subgraph = network.topology.subgraph(subgraph_switches)
 
+            # Generate path between two switches
             if not is_last_switch:
                 sub_ft = path_generator(subgraph, v, v_next, label(v, 1), label(v_next, 1))
                 sub_ft.extend(path_generator(subgraph, v, v_next, label(v, 2), label(v_next, 2)))
@@ -70,8 +80,8 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
 
             forwarding_table.extend(sub_ft)
 
-
     return forwarding_table.table
+
 
 def shortest_path_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoing_label):
     ft = ForwardingTable()
@@ -89,6 +99,7 @@ def shortest_path_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoin
     src, tgt = path[-2:]
     ft.add_rule((src, ingoing_label), (2, tgt, outgoing_label))
     return ft
+
 
 def arborescence_path_generator(G: Graph, src: str, tgt: str, ingoing_label: oFEC, outgoing_label: oFEC):
     from target_based_arborescence.arborescences import find_arborescences
@@ -124,11 +135,69 @@ def arborescence_path_generator(G: Graph, src: str, tgt: str, ingoing_label: oFE
     return ft
 
 
+def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoing_label, num_paths=4):
+    # Try to use underlying auxiliary graph for all pairs edge_disjoint_paths
+    ft = ForwardingTable()
+    if src == tgt:
+        return ft
+
+    try:
+        dist_paths: List[List] = compute_disjoint_paths_by_shortest_path_weight_increase(G, src, tgt, num_paths)
+    except networkx.exception.NetworkXNoPath:
+        return ft
+
+    path_labels: list[oFEC] = []
+    for i in range(len(dist_paths)):
+        path_labels.append(oFEC("cfor", f"{ingoing_label.name}_subpath_{i}", {'ingress': ingoing_label.value['ingress'], 'egress': ingoing_label.value['egress']}))
+
+    # Initially, try subpath 0
+    ft.add_rule((src, ingoing_label), (2, src, path_labels[0]))
+
+    # If at tgt from any subpath, go to outgoing_label
+    for l in path_labels:
+        ft.add_rule((tgt, l), (0, tgt, outgoing_label))
+
+    for i, path in enumerate(dist_paths):
+
+        # for each edge in path
+        for s, t in zip(path[:-1], path[1:]):
+            # create forwarding using the path label
+            ft.add_rule((s, path_labels[i]), (1, t, path_labels[i]))
+
+            # if not last subpath
+            if i < len(path_labels) - 1:
+                # if link failed, bounce to next subpath
+                ft.add_rule((s, path_labels[i]), (2, s, path_labels[i+1]))
+
+                # create backtracking rules for next subpath
+                if t not in dist_paths[i+1]:
+                    ft.add_rule((t, path_labels[i+1]), (1, s, path_labels[i+1]))
+
+    return ft
+
+
+def compute_disjoint_paths_by_shortest_path_weight_increase(G: Graph, src: str, tgt: str, num_paths) -> List[List[str]]:
+    weight_graph = G.copy()
+    for u, v, d in weight_graph.edges(data=True):
+        d["weight"] = 1
+    paths = []
+
+    for _ in range(num_paths):
+        path = shortest_path(weight_graph, src, tgt, "weight")
+        if path not in paths:
+            paths.append(path)
+
+        for i in (range(len(path) - 1)):
+            weight_graph[path[i]][path[i+1]]["weight"] += 1000
+
+    return paths
+
+
 class CFor(MPLS_Client):
     protocol = "cfor"
 
     def __init__(self, router: Router, **kwargs):
-        super().__init__(router)
+        super().__init__(router, **kwargs)
 
         # The demands where this router is the tailend
         self.demands: dict[str, tuple[str, str]] = {}
@@ -138,8 +207,9 @@ class CFor(MPLS_Client):
 
         self.path_generator = {
             'shortest': shortest_path_generator,
-            'arborescence': arborescence_path_generator
-        }[kwargs['path_generator']]
+            'arborescence': arborescence_path_generator,
+            'disjoint': disjoint_paths_generator
+        }[kwargs['path']]
 
 
     def LFIB_compute_entry(self, fec: oFEC, single=False):
@@ -147,7 +217,7 @@ class CFor(MPLS_Client):
             local_label = self.get_local_label(fec)
             assert(local_label is not None)
 
-            if fec.value["egress"] == next_hop:
+            if next_hop in fec.value["egress"]:
                 yield (local_label, {'out': next_hop, 'ops': [{'pop': ''}], 'weight': priority})
             else:
                 remote_label = self.get_remote_label(next_hop, swap_fec)
@@ -160,16 +230,18 @@ class CFor(MPLS_Client):
         self.demands[f"{len(self.demands.items())}_{headend}_to_{self.router.name}"] = (headend, self.router.name)
 
     def commit_config(self):
-        for demand, (ingress, egress) in self.demands.items():
-            ft = generate_pseudo_forwarding_table(self.router.network, ingress, egress, self.path_generator)
+        headends = list(map(lambda x: x[0], self.demands.values()))
+        if len(headends) == 0:
+            return
+        ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.path_generator)
 
-            for (src, fec), entries in ft.items():
-                src_client: CFor = self.router.network.routers[src].clients["cfor"]
+        for (src, fec), entries in ft.items():
+            src_client: CFor = self.router.network.routers[src].clients["cfor"]
 
-                if (src, fec) not in src_client.partial_forwarding_table:
-                    src_client.partial_forwarding_table[(src, fec)] = []
+            if (src, fec) not in src_client.partial_forwarding_table:
+                src_client.partial_forwarding_table[(src, fec)] = []
 
-                src_client.partial_forwarding_table[(src, fec)].extend(entries)
+            src_client.partial_forwarding_table[(src, fec)].extend(entries)
 
     def compute_bypasses(self):
         pass
@@ -182,4 +254,4 @@ class CFor(MPLS_Client):
             yield fec
 
     def self_sourced(self, fec: oFEC):
-        return 'cfor' in fec.fec_type and fec.value["egress"] == self.router.name
+        return 'cfor' in fec.fec_type and fec.value["egress"][0] == self.router.name

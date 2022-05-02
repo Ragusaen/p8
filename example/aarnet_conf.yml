@@ -3,13 +3,14 @@ ldp: false
 php: false
 random_seed: 1
 method: cfor
+rule_reduction: true
 path: shortest
 protection: none
 rsvp_num_lsps: 50
 rsvp_tunnels_per_pair: 1
 vpn: false
-topology: example/testnet.json
-flows_file: example/testnet_flows.yml
+topology: topologies/zoo_Aarnet.json
+flows_file: confs/Aarnet/testnet_flows.yml
 failure_chunk_file: example/fail_testnet.yaml
 result_folder: results
 vpn_ces_per_pe: 2

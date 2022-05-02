@@ -169,7 +169,7 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
         common = open(os.path.join(os.path.dirname(f.name), "common"), "w")
         common.write(f"len(E):{links} num_flows:{total_flows} fwd_gen_time:{stats['fwd_gen_time']} memory:{router_memory_str}")
 
-    print("SIMULATION FINISHED")
+    print(f"SIMULATION FINISHED - FAILED: {initially_connected - successful_flows}")
 
 
 if __name__ == "__main__":
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     gft_parser = method_parser.add_parser("gft")
 
     cfor_parser = method_parser.add_parser("cfor")
-    cfor_parser.add_argument('--path', choices=['shortest', 'arborescence'], default='shortest', help='Method for generating paths between switches on same layer')
+    cfor_parser.add_argument('--path', choices=['shortest', 'arborescence', 'disjoint'], default='shortest', help='Method for generating paths between switches on same layer')
 
     rsvp_parser = method_parser.add_parser("rsvp")
     rsvp_parser.add_argument("--protection", choices=['none', 'facility-node', 'facility-link'], help="Protection bypasses to use")
