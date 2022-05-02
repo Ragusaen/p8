@@ -53,6 +53,11 @@ class OutputData:
 def generate_all_latex():
     start_time = time.time()
 
+    latex_dir = os.path.join(os.path.dirname(__file__), f"latex")
+    if not os.path.exists(latex_dir) or not os.path.isdir(latex_dir):
+        os.mkdir(latex_dir)
+
+
     # generate latex code for connectedness plot for each failure scenario cardinality
     print("Creating connectedness plot for each failure scenario cardinality")
     for len_f in range(1, 5):
