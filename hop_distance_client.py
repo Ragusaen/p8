@@ -203,7 +203,6 @@ def demote_or_remove_loops(vertices: Set[str], ingress: str, E: List[Tuple[str, 
                 E.append((max_fail_edge[0], max_fail_edge[1], pl))
                 edge_to_layer[max_fail_edge] = pl
                 #print(f"Promoted {max_fail_edge} from {l} to {pl}")
-            break
 
 
 class HopDistance_Client(MPLS_Client):
