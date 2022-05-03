@@ -3078,19 +3078,19 @@ class Simulator(object):
                             if breakloop:
                                 break
 
-        if loop_links:
-            def filter_edge(n1, n2):
-                if (n1, n2) in loop_links or (n2, n1) in loop_links:
-                    return False
-                return True
-
-            def filter_node(n):
-                return True
-
-            view = nx.subgraph_view(self.topology, filter_edge=filter_edge, filter_node=filter_node)
-            self.topology = view
-            self.traces = dict()
-            self.run(flows)
+        # if loop_links:
+        #     def filter_edge(n1, n2):
+        #         if (n1, n2) in loop_links or (n2, n1) in loop_links:
+        #             return False
+        #         return True
+        #
+        #     def filter_node(n):
+        #         return True
+        #
+        #     view = nx.subgraph_view(self.topology, filter_edge=filter_edge, filter_node=filter_node)
+        #     self.topology = view
+        #     self.traces = dict()
+        #     self.run(flows)
 
         self.looping_links = self.initial_links - len(self.topology.edges)
 
