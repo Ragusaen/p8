@@ -26,7 +26,7 @@ class ForwardingTable:
                 self.add_rule(lhs, rhs)
 
 
-def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: str, path_generator: Callable[[Graph, str, str, oFEC, oFEC], ForwardingTable]) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
+def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: str, num_down_paths: int = 1, num_cycling_paths: int = 1) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
     def label(switch: str, iteration: int):
         return oFEC("cfor", f"{ingress}_to_{egress}_at_{switch}_it_{iteration}", {"ingress": ingress, "egress": [egress], "iteration": iteration, "switch": switch})
 
@@ -50,13 +50,10 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
     for i in range(1, len(layers)):
         for j in range(0, len(layers[i])):
             v = layers[i][j]
-            # for v_down in filter(lambda edge: edge[0] == v and edge[1] in layers[i - 1], edges):
-            #     forwarding_table.add_rule((v, label(v, 1)), (0, v_down[1], label(v_down[1], 1)))
-            #     forwarding_table.add_rule((v, label(v, 2)), (0, v_down[1], label(v_down[1], 1)))
 
             for v_down in filter(lambda edge: edge[0] == v and edge[1] in layers[i - 1], edges):
-                forwarding_table.extend(disjoint_paths_generator(network.topology, v, v_down[1], label(v, 1), label(v_down[1], 1), 0, "godown", num_paths=2))
-                forwarding_table.extend(disjoint_paths_generator(network.topology, v, v_down[1], label(v, 2), label(v_down[1], 1), 0, "godown", num_paths=2))
+                forwarding_table.extend(disjoint_paths_generator(network.topology, v, v_down[1], label(v, 1), label(v_down[1], 1), 0, "godown", num_down_paths))
+                forwarding_table.extend(disjoint_paths_generator(network.topology, v, v_down[1], label(v, 2), label(v_down[1], 1), 0, "godown", num_down_paths))
 
             if len(layers[i]) == 1:
                 continue
@@ -77,10 +74,10 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
 
             # Generate path between two switches
             if not is_last_switch:
-                sub_ft = disjoint_paths_generator(subgraph, v, v_next, label(v, 1), label(v_next, 1), 2, "subpath", num_paths=4)
-                sub_ft.extend(disjoint_paths_generator(subgraph, v, v_next, label(v, 2), label(v_next, 2), 2, "subpath", num_paths=4))
+                sub_ft = disjoint_paths_generator(subgraph, v, v_next, label(v, 1), label(v_next, 1), 2, "subpath", num_cycling_paths)
+                sub_ft.extend(disjoint_paths_generator(subgraph, v, v_next, label(v, 2), label(v_next, 2), 2, "subpath", num_cycling_paths))
             else:
-                sub_ft = disjoint_paths_generator(subgraph, v, v_next, label(v, 1), label(v_next, 2), 2, "subpath", num_paths=4)
+                sub_ft = disjoint_paths_generator(subgraph, v, v_next, label(v, 1), label(v_next, 2), 2, "subpath", num_cycling_paths)
 
             forwarding_table.extend(sub_ft)
 
@@ -139,7 +136,7 @@ def arborescence_path_generator(G: Graph, src: str, tgt: str, ingoing_label: oFE
     return ft
 
 
-def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoing_label, priority, type, num_paths=4):
+def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoing_label, priority, type, num_paths):
     # Try to use underlying auxiliary graph for all pairs edge_disjoint_paths
     ft = ForwardingTable()
     if src == tgt:
@@ -215,7 +212,8 @@ class CFor(MPLS_Client):
             'arborescence': arborescence_path_generator,
             'disjoint': disjoint_paths_generator
         }[kwargs['path']]
-
+        self.num_down_paths = kwargs['num_down_paths']
+        self.num_cycling_paths = kwargs['num_cycling_paths']
 
     def LFIB_compute_entry(self, fec: oFEC, single=False):
         for priority, next_hop, swap_fec in self.partial_forwarding_table[(self.router.name, fec)]:
@@ -238,7 +236,7 @@ class CFor(MPLS_Client):
         headends = list(map(lambda x: x[0], self.demands.values()))
         if len(headends) == 0:
             return
-        ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.path_generator)
+        ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.num_down_paths, self.num_cycling_paths)
 
         for (src, fec), entries in ft.items():
             src_client: CFor = self.router.network.routers[src].clients["cfor"]

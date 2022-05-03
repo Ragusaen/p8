@@ -222,6 +222,8 @@ if __name__ == "__main__":
 
     cfor_parser = method_parser.add_parser("cfor")
     cfor_parser.add_argument('--path', choices=['shortest', 'arborescence', 'disjoint'], default='shortest', help='Method for generating paths between switches on same layer')
+    cfor_parser.add_argument('--num_down_paths', default=2, help='How many semi-disjoint paths down in layers')
+    cfor_parser.add_argument('--num_cycling_paths', default=4, help='How many semi-disjoint paths between two nodes in the same layer')
 
     rsvp_parser = method_parser.add_parser("rsvp")
     rsvp_parser.add_argument("--protection", choices=['none', 'facility-node', 'facility-link'], help="Protection bypasses to use")
