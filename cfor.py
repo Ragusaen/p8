@@ -141,6 +141,8 @@ def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoi
     ft = ForwardingTable()
     if src == tgt:
         return ft
+    if num_paths < 1:
+        return ft
 
     try:
         dist_paths: List[List] = compute_disjoint_paths_by_shortest_path_weight_increase(G, src, tgt, num_paths)
