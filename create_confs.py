@@ -100,8 +100,12 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1):
     if conf_type == 'rsvp-fn':
         base_config['method'] = 'rsvp'
         base_config['protection'] = 'facility-node'
-    elif conf_type == "tba":
+    elif conf_type == "tba-simple":
         base_config["method"] = "tba"
+        base_config['path'] = 'simple'
+    elif conf_type == "tba-complex":
+        base_config["method"] = "tba"
+        base_config['path'] = 'complex'
     elif conf_type == 'hd':
         base_config['method'] = 'hd'
     elif conf_type == 'gft':
@@ -118,7 +122,7 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1):
     elif conf_type == 'kf':
         base_config['method'] = 'kf'
     else:
-        raise f"Conf type {conf_type} not known"
+        raise Exception(f"Conf type {conf_type} not known")
 
     return base_config
 
@@ -192,7 +196,8 @@ if __name__ == "__main__":
             documents = yaml.dump(dict_conf, file, Dumper=NoAliasDumper)
 
     create('rsvp-fn')    # conf file with RSVP(FRR), no RMPLS
-    create('tba')
+    create('tba-simple')
+    #create('tba-complex')
     create('hd')
     create('cfor-short')
     create('cfor-arb')
