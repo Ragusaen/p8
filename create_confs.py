@@ -115,8 +115,14 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1):
     elif conf_type == 'cfor-disjoint':
         base_config['method'] = 'cfor'
         base_config['path'] = 'disjoint'
+        base_config['num_down_paths'] = 2
+        base_config['num_cycling_paths'] = 0
     elif conf_type == 'kf':
         base_config['method'] = 'kf'
+    elif conf_type == 'inout-disjoint':
+        base_config['method'] = 'inoutdisjoint'
+        base_config['epochs'] = 1000
+        base_config['num_paths'] = 4
     else:
         raise f"Conf type {conf_type} not known"
 
@@ -199,6 +205,7 @@ if __name__ == "__main__":
     create('cfor-disjoint')
     create('gft')
     create('kf')
+    create('inout-disjoint')
 
     if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):
         # Generate failures

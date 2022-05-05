@@ -17,12 +17,13 @@ class AlgorithmPlotConfiguration:
 alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "cfor": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dotted"),
     "cfor-short": AlgorithmPlotConfiguration("Continue Forwarding - shortest", "magenta", "loosely dashed"),
-    "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding - disjoint", "grey", "loosely dotted"),
+    "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding - disjoint", "blue", "dotted"),
     "tba": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "dashed"),
     "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "red", "dashdotted"),
     "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "solid"),
     "kf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted"),
     "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashdotted"),
+    "inout-disjoint": AlgorithmPlotConfiguration("Ingress Egress Disjoint Paths", "magenta", "loosely dashed"),
 }
 
 parser = argparse.ArgumentParser()
@@ -52,11 +53,12 @@ class OutputData:
 
 def generate_all_latex():
     start_time = time.time()
+    if overleaf_upload:
+        overleaf.synchronize()
 
     latex_dir = os.path.join(os.path.dirname(__file__), f"latex")
     if not os.path.exists(latex_dir) or not os.path.isdir(latex_dir):
         os.mkdir(latex_dir)
-
 
     # generate latex code for connectedness plot for each failure scenario cardinality
     print("Creating connectedness plot for each failure scenario cardinality")
@@ -72,6 +74,8 @@ def generate_all_latex():
     output_latex_content("memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
 
+    if overleaf_upload:
+        overleaf.push()
     print(f"Time taken to generate latex: {time.time()-start_time}")
 
 
@@ -81,7 +85,6 @@ def output_latex_content(file_name: str, content: str, content_type: str):
     latex_file_table = open(os.path.join(os.path.dirname(__file__), f"latex/{file_name}"), "w")
     latex_file_table.write(content)
     if overleaf_upload:
-        print(f"Uploading {content_type} to Overleaf at: 'figures/results_auto_generated/{file_name}'")
         try:
             overleaf.set_file_text(content, f"figures/results_auto_generated/{file_name}")
         except:

@@ -11,8 +11,14 @@ def synchronize():
 
 
 def set_file_text(text: str, fname: str):
-    synchronize()
     with open(f"overleaf/{fname}", "w") as file:
         file.write(text)
-    os.system(f"cd overleaf; git add {fname}; git commit {fname} -m \"updated plots\"; git push -f; cd ..")
 
+
+def push():
+    os.system(f"cd overleaf; \
+        git add figures/results_auto_generated/.; \
+        git commit -m \"updated plots\"; \
+        git pull --rebase; \
+        git push -f; \
+        cd ..")
