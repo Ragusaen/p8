@@ -209,7 +209,7 @@ def disjoint_paths_generator(G: Graph, src: str, tgt: str, ingoing_label, outgoi
     return ft
 
 
-def disjoint_paths_generator_mult_tgts(tgt_to_graph: dict[str, Graph], src, tgts, ingoing_label, tgt_to_outgoing_label_dict, priority, type, num_paths):
+def disjoint_paths_generator_mult_tgts(tgt_to_graph: Dict[str, Graph], src, tgts, ingoing_label, tgt_to_outgoing_label_dict, priority, type, num_paths):
     # Try to use underlying auxiliary graph for all pairs edge_disjoint_paths
     ft = ForwardingTable()
     if num_paths < 1:

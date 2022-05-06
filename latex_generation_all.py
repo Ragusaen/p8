@@ -28,7 +28,7 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--max_points", type=int, required=False)
-parser.add_argument("--auto_overleaf", type=bool, required=False)
+parser.add_argument("--auto_overleaf", action='store_true', required=False)
 args = parser.parse_args()
 
 results_folder = os.path.join(os.path.dirname(__file__), "results")
