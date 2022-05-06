@@ -53,11 +53,18 @@ class OutputData:
 def init_connectedness_table_output(result_data):
     return "\\begin{tabular}{c |" + " c" * len(result_data.keys()) + "}\n\t" + "$|F|$ & " + " & ".join(results_data.keys()) + "\\\\ \hline \n"
 
+
 def add_failure_line_connectedness_table(filtered_data, len_f):
     return f"\t {len_f} & " + " & ".join(["{:.6f}".format(sum(c.connectedness for c in filtered_data[algo]) / len(filtered_data[algo])) for algo in filtered_data]) + "\\\\ \n"
 
+
+def compute_average_connectedness_for_algorithms(data) -> list[str]:
+    return [sum(c.connectedness for c in data[alg]) / len(data[alg]) for alg in data]
+
+
 def end_connectedness_table_output():
     return "\end{tabular}"
+
 
 def generate_all_latex():
     start_time = time.time()
@@ -74,7 +81,7 @@ def generate_all_latex():
     print("Creating connectedness plot for each failure scenario cardinality")
     for len_f in range(0, 5):
         filtered_data = remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(results_data, len_f)
-
+        filter(lambda x: not x.keys.__contains__("max-mem"), filtered_data)
         compute_connectedness(filtered_data)
 
         connectedness_table_output += add_failure_line_connectedness_table(filtered_data, len_f)
@@ -85,11 +92,10 @@ def generate_all_latex():
 
     connectedness_table_output += end_connectedness_table_output()
     output_latex_content("connectedness_table.tex", connectedness_table_output, "connectedness table")
-
     output_latex_content("connectedness_plot_data.tex", latex_connectedness_plot(results_data, max_points), "connectedness plot")
     output_latex_content("memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
+    output_latex_content("memory_bar_chart_data.tex", latex_memory_bar_chart(results_data), "memory bar chart")
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
-    output_latex_content("memory_bar_chart.tex", latex_memory_bar_chart(results_data), "memory bar chart")
 
     if overleaf_upload:
         overleaf.push()
@@ -226,12 +232,18 @@ def latex_loop_table(data) -> str:
 
 def latex_memory_plot(data, _max_points) -> str:
     latex_plot_legend = r"\legend{"
+    skip_algs = set()
     for alg in data.keys():
+        if not alg_to_plot_config_dict.keys().__contains__(alg):
+            skip_algs.add(alg)
+            continue
         latex_plot_legend += f"{alg_to_plot_config_dict[alg].name}, "
     latex_plot_legend += "}\n"
 
     latex_plot_data = ""
     for (alg, topologies) in data.items():
+        if skip_algs.__contains__(alg):
+            continue
         cactus_data = sorted(topologies, key=lambda topology: topology.max_memory)
 
         skip_number = len(cactus_data) / _max_points
