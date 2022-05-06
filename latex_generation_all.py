@@ -18,7 +18,7 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "cfor": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dotted"),
     "cfor-short": AlgorithmPlotConfiguration("Continue Forwarding - shortest", "magenta", "loosely dashed"),
     "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding - disjoint", "blue", "dotted"),
-    "tba": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "dashed"),
+    "tba-simple": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "dashed"),
     "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "red", "dashdotted"),
     "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "solid"),
     "kf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted"),
@@ -51,6 +51,15 @@ class OutputData:
         self.content_type: str = content_type
 
 
+def init_connectedness_table_output(result_data):
+    return "\\begin{tabular}{c |" + " c" * len(result_data.keys()) + "}\n\t" + "$|F|$ & " + " & ".join(results_data.keys()) + "\\\\ \hline \n"
+
+def add_failure_line_connectedness_table(filtered_data, len_f):
+    return f"\t {len_f} & " + " & ".join(["{:.6f}".format(sum(c.connectedness for c in filtered_data[algo]) / len(filtered_data[algo])) for algo in filtered_data]) + "\\\\ \n"
+
+def end_connectedness_table_output():
+    return "\end{tabular}"
+
 def generate_all_latex():
     start_time = time.time()
     if overleaf_upload:
@@ -60,15 +69,23 @@ def generate_all_latex():
     if not os.path.exists(latex_dir) or not os.path.isdir(latex_dir):
         os.mkdir(latex_dir)
 
+    connectedness_table_output = init_connectedness_table_output(results_data)
+
     # generate latex code for connectedness plot for each failure scenario cardinality
     print("Creating connectedness plot for each failure scenario cardinality")
-    for len_f in range(1, 5):
+    for len_f in range(0, 5):
         filtered_data = remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(results_data, len_f)
 
         compute_connectedness(filtered_data)
+
+        connectedness_table_output += add_failure_line_connectedness_table(filtered_data, len_f)
+        
         output_latex_content(f"connectedness_plot_data_lenf={len_f}.tex",
                              latex_connectedness_plot(filtered_data, max_points),
                              f"connectedness plot for |F| = {len_f}")
+
+    connectedness_table_output += end_connectedness_table_output()
+    output_latex_content("connectedness_table.tex", connectedness_table_output, "connectedness table")
 
     output_latex_content("connectedness_plot_data.tex", latex_connectedness_plot(results_data, max_points), "connectedness plot")
     output_latex_content("memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
