@@ -22,3 +22,4 @@ def push():
         git pull --rebase; \
         git push -f; \
         cd ..")
+    print("Successfully pushed to overleaf git")
