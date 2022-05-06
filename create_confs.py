@@ -83,7 +83,7 @@ def generate_failures_all(G, division = None, random_seed = 1):
     return [all_of_em]
 
 
-def generate_conf(n, conf_type: str, topofile = None, random_seed = 1):
+def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, max_memory = 20):
     base_config = {
     #we need extra configuration here!!!!
         "topology": topofile,
@@ -117,12 +117,14 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1):
         base_config['path'] = 'disjoint'
         base_config['num_down_paths'] = 2
         base_config['num_cycling_paths'] = 0
+        base_config['max_memory'] = max_memory
     elif conf_type == 'kf':
         base_config['method'] = 'kf'
     elif conf_type == 'inout-disjoint':
         base_config['method'] = 'inoutdisjoint'
         base_config['epochs'] = 1000
         base_config['num_paths'] = 4
+        base_config['max_memory'] = max_memory
     else:
         raise f"Conf type {conf_type} not known"
 

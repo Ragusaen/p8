@@ -13,18 +13,16 @@ class AlgorithmPlotConfiguration:
         self.color: str = color
         self.line_style: str = line_style
 
-
 alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
-    "cfor": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dotted"),
-    "cfor-short": AlgorithmPlotConfiguration("Continue Forwarding - shortest", "magenta", "loosely dashed"),
-    "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding - disjoint", "blue", "dotted"),
-    "tba": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "dashed"),
-    "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "red", "dashdotted"),
-    "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "solid"),
+    "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dashed"),
+    "tba-simple": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "solid"),
+    "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "red", "dotted"),
+    "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "loosely dotted"),
     "kf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted"),
-    "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashdotted"),
-    "inout-disjoint": AlgorithmPlotConfiguration("Ingress Egress Disjoint Paths", "magenta", "loosely dashed"),
+    "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashed"),
+    "inout-disjoint": AlgorithmPlotConfiguration("Ingress Egress Disjoint Paths", "magenta", "loosely dashdotted"),
 }
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--max_points", type=int, required=False)
