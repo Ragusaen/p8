@@ -5,7 +5,7 @@ from get_results import parse_result_data, TopologyResult, FailureScenarioData, 
 import overleaf
 import time
 from datetime import datetime
-
+import re
 
 class AlgorithmPlotConfiguration:
     def __init__(self, name: str, color: str, line_style: str):
@@ -13,7 +13,8 @@ class AlgorithmPlotConfiguration:
         self.color: str = color
         self.line_style: str = line_style
 
-alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
+
+alg_to_plot_config_dict: {str : AlgorithmPlotConfiguration} = {
     "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dashed"),
     "tba-simple": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "solid"),
     "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "red", "dotted"),
@@ -71,6 +72,7 @@ def generate_all_latex():
     output_latex_content("connectedness_plot_data.tex", latex_connectedness_plot(results_data, max_points), "connectedness plot")
     output_latex_content("memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
+    output_latex_content("memory_bar_chart.tex", latex_memory_bar_chart(results_data), "memory bar chart")
 
     if overleaf_upload:
         overleaf.push()
@@ -89,6 +91,38 @@ def output_latex_content(file_name: str, content: str, content_type: str):
             print(f"ERROR: Failed uploading {content_type} at 'figures/results_auto_generated/{file_name}'")
 
 
+def latex_memory_bar_chart(data: dict) -> str:
+    latex_plot_legend = r"\legend{"
+    skip_algs = set()
+    alg_longname_to_proper_alg = {}
+    alg_longname_to_memory_group = {}
+
+    for alg in data.keys():
+        alg: str
+        if not alg.__contains__("max_mem"):
+            skip_algs.add(alg)
+            continue
+        (alg_proper_name, memory_group) = re.split("_max-mem=", alg)
+        alg_longname_to_memory_group[alg] = alg_proper_name
+        alg_longname_to_memory_group[alg] = memory_group
+
+        latex_plot_legend += f"{alg_proper_name}, "
+
+    latex_plot_legend += "}\n"
+
+    alg_to_coordinates = {}
+    for alg in alg_longname_to_proper_alg.values():
+        alg_to_coordinates[alg] = r"\addplot coordinates {"
+
+    for (alg_longname, memory_group) in alg_longname_to_memory_group:
+        alg_to_coordinates[alg_longname_to_proper_alg[alg_longname]] += f"({memory_group}, {data}) "
+
+    for alg in alg_longname_to_proper_alg.values():
+        alg_to_coordinates[alg] = "}\n"
+
+    return latex_plot_legend + ''.join(alg_to_coordinates.values())
+
+
 def remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(data: {str: TopologyResult}, lenf: int) -> {str: TopologyResult}:
     filtered_data = {}
     for (conf, topologies) in data.items():
@@ -104,13 +138,20 @@ def remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(data: {
 
 def latex_connectedness_plot(data: dict, _max_points) -> str:
     latex_plot_legend = r"\legend{"
+    skip_algs = set()
     for alg in data.keys():
+        if not alg_to_plot_config_dict.keys().__contains__(alg):
+            skip_algs.add(alg)
+            continue
         latex_plot_legend += f"{alg_to_plot_config_dict[alg].name}, "
     latex_plot_legend += "}\n"
 
     latex_plot_data = ""
     for (alg, topologies) in data.items():
         alg: str
+        if skip_algs.__contains__(alg):
+            continue
+
         cactus_data = sorted(topologies, key=lambda topology: topology.connectedness)
 
         skip_number = len(cactus_data) / _max_points

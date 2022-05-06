@@ -217,13 +217,20 @@ if __name__ == "__main__":
     hba_parser = method_parser.add_parser("hd")
 
     tba_parser = method_parser.add_parser("tba")
+    tba_parser.add_argument('--max_memory', default=0, help="Max memory allowed on any router")
 
     gft_parser = method_parser.add_parser("gft")
+
+    inout_disjoint_parser = method_parser.add_parser("inout-disjoint")
+    inout_disjoint_parser.add_argument('--num_paths', default=10, help="How many paths from ingress to egress for a flow")
+    inout_disjoint_parser.add_argument('--epochs', default=1000, help="Epochs")
+    inout_disjoint_parser.add_argument('--max_memory', default=0, help="Max memory allowed on any router")
 
     cfor_parser = method_parser.add_parser("cfor")
     cfor_parser.add_argument('--path', choices=['shortest', 'arborescence', 'disjoint'], default='shortest', help='Method for generating paths between switches on same layer')
     cfor_parser.add_argument('--num_down_paths', default=2, help='How many semi-disjoint paths down in layers')
     cfor_parser.add_argument('--num_cycling_paths', default=4, help='How many semi-disjoint paths between two nodes in the same layer')
+    cfor_parser.add_argument('--max_memory', default=0, help="Max memory allowed on any router")
 
     rsvp_parser = method_parser.add_parser("rsvp")
     rsvp_parser.add_argument("--protection", choices=['none', 'facility-node', 'facility-link'], help="Protection bypasses to use")

@@ -214,6 +214,10 @@ if __name__ == "__main__":
     create('cfor-arb')
     create('gft')
     create('kf')
+    create('inout-disjoint')
+    create('cfor-disjoint')
+    create('tba-simple')
+    #create('tba-complex')
 
     max_memory_list = [20, 100, 200]
     for mem in max_memory_list:
