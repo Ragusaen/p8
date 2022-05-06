@@ -89,7 +89,6 @@ class Grafting_Client(MPLS_Client):
         # The FECs this router is a non-tailend part of. fec_name -> list[(fec, next_hop, bounce_fec_name)]
         self.arborescence_next_hops: dict[str, list[tuple[oFEC, str, str]]] = {}
 
-
     # Abstract functions to be implemented by each client subclass.
     def LFIB_compute_entry(self, fec: oFEC, single=False):
 
