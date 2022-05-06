@@ -25,6 +25,13 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "inout-disjoint": AlgorithmPlotConfiguration("Ingress Egress Disjoint Paths", "magenta", "loosely dashdotted"),
 }
 
+alg_to_bar_config_dict = {
+    "cfor-disjoint": "north east lines",
+    "tba-simple": "north west lines",
+    "inout-disjoint": "horizontal lines",
+    "tba-comlex": "grid"
+}
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--max_points", type=int, required=False)
 parser.add_argument("--auto_overleaf", action='store_true', required=False)
@@ -138,7 +145,7 @@ def latex_memory_bar_chart(data: dict) -> str:
 
     alg_to_coordinates = {}
     for alg in set(alg_longname_to_proper_alg_name.values()):
-        alg_to_coordinates[alg] = r"\addplot coordinates {"
+        alg_to_coordinates[alg] = r"\addplot[ybar, pattern={" + alg_to_bar_config_dict[alg] + r"}] coordinates {"
         latex_plot_legend += f"{alg}, "
 
     latex_plot_legend += "}\n"
@@ -153,14 +160,7 @@ def latex_memory_bar_chart(data: dict) -> str:
     for alg in alg_to_coordinates.keys():
         alg_to_coordinates[alg] += "};\n"
 
-    latex_axis_specification = r"\begin{axis} [ylabel={Connectedness}, xlabel={Memory}, legend pos={north west}, " \
-                               r"legend style = {legend cell align=left}, x label style = {xshift=10pt}, " \
-                               r"height=9cm," \
-                               r"ybar = .05cm, bar width = 8pt," + "\n" + \
-                               "ytick = {1, " + str(lowest_connectedness) + "},\n" + \
-                               "xtick = {" + ','.join(set(alg_longname_to_memory_group.values())) + "}, \n]\n"
-
-    return latex_axis_specification + latex_plot_legend + ''.join(alg_to_coordinates.values()) + "\\end{axis}\n"
+    return latex_plot_legend + ''.join(alg_to_coordinates.values())
 
 
 def remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(data: {str: TopologyResult}, lenf: int) -> {

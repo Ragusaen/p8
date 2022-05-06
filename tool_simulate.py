@@ -222,7 +222,6 @@ if __name__ == "__main__":
     gft_parser = method_parser.add_parser("gft")
 
     inout_disjoint_parser = method_parser.add_parser("inout-disjoint")
-    inout_disjoint_parser.add_argument('--num_paths', default=10, help="How many paths from ingress to egress for a flow")
     inout_disjoint_parser.add_argument('--epochs', default=1000, help="Epochs")
     inout_disjoint_parser.add_argument('--max_memory', default=0, help="Max memory allowed on any router")
 
