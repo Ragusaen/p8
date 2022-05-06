@@ -32,32 +32,39 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
         return oFEC("cfor", f"{_ingress}_to_{_egress}_{path_index}", {"ingress": ingress, "egress": [egress], "iteration": 1, "switch": 1})
 
     forwarding_table = ForwardingTable()
-    weighted_graph = network.topology.copy()
 
     for ing in ingress:
+        weight_graph = network.topology.copy()
+        reset_weights(weight_graph, 0)
         paths = []
+
         for i in range(epochs):
-            path = nx.single_source_bellman_ford(weighted_graph, ing, egress, "weight")[1]
+            path = nx.single_source_bellman_ford(weight_graph, ing, egress, "weight")[1]
             if path not in paths:
                 paths.append(path)
             if len(path) == num_paths:
                 break
-            update_weights(weighted_graph, path)
+            update_weights(weight_graph, path)
 
         path_labels = []
         for l in range(len(paths)):
             path_labels.append(label(ing, egress, l))
-        forwarding_table.extend(encode_paths(weighted_graph, paths, path_labels))
+        forwarding_table.extend(encode_paths(weight_graph, paths, path_labels))
 
     return forwarding_table.table
+
+
+def reset_weights(G: Graph, value):
+    for u, v, d in G.edges(data=True):
+        d["weight"] = value
 
 
 def update_weights(G: Graph, path):
     for v1, v2 in zip(path[:-1], path[1:]):
         weight = G[v1][v2]["weight"]
 
-        if weight == -1:
-            G[v1][v2]["weight"] = 0
+        if weight == 0:
+            G[v1][v2]["weight"] = 100000
         else:
             G[v1][v2]["weight"] = G[v1][v2]["weight"] * 2 + 1
 
