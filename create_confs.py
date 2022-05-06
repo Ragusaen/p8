@@ -83,7 +83,7 @@ def generate_failures_all(G, division = None, random_seed = 1):
     return [all_of_em]
 
 
-def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, max_memory = 20):
+def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, max_memory = 0):
     base_config = {
     #we need extra configuration here!!!!
         "topology": topofile,
@@ -196,23 +196,31 @@ if __name__ == "__main__":
     with open(os.path.join(folder, "flows.yml"), "w") as file:
         yaml.dump(flows, file, default_flow_style=True, Dumper=NoAliasDumper)
 
-    def create(conf_type):
-        dict_conf = generate_conf(n, conf_type = conf_type, topofile = topofile, random_seed = random_seed)
-        path = os.path.join(folder, "conf_{}.yml".format(conf_type))
+    def create(conf_type, max_memory = 0):
+        dict_conf = generate_conf(n, conf_type = conf_type, topofile = topofile, random_seed = random_seed, max_memory=max_memory)
+        if max_memory > 0:
+            conf_name = f"conf_{conf_type}_max-mem={max_memory}.yml"
+        else:
+            conf_name = f"conf_{conf_type}.yml"
+
+        path = os.path.join(folder, conf_name)
        # dict_conf["output_file"] = os.path.join(folder, "dp_{}.yml".format(conf_type))
         with open(path, "w") as file:
             documents = yaml.dump(dict_conf, file, Dumper=NoAliasDumper)
 
     create('rsvp-fn')    # conf file with RSVP(FRR), no RMPLS
-    create('tba-simple')
-    #create('tba-complex')
     create('hd')
     create('cfor-short')
     create('cfor-arb')
-    create('cfor-disjoint')
     create('gft')
     create('kf')
-    create('inout-disjoint')
+
+    max_memory_list = [20, 100, 200]
+    for mem in max_memory_list:
+        create('inout-disjoint', mem)
+        create('cfor-disjoint', mem)
+        create('tba-simple', mem)
+        #create('tba-complex', mem)
 
     if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):
         # Generate failures
