@@ -209,6 +209,8 @@ if __name__ == "__main__":
             documents = yaml.dump(dict_conf, file, Dumper=NoAliasDumper)
 
     create('rsvp-fn')    # conf file with RSVP(FRR), no RMPLS
+    create('tba-simple')
+    create('tba-complex')
     create('hd')
     create('cfor-short')
     create('cfor-arb')
