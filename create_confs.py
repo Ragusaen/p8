@@ -218,15 +218,13 @@ if __name__ == "__main__":
     create('kf')
     create('inout-disjoint')
     create('cfor-disjoint')
-    create('tba-simple')
-    #create('tba-complex')
 
     max_memory_list = [20, 100, 200]
     for mem in max_memory_list:
         create('inout-disjoint', mem)
         create('cfor-disjoint', mem)
         create('tba-simple', mem)
-        #create('tba-complex', mem)
+        create('tba-complex', mem)
 
     if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):
         # Generate failures
