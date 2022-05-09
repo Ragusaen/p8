@@ -52,13 +52,17 @@ def generate_failures_random(G, n, division = None, random_seed = 1):
     F_list = [()]
     random.seed(random_seed)
 
-    # compute numbers proportional to failure scenarios per k
     lis = list(map(lambda x: math.comb(G.number_of_edges(),x) , range(K+1)))
-    r = reduce(lambda a,b: a+b, lis)
-    p = list(map(lambda x: math.ceil(n*x/r),lis))
 
-    excess = reduce(lambda a,b: a+b, p) - n
-    p[-1] -= excess   #adjust.
+    # Caps failure scenarios to n for all K.
+    p = [min(f, n) for f in lis]
+
+    # # compute numbers proportional to failure scenarios per k
+    # r = reduce(lambda a,b: a+b, lis)
+    # p = list(map(lambda x: math.ceil(n*x/r),lis))
+    #
+    # excess = reduce(lambda a,b: a+b, p) - n
+    # p[-1] -= excess   #adjust.
 
     for k in range(1,K+1):
         X = combinations(list(G.edges),k)
@@ -130,7 +134,6 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, max_memor
     elif conf_type == 'inout-disjoint':
         base_config['method'] = 'inoutdisjoint'
         base_config['epochs'] = 1000
-        base_config['num_paths'] = 4
         base_config['max_memory'] = max_memory
     else:
         raise Exception(f"Conf type {conf_type} not known")

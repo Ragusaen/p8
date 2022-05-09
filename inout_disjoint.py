@@ -91,7 +91,7 @@ def encode_paths(G: Graph, paths: List, path_labels):
 
 
 class InOutDisjoint(MPLS_Client):
-    protocol = "in-out-disjoint"
+    protocol = "inout-disjoint"
 
     def __init__(self, router: Router, **kwargs):
         super().__init__(router, **kwargs)
@@ -102,7 +102,6 @@ class InOutDisjoint(MPLS_Client):
         # Partial forwarding table containing only rules for this router
         self.partial_forwarding_table: dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]] = {}
 
-        self.num_paths = kwargs['num_paths']
         self.epochs = kwargs['epochs']
 
     def LFIB_compute_entry(self, fec: oFEC, single=False):
