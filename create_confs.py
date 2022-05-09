@@ -129,7 +129,7 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, max_memor
     elif conf_type == 'kf':
         base_config['method'] = 'kf'
     elif conf_type == 'inout-disjoint':
-        base_config['method'] = 'inoutdisjoint'
+        base_config['method'] = 'inout-disjoint'
         base_config['epochs'] = 1000
         base_config['max_memory'] = max_memory
     else:

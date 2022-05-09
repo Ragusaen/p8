@@ -27,29 +27,52 @@ class ForwardingTable:
                 self.add_rule(lhs, rhs)
 
 
-def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: str, epochs, num_paths) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
+def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: str, epochs, flow_max_memory) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
     def label(_ingress, _egress, path_index: int):
-        return oFEC("cfor", f"{_ingress}_to_{_egress}_{path_index}", {"ingress": ingress, "egress": [egress], "iteration": 1, "switch": 1})
+        return oFEC("cfor", f"{_ingress}_to_{_egress}_path{path_index}", {"ingress": ingress, "egress": [egress], "iteration": 1, "switch": 1})
+    def backtracking_label(_ingress, _egress, path_index: int):
+        return oFEC("cfor", f"{_ingress}_to_{_egress}_path{path_index}_backtracking", {"ingress": ingress, "egress": [egress], "iteration": 1, "switch": 1})
+
+    flow_max_memory *= len(ingress)
+    router_memory_usage = {r: 0 for r in network.routers}
 
     forwarding_table = ForwardingTable()
+    weight_graph = network.topology.copy()
+    ingress_to_paths_dict = {r: [] for r in ingress}
+    ingress_index = 0
+    ingress_to_path_labels_dict = {r: [] for r in ingress}
+    ingress_to_path_backtracking_labels_dict = {r: [] for r in ingress}
+
+    for i in range(epochs):
+        if ingress_index == len(ingress):
+            ingress_index = 0
+        ingress_router = ingress[ingress_index]
+        ingress_index += 1
+
+        max_memory_reached = False
+        path = nx.dijkstra_path(weight_graph, ingress_router, egress, "weight")
+        for r in path:
+            if router_memory_usage[r] < flow_max_memory:
+                router_memory_usage[r] += 3
+            else:
+                max_memory_reached = True
+                break
+        if max_memory_reached:
+            break
+
+        if path not in ingress_to_paths_dict[ingress_router]:
+            ingress_to_paths_dict[ingress_router].append(path)
+        ingress_to_path_labels_dict[ingress_router].append(label(ingress_router, egress, len(ingress_to_paths_dict[ingress_router])))
+        ingress_to_path_backtracking_labels_dict[ingress_router].append(backtracking_label(ingress_router, egress, len(ingress_to_paths_dict[ingress_router])))
+
+        update_weights(weight_graph, path)
 
     for ing in ingress:
-        weight_graph = network.topology.copy()
-        reset_weights(weight_graph, 0)
-        paths = []
+        # remove duplictes
+        ingress_to_path_labels_dict[ing] = list(dict.fromkeys(ingress_to_path_labels_dict[ing]))
+        ingress_to_path_backtracking_labels_dict[ing] = list(dict.fromkeys(ingress_to_path_backtracking_labels_dict[ing]))
 
-        for i in range(epochs):
-            path = nx.single_source_bellman_ford(weight_graph, ing, egress, "weight")[1]
-            if path not in paths:
-                paths.append(path)
-            if len(path) == num_paths:
-                break
-            update_weights(weight_graph, path)
-
-        path_labels = []
-        for l in range(len(paths)):
-            path_labels.append(label(ing, egress, l))
-        forwarding_table.extend(encode_paths(weight_graph, paths, path_labels))
+        forwarding_table.extend(encode_paths(network.topology, ingress_to_paths_dict[ing], ingress_to_path_labels_dict[ing], ingress_to_path_backtracking_labels_dict[ing]))
 
     return forwarding_table.table
 
@@ -66,26 +89,28 @@ def update_weights(G: Graph, path):
         if weight == 0:
             G[v1][v2]["weight"] = 100000
         else:
-            G[v1][v2]["weight"] = G[v1][v2]["weight"] * 2 + 1
+            G[v1][v2]["weight"] = G[v1][v2]["weight"] * 2 + random.randint(1,10)
 
 
-def encode_paths(G: Graph, paths: List, path_labels):
+def encode_paths(G: Graph, paths: List, path_labels: List, backtracking_path_labels: List):
     ft = ForwardingTable()
 
     for i, path in enumerate(paths):
+        if i > 0:
+            ft.add_rule((path[0], backtracking_path_labels[i-1]), (1, path[0], path_labels[i]))
+
         # for each edge in path
         for s, t in zip(path[:-1], path[1:]):
             # create forwarding using the path label
             ft.add_rule((s, path_labels[i]), (1, t, path_labels[i]))
 
-            # if not last subpath
+            # create backtracking
             if i < len(path_labels) - 1:
-                # if link failed, bounce to next subpath
-                ft.add_rule((s, path_labels[i]), (2, s, path_labels[i+1]))
+                # if link failed, bounce to backtracking
+                ft.add_rule((s, path_labels[i]), (2, s, backtracking_path_labels[i]))
 
-                # create backtracking rules for next subpath
-                if t not in paths[i+1]:
-                    ft.add_rule((t, path_labels[i+1]), (1, s, path_labels[i+1]))
+                if t != path[len(path)-1]:
+                    ft.add_rule((t, backtracking_path_labels[i]), (1, s, backtracking_path_labels[i]))
 
     return ft
 
@@ -103,6 +128,7 @@ class InOutDisjoint(MPLS_Client):
         self.partial_forwarding_table: dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]] = {}
 
         self.epochs = kwargs['epochs']
+        self.max_memory = kwargs['max_memory']
 
     def LFIB_compute_entry(self, fec: oFEC, single=False):
         for priority, next_hop, swap_fec in self.partial_forwarding_table[(self.router.name, fec)]:
@@ -125,10 +151,14 @@ class InOutDisjoint(MPLS_Client):
         headends = list(map(lambda x: x[0], self.demands.values()))
         if len(headends) == 0:
             return
-        ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.epochs, self.num_paths)
+
+        if self.max_memory == 0:
+            ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.epochs, 100)
+        else:
+            ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.epochs, self.max_memory)
 
         for (src, fec), entries in ft.items():
-            src_client: InOutDisjoint = self.router.network.routers[src].clients["cfor"]
+            src_client: InOutDisjoint = self.router.network.routers[src].clients["inout-disjoint"]
 
             if (src, fec) not in src_client.partial_forwarding_table:
                 src_client.partial_forwarding_table[(src, fec)] = []
@@ -146,4 +176,4 @@ class InOutDisjoint(MPLS_Client):
             yield fec
 
     def self_sourced(self, fec: oFEC):
-        return 'cfor' in fec.fec_type and fec.value["egress"][0] == self.router.name
+        return 'inout-disjoint' in fec.fec_type and fec.value["egress"][0] == self.router.name
