@@ -172,6 +172,91 @@ def create_least_used_arborescence(graph: Graph, egress: str, edge_to_count: Dic
     return [(s, t, arborescence[s][t]['weight']) for s, t in arborescence.edges]
 
 
+def multi_create_arborescences(graph: Graph, egress: str) -> List[List[Tuple[str, str, int]]]:
+    inf = 1_000_000_000
+
+    class Arborescence:
+        def __init__(self):
+            self.G = nx.DiGraph()
+            self.G.add_nodes_from(graph.nodes)
+            self.nodes_in_arborescence = {egress}
+            self.node_distance = {v: inf for v in graph.nodes}
+            self.node_distance[egress] = 0
+
+            # Possible traversal subgraph, a graph that contains those edges that could possibly be traversed with arborescence
+            # i.e., those that are already in arborescence or it is not outgoing from a node in the arborescence
+            self.subgraph: DiGraph = graph.to_directed()
+
+    count = max(graph.degree(v) for v in graph.nodes)
+    arborescences = [Arborescence() for _ in range(count)]
+
+    edge_to_count = {e: 0 for e in graph.to_directed().edges}
+
+    def h(a: Arborescence, e: Tuple[str, str]):
+        return (e[0] in a.nodes_in_arborescence, -a.node_distance[e[1]], edge_to_count[e], edge_to_count[(e[1], e[0])])
+
+    unused_edges: List[Tuple[str, str]] = list(graph.to_directed().edges)
+
+    def try_add_edge(a: Arborescence, s: str, t: str):
+        nonlocal unused_edges
+        # Try to add this edge
+        new_subgraph = a.subgraph.copy()
+        new_subgraph.remove_edges_from(list(filter(lambda e: e[1] != t, new_subgraph.out_edges(s))))
+
+        try:
+            has_path = nx.has_path(new_subgraph, s, egress)
+        except:
+            has_path = False
+
+        # If there is a path then add this edge
+        if has_path:
+            a.subgraph = new_subgraph
+            a.G.add_edge(s, t, weight=2)
+            a.nodes_in_arborescence.add(s)
+
+            try:
+                a.node_distance[s] = nx.shortest_path_length(a.G, s, egress, weight=1)
+            except:
+                a.node_distance[s] = inf
+
+            edge_to_count[(s, t)] += 1
+            return True
+        return False
+
+    # Try to add as many unused edges as possible, prioritise those that go to a node already in arborescence
+    i = 0
+    while len(unused_edges) > 0 and i < len(unused_edges):
+        for a in arborescences:
+            s,t = min(unused_edges,key=lambda e: h(a,e))
+            # Check that this node is not already in arborescence
+            if s not in a.nodes_in_arborescence:
+                # Try to add this edge
+                if try_add_edge(a, s, t):
+                    # update heap
+                    unused_edges.remove((s,t))
+            i += 1
+
+    for a in arborescences:
+        # Stitch rest of arborescence together
+        nodes_not_in_arborescence = set(graph.nodes()) - a.nodes_in_arborescence
+
+        for v in nodes_not_in_arborescence:
+            edges_by_heuristic = sorted(a.subgraph.edges(v), key=lambda e: h(a,e))
+            for s, t in edges_by_heuristic:
+                if try_add_edge(a, s, t):
+                    break
+
+        # Add short-cuts, i.e. single hop paths (edges) between two points in the arborescence
+        for e in graph.edges:
+            if e[0] != egress and e not in a.G.edges and nx.has_path(a.G, e[0], e[1]):
+                a.G.add_edge(e[0], e[1], weight=1)
+
+                if not nx.is_directed_acyclic_graph(a.G):
+                    a.G.remove_edge(e[0], e[1])
+
+    return [[(s, t, 2) for s, t in a.G.edges] for a in arborescences]
+
+
 def complex_find_arborescence(graph: Graph, egress: str) -> List[List[Tuple[str, str, int]]]:
     arborescences = []
     edge_to_count = {e: 0 for e in graph.to_directed().edges}

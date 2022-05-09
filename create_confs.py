@@ -110,6 +110,9 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, max_memor
     elif conf_type == "tba-complex":
         base_config["method"] = "tba"
         base_config['path'] = 'complex'
+    elif conf_type == 'tba-multi':
+        base_config['method'] = 'tba'
+        base_config['path'] = 'multi'
     elif conf_type == 'hd':
         base_config['method'] = 'hd'
     elif conf_type == 'gft':
@@ -214,6 +217,7 @@ if __name__ == "__main__":
     create('rsvp-fn')    # conf file with RSVP(FRR), no RMPLS
     create('tba-simple')
     create('tba-complex')
+    create('tba-multi')
     create('hd')
     create('cfor-short')
     create('cfor-arb')
