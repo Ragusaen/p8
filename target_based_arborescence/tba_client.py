@@ -2,7 +2,8 @@ import itertools
 from typing import Union, Tuple, List
 
 from mpls_classes import MPLS_Client, Network, oFEC, Router
-from target_based_arborescence.arborescences import find_arborescences, complex_find_arborescence
+from target_based_arborescence.arborescences import find_arborescences, complex_find_arborescence, \
+    multi_create_arborescences
 
 import graphviz as gv
 
@@ -24,7 +25,8 @@ class TargetBasedArborescence(MPLS_Client):
 
         self.arborescence_finder = {
             'simple': find_arborescences,
-            'complex': complex_find_arborescence
+            'complex': complex_find_arborescence,
+            'multi': multi_create_arborescences
         }[kwargs['path']]
 
 
@@ -83,7 +85,8 @@ class TargetBasedArborescence(MPLS_Client):
 
         for i, (fec, a) in enumerate(fec_arbors):
             def find_bounce_fec(v: str) -> str:
-                for j in list(range(i + 1, len(fec_arbors))) + list(range(0, i + 1)):
+                k = i#(i * 31) % len(fec_arbors)
+                for j in list(range(k + 1, len(fec_arbors))) + list(range(0, k + 1)):
                     if any(s == v for s, t, _ in fec_arbors[j][1]):
                         return fec_arbors[j][0].name
                 assert("Could not bounce to any arborescence??")

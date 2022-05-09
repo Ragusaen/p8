@@ -1,5 +1,6 @@
 import itertools
 
+import networkx as nx
 import networkx.exception
 
 from mpls_classes import *
@@ -10,40 +11,56 @@ from cfor import ForwardingTable
 from typing import Dict, Tuple, List, Callable
 
 
-def build_kf_traversal(network: Network) -> Dict[str, str]:
-    G: nx.DiGraph = network.topology.copy().to_directed()
-    node_use = {}
+def undirect(e: Tuple[str, str]):
+    return (min(e[0], e[1]), max(e[0], e[1]))
 
-    def cycle(start: str, current: str, depth: int):
-        if current not in node_use:
-            node_use[current] = 0
-        node_use[current] += 1
-        if start == current and depth > 0:
-            return []
+def build_kf_traversal(topology: Graph) -> Dict[Tuple[str,str], List[str]]:
+    G: nx.DiGraph = topology.copy().to_directed()
+    G.clear_edges()
+    G.add_weighted_edges_from(map(lambda e: (e[0], e[1], 0), topology.to_directed().edges))
 
-        next = sorted(list(G.neighbors(current)), key=lambda x: node_use[x] if x in node_use else 0)[0]
-        return [(current, next)] + cycle(start, next, depth + 1)
+    used_nodes = set()
 
-    s = list(G.nodes())[0]
-    traversal = [s]
-    while len(node_use) != G.number_of_nodes():
-        c = cycle(s, s, 0)
+    edge_use_count = {undirect(e): 0 for e in G.edges}
 
-        subtraversal = [t for _,t in c]
-        i = traversal.index(s)
-        traversal = traversal[:i+1] + subtraversal + traversal[i+1:]
+    s = list(G.edges())[0]
+    traversal = []
+    while any(c == 0 for _,c in edge_use_count.items()):
+        if (s[1], s[0]) in G.edges:
+            G[s[1]][s[0]]['weight'] = 1
+        cycle = [s[0]] + nx.shortest_path(G, s[1], s[0], weight='weight')
+        cycle = list(zip(cycle[:-1], cycle[1:]))
 
-        G.remove_edges_from(c)
+        i = next((i for i, e in enumerate(traversal) if e[1] == s[0]), 0)
+        traversal = traversal[:i+1] + cycle + traversal[i+1:]
+
+        used_nodes.update({t for _,t in cycle})
+
+        for e in cycle:
+            edge_use_count[undirect(e)] += 1
+
+            G.remove_edge(e[0], e[1])
 
         # Find next node s.t. it has a remaining edge
-        for n in node_use.keys():
-            if len(list(G.neighbors(n))) != 0:
-                s = n
+        for n in used_nodes:
+            p = next((e for e in G.edges(n) if edge_use_count[undirect(e)] == 0), None)
+            if p is not None:
+                s = p
                 break
         else:
-            assert(len(node_use) == G.number_of_nodes())
+            assert(len(used_nodes) == G.number_of_nodes())
 
-    trav_dict = {s: t for s,t in zip(traversal[:-1], traversal[1:])}
+    trav_dict: dict[Tuple[str, str], list[str]] = {e: [] for e in topology.edges}
+    undirected_traversal = list(map(lambda e: undirect(e), traversal))
+    undirected_traversal = list(dict.fromkeys(undirected_traversal)) # Remove duplicates while keeping order
+
+    for e in topology.to_directed().edges:
+        ue = undirect(e)
+        idx = undirected_traversal.index(ue)
+        e_traversal = undirected_traversal[idx+1:] + undirected_traversal[:idx+1]
+
+        trav_dict[e] = list(map(lambda ep: ep[0] if ep[1] == e[1] else ep[1], filter(lambda ep: e[1] == ep[0] or e[1] == ep[1], e_traversal)))
+
     return trav_dict
 
 
@@ -55,7 +72,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
     network.compute_dijkstra(weight=1)
     D: dict[str, int] = {r: network.routers[r].dist[egress] for r in network.routers.keys()}
 
-    kf_traversal = build_kf_traversal(network)
+    kf_traversal = build_kf_traversal(network.topology)
 
     def true_sink(e: tuple[str, str]):
         v, u = e
@@ -96,7 +113,9 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
         else:
             add_ordered_rules([(s,t) for s,t in out_edges if D[t] < D[s]])
 
-            ft.add_rule((tgt, router_to_label[src]), (priority, kf_traversal[tgt], router_to_label[tgt]))
+            for nh in kf_traversal[(src, tgt)]:
+                ft.add_rule((tgt, router_to_label[src]), (priority, nh, router_to_label[tgt]))
+                priority += 1
 
             add_ordered_rules([(s,t) for s,t in out_edges if D[t] > D[s]])
 
