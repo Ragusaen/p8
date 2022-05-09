@@ -131,7 +131,6 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, max_memor
     elif conf_type == 'inout-disjoint':
         base_config['method'] = 'inoutdisjoint'
         base_config['epochs'] = 1000
-        base_config['num_paths'] = 4
         base_config['max_memory'] = max_memory
     else:
         raise Exception(f"Conf type {conf_type} not known")
@@ -213,18 +212,22 @@ if __name__ == "__main__":
             documents = yaml.dump(dict_conf, file, Dumper=NoAliasDumper)
 
     create('rsvp-fn')    # conf file with RSVP(FRR), no RMPLS
+    create('tba-simple')
+    create('tba-complex')
     create('hd')
     create('cfor-short')
     create('cfor-arb')
     create('gft')
     create('kf')
+    create('inout-disjoint')
+    create('cfor-disjoint')
 
     max_memory_list = [20, 100, 200]
     for mem in max_memory_list:
         create('inout-disjoint', mem)
         create('cfor-disjoint', mem)
         create('tba-simple', mem)
-        #create('tba-complex', mem)
+        create('tba-complex', mem)
 
     if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):
         # Generate failures
