@@ -33,6 +33,18 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
     def backtracking_label(_ingress, _egress, path_index: int):
         return oFEC("cfor", f"{_ingress}_to_{_egress}_path{path_index}_backtracking", {"ingress": ingress, "egress": [egress], "iteration": 1, "switch": 1})
 
+    def update_memory_usage(memory_usage: {}, path: List, is_not_first_path, is_last_path):
+        if is_not_first_path:
+            memory_usage[path[0]] += 1
+
+        # for each edge in path
+        for s, t in zip(path[:-1], path[1:]):
+            memory_usage[s] += 1
+            if not is_last_path:
+                memory_usage[s] += 1
+                if t != path[len(path) - 1]:
+                    memory_usage[t] += 1
+
     flow_max_memory *= len(ingress)
     router_memory_usage = {r: 0 for r in network.routers}
 
@@ -44,35 +56,45 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
     ingress_to_path_backtracking_labels_dict = {r: [] for r in ingress}
 
     for i in range(epochs):
-        if ingress_index == len(ingress):
-            ingress_index = 0
-        ingress_router = ingress[ingress_index]
-        ingress_index += 1
+        # select the next ingress router to even out memory usage
+        ingress_router = ingress[i % len(ingress)]
 
-        max_memory_reached = False
         path = nx.dijkstra_path(weight_graph, ingress_router, egress, "weight")
-        for r in path:
-            if router_memory_usage[r] < flow_max_memory:
-                router_memory_usage[r] += 3
-            else:
-                max_memory_reached = True
-                break
+
+        # see if this path (with backtracking) surpasses the memory limit
+        router_memory_usage_after = router_memory_usage.copy()
+        update_memory_usage(router_memory_usage_after, path, i > 0, is_last_path=False)
+        max_memory_reached = [False if router_memory_usage_after[r] <= flow_max_memory else True for r in path].__contains__(True)
+
+        # see if there is space for a last path with no backtracking
+        make_last_path = False
         if max_memory_reached:
-            break
+            router_memory_usage_after = router_memory_usage.copy()
+            update_memory_usage(router_memory_usage_after, path, i > 0, is_last_path=True)
+            make_last_path = not [False if router_memory_usage_after[r] <= flow_max_memory else True for r in path].__contains__(True)
+
+        # update weights in the network to change the shortest path
+        update_weights(weight_graph, path)
+
+        # if path violates memory limit, do not add it
+        if max_memory_reached and not make_last_path:
+            continue
 
         if path not in ingress_to_paths_dict[ingress_router]:
             ingress_to_paths_dict[ingress_router].append(path)
         ingress_to_path_labels_dict[ingress_router].append(label(ingress_router, egress, len(ingress_to_paths_dict[ingress_router])))
         ingress_to_path_backtracking_labels_dict[ingress_router].append(backtracking_label(ingress_router, egress, len(ingress_to_paths_dict[ingress_router])))
+        update_memory_usage(router_memory_usage, path, i > 0, is_last_path=make_last_path)
 
-        update_weights(weight_graph, path)
+        if make_last_path:
+            break
 
     for ing in ingress:
-        # remove duplictes
+        # remove duplicate labels
         ingress_to_path_labels_dict[ing] = list(dict.fromkeys(ingress_to_path_labels_dict[ing]))
         ingress_to_path_backtracking_labels_dict[ing] = list(dict.fromkeys(ingress_to_path_backtracking_labels_dict[ing]))
 
-        forwarding_table.extend(encode_paths(network.topology, ingress_to_paths_dict[ing], ingress_to_path_labels_dict[ing], ingress_to_path_backtracking_labels_dict[ing]))
+        forwarding_table.extend(encode_paths(ingress_to_paths_dict[ing], ingress_to_path_labels_dict[ing], ingress_to_path_backtracking_labels_dict[ing]))
 
     return forwarding_table.table
 
@@ -92,7 +114,7 @@ def update_weights(G: Graph, path):
             G[v1][v2]["weight"] = G[v1][v2]["weight"] * 2 + random.randint(1,10)
 
 
-def encode_paths(G: Graph, paths: List, path_labels: List, backtracking_path_labels: List):
+def encode_paths(paths: List, path_labels: List, backtracking_path_labels: List):
     ft = ForwardingTable()
 
     for i, path in enumerate(paths):
@@ -105,7 +127,7 @@ def encode_paths(G: Graph, paths: List, path_labels: List, backtracking_path_lab
             ft.add_rule((s, path_labels[i]), (1, t, path_labels[i]))
 
             # create backtracking
-            if i < len(path_labels) - 1:
+            if i < len(paths) - 1:
                 # if link failed, bounce to backtracking
                 ft.add_rule((s, path_labels[i]), (2, s, backtracking_path_labels[i]))
 
@@ -113,6 +135,9 @@ def encode_paths(G: Graph, paths: List, path_labels: List, backtracking_path_lab
                     ft.add_rule((t, backtracking_path_labels[i]), (1, s, backtracking_path_labels[i]))
 
     return ft
+
+
+
 
 
 class InOutDisjoint(MPLS_Client):
@@ -164,6 +189,7 @@ class InOutDisjoint(MPLS_Client):
                 src_client.partial_forwarding_table[(src, fec)] = []
 
             src_client.partial_forwarding_table[(src, fec)].extend(entries)
+
 
     def compute_bypasses(self):
         pass

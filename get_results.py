@@ -20,7 +20,7 @@ class CommonResultData:
 
 
 class TopologyResult:
-    def __init__(self, topology_name, total_links, num_flows, failure_scenarios, connectedness, fwd_gen_time, max_memory):
+    def __init__(self, topology_name, total_links, num_flows, failure_scenarios, connectedness, fwd_gen_time, max_memory, within_memory_limit):
         self.topology_name = topology_name
         self.total_links = total_links
         self.num_flows = num_flows
@@ -28,6 +28,7 @@ class TopologyResult:
         self.connectedness = connectedness
         self.fwd_gen_time = fwd_gen_time
         self.max_memory = max_memory
+        self.within_memory_limit = within_memory_limit
 
 
 def __compute_probability(f, e, pf=0.001):
@@ -103,11 +104,24 @@ def parse_result_data(result_folder) -> dict[str, TopologyResult]:
                         for line in lines:
                             failure_data = __parse_single_line_in_failure_scenario(line)
                             failure_scenarios.append(failure_data)
+                    within_memory_limit = True
+                    if conf_name.__contains__("max-mem="):
+                        memory_cap = int(conf_name.split("max-mem=")[1])
+                        within_memory_limit = max_memory < num_flows * memory_cap
 
-            result_dict[conf_name].append(TopologyResult(topology, total_links, num_flows, failure_scenarios, -1, fwd_gen_time, max_memory))
+            result_dict[conf_name].append(TopologyResult(topology, total_links, num_flows, failure_scenarios, -1, fwd_gen_time, max_memory, within_memory_limit))
 
     compute_connectedness(result_dict)
+
+    check_within_memory_limit(result_dict)
+
     return result_dict
+
+def check_within_memory_limit(result_data: dict):
+    for alg, topology_results in result_data.items():
+        for topology in topology_results:
+            if not topology.within_memory_limit:
+                print(f"get_results: USING TOO MUCH MEMORY on topology {topology.topology_name} - Flaw in algorithm {alg}!")
 
 
 def compute_connectedness(result_data: dict) -> {}:

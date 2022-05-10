@@ -226,7 +226,7 @@ if __name__ == "__main__":
     create('inout-disjoint')
     create('cfor-disjoint')
 
-    max_memory_list = [20, 100, 200]
+    max_memory_list = [3,5,8,10,15,25,50,100,1000]
     for mem in max_memory_list:
         create('inout-disjoint', mem)
         create('cfor-disjoint', mem)
