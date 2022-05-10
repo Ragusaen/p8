@@ -158,6 +158,18 @@ class KeepForwarding(MPLS_Client):
         for demand, (ingress, egress) in self.demands.items():
             ft = generate_pseudo_forwarding_table(self.router.network, ingress, egress)
 
+            #Clean the forwarding table
+            for _, rules in ft.items():
+                seen = set()
+                remove = set()
+                for rule in rules:
+                    if rule[1] in seen:
+                        remove.add(rule)
+                    seen.add(rule[1])
+
+                for rule in remove:
+                    rules.remove(rule)
+
             for (src, fec), entries in ft.items():
                 src_client: KeepForwarding = self.router.network.routers[src].clients["kf"]
 
@@ -170,15 +182,7 @@ class KeepForwarding(MPLS_Client):
         pass
 
     def LFIB_refine(self, label):
-        # Remove impossible rules
-        seen = set()
-        new_rules = []
-        for rule in self.router.LFIB[label]:
-            if rule['out'] not in seen:
-                new_rules.append(rule)
-                seen.add(rule['out'])
-        return new_rules
-
+        pass
 
     def known_resources(self):
         for _, fec in self.partial_forwarding_table.keys():
