@@ -2,7 +2,9 @@ enable_RMPLS: false
 ldp: false
 php: false
 random_seed: 1
-method: kf
+method: tba
+path: complex
+per_flow_memory: 3
 protection: none
 rsvp_num_lsps: 50
 rsvp_tunnels_per_pair: 1

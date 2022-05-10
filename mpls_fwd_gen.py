@@ -122,6 +122,9 @@ def generate_fwd_rules(G, conf, enable_PHP = True, numeric_labels = False, enabl
 
         print("LDP ready.")
 
+    conf['num_flows'] = num_lsps if not isinstance(num_lsps, list) else len(num_lsps)
+    conf['max_memory'] = conf['num_flows'] * conf['per_flow_memory']
+
     print("Computing RSVP...")
     random.seed(random_seed)
     method = conf["method"]

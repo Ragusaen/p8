@@ -175,7 +175,7 @@ def remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(data: {
             failure_scenarios = list(filter(lambda scenario: scenario.failed_links == lenf, topology.failure_scenarios))
             filtered_data[conf].append(
                 TopologyResult(topology.topology_name, topology.total_links, topology.num_flows, failure_scenarios, -1,
-                               topology.fwd_gen_time, topology.max_memory))
+                               topology.fwd_gen_time, topology.max_memory, topology.within_memory_limit))
 
     return filtered_data
 

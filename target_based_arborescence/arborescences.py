@@ -257,14 +257,32 @@ def multi_create_arborescences(graph: Graph, egress: str) -> List[List[Tuple[str
     return [[(s, t, 2) for s, t in a.G.edges] for a in arborescences]
 
 
-def complex_find_arborescence(graph: Graph, egress: str) -> List[List[Tuple[str, str, int]]]:
+def complex_find_arborescence(graph: Graph, egress: str, memory: int) -> List[List[Tuple[str, str, int]]]:
     arborescences = []
     edge_to_count = {e: 0 for e in graph.to_directed().edges}
 
-    while True:
+    # Each edge in the arborescence uses 1 rule + one rule for switching to the next arborescence
+    def memory_of_router(v: str):
+        return sum(1 for a in arborescences for s,_,_ in a if s == v) + len(arborescences)
+
+    # We need at least 2 rules to make a usable arborescence
+    while max(memory_of_router(v) for v in graph.nodes()) < memory - 2:
         a = create_least_used_arborescence(graph, egress, edge_to_count)
         if len(a) == 0:
             break
         arborescences.append(a)
+
+    # Prune the rules, assume last arborescence is least important
+    router_memory_usage = {v: sum(1 for a in arborescences for s,_,_ in a if s == v) for v in graph.nodes()}
+    over_memory = {v for v, m in router_memory_usage.items() if m > memory}
+
+    for v in over_memory:
+        to_remove = router_memory_usage[v] - memory
+
+        # Prefer to remove short-cuts
+        v_rules = sorted([r for r in arborescences[-1] if r[0] == v], key=lambda r: r[2])[:to_remove]
+
+        for r in v_rules:
+            arborescences[-1].remove(r)
 
     return arborescences

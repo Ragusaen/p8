@@ -96,7 +96,7 @@ def generate_failures_all(G, division = None, random_seed = 1):
     return [all_of_em]
 
 
-def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, max_memory = 0):
+def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, per_flow_memory = None):
     base_config = {
     #we need extra configuration here!!!!
         "topology": topofile,
@@ -110,6 +110,8 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, max_memor
         "result_folder": os.path.join(conf["result_folder"], conf_type, topofile.split('/')[-1].split('.')[0]),
         "flows_file": os.path.join(folder, "flows.yml")
     }
+    if per_flow_memory is not None:
+        base_config['per_flow_memory'] = per_flow_memory
     if conf_type == 'rsvp-fn':
         base_config['method'] = 'rsvp'
         base_config['protection'] = 'facility-node'
@@ -137,13 +139,11 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, max_memor
         base_config['path'] = 'disjoint'
         base_config['num_down_paths'] = 2
         base_config['num_cycling_paths'] = 0
-        base_config['max_memory'] = max_memory
     elif conf_type == 'kf':
         base_config['method'] = 'kf'
     elif conf_type == 'inout-disjoint':
         base_config['method'] = 'inout-disjoint'
         base_config['epochs'] = 1000
-        base_config['max_memory'] = max_memory
     else:
         raise Exception(f"Conf type {conf_type} not known")
 
@@ -212,7 +212,7 @@ if __name__ == "__main__":
         yaml.dump(flows, file, default_flow_style=True, Dumper=NoAliasDumper)
 
     def create(conf_type, max_memory = 0):
-        dict_conf = generate_conf(n, conf_type = conf_type, topofile = topofile, random_seed = random_seed, max_memory=max_memory)
+        dict_conf = generate_conf(n, conf_type = conf_type, topofile = topofile, random_seed = random_seed, per_flow_memory=max_memory)
         if max_memory > 0:
             conf_name = f"conf_{conf_type}_max-mem={max_memory}.yml"
         else:
@@ -224,22 +224,18 @@ if __name__ == "__main__":
             documents = yaml.dump(dict_conf, file, Dumper=NoAliasDumper)
 
     create('rsvp-fn')    # conf file with RSVP(FRR), no RMPLS
-    create('tba-simple')
-    create('tba-complex')
-    create('tba-multi')
-    create('hd')
-    create('cfor-short')
-    create('cfor-arb')
+#    create('tba-multi')
+#    create('hd')
+#    create('cfor-short')
+#    create('cfor-arb')
     create('gft')
     create('kf')
-    create('inout-disjoint')
-    create('cfor-disjoint')
 
-    max_memory_list = [20, 100, 200]
-    for mem in max_memory_list:
+    per_flow_memory = [3, 5, 8]
+    for mem in per_flow_memory:
         create('inout-disjoint', mem)
         create('cfor-disjoint', mem)
-        create('tba-simple', mem)
+#        create('tba-simple', mem)
         create('tba-complex', mem)
 
     if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):
