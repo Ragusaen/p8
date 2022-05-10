@@ -29,6 +29,8 @@ class TargetBasedArborescence(MPLS_Client):
             'multi': multi_create_arborescences
         }[kwargs['path']]
 
+        self.memory_per_flow = kwargs['per_flow_memory']
+
 
     # Abstract functions to be implemented by each client subclass.
     def LFIB_compute_entry(self, fec: oFEC, single=False):
@@ -61,23 +63,25 @@ class TargetBasedArborescence(MPLS_Client):
         self.demands[f"{len(self.demands.items())}_{headend}_to_{self.router.name}"] = (headend, self.router.name)
 
     def commit_config(self):
+        useable_memory = self.memory_per_flow * len(self.demands)
+
         if len(self.demands) == 0:
             return
 
         headends = tuple(set(map(lambda x: x[0], self.demands.values()))) #lists cannot be hashed :|
-        self.rooted_arborescences = self.arborescence_finder(self.router.network.topology, self.router.name)
+        self.rooted_arborescences = self.arborescence_finder(self.router.network.topology, self.router.name, useable_memory)
 
+        print(f'Demands: {len(self.demands)}\tArborescences: {len(self.rooted_arborescences)}')
 
-        #Create graph for debugging
-        g = gv.Digraph(format="svg")
-
-        colors = ['blue', 'green', 'red', 'purple', 'orange', 'cyan']
-        for arb, color in zip(self.rooted_arborescences, colors):
-            for src, tgt, _ in arb:
-                g.edge(src, tgt, color=color)
-
-        g.render(f"arborescence_{self.router.name}", "gen")
-
+        # #Create graph for debugging
+        # g = gv.Digraph(format="svg")
+        #
+        # colors = ['blue', 'green', 'red', 'purple', 'orange', 'cyan']
+        # for arb, color in zip(self.rooted_arborescences, colors):
+        #     for src, tgt, _ in arb:
+        #         g.edge(src, tgt, color=color)
+        #
+        # g.render(f"arborescence_{self.router.name}", "gen")
 
         fec_arbors: list[tuple[oFEC, list[tuple[str, str, int]]]] =\
             [(oFEC("arborescence", f"{self.router.name}_{i}", (self.router.name, i, headends, i == 0)), a)
@@ -107,7 +111,6 @@ class TargetBasedArborescence(MPLS_Client):
             # Loop over all vertices NOT source of any edge in arborescence
             not_in_arb = set(self.router.network.topology.nodes()) - set(map(lambda e: e[0], a))
             for src in not_in_arb:
-                src_router: TargetBasedArborescence = self.router.network.routers[src].clients["tba"]
                 bounce_fec_name = find_bounce_fec(src)
 
                 # This has no next-hop, but should have bounce fec

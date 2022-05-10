@@ -74,7 +74,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
 
     kf_traversal = build_kf_traversal(network.topology)
 
-    def true_sink(e: tuple[str, str]):
+    def true_sink(e: Tuple[str, str]):
         v, u = e
         u_degree = network.topology.degree[u]
         if u_degree > 2:
@@ -170,7 +170,15 @@ class KeepForwarding(MPLS_Client):
         pass
 
     def LFIB_refine(self, label):
-        pass
+        # Remove impossible rules
+        seen = set()
+        new_rules = []
+        for rule in self.router.LFIB[label]:
+            if rule['out'] not in seen:
+                new_rules.append(rule)
+                seen.add(rule['out'])
+        return new_rules
+
 
     def known_resources(self):
         for _, fec in self.partial_forwarding_table.keys():

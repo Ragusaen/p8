@@ -158,8 +158,8 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
 
     (successful_flows, total_flows, codes) = s.success_rate(exit_codes=True)
 
-    routers: List[Router] = network.routers.values()
-    router_memory = [len([rule for rule in router.LFIB.values()]) for router in routers]
+    routers: List[Router] = list(network.routers.values())
+    router_memory = [sum(len(rule) for rule in router.LFIB.values()) for router in routers]
     router_memory_str = str(router_memory).replace(' ', '')
 
     loops = codes[1]  # p8: we do not know what this is

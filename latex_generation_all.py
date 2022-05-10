@@ -18,6 +18,7 @@ class AlgorithmPlotConfiguration:
 alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dashed"),
     "tba-simple": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "solid"),
+    "tba-complex": AlgorithmPlotConfiguration("Circular Arborescence", "yellow", "densely dashdotted"),
     "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "red", "dotted"),
     "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "loosely dotted"),
     "kf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted"),
@@ -29,7 +30,7 @@ alg_to_bar_config_dict = {
     "cfor-disjoint": "north east lines",
     "tba-simple": "north west lines",
     "inout-disjoint": "horizontal lines",
-    "tba-comlex": "grid"
+    "tba-complex": "grid"
 }
 
 parser = argparse.ArgumentParser()
