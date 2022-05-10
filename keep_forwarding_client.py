@@ -170,7 +170,15 @@ class KeepForwarding(MPLS_Client):
         pass
 
     def LFIB_refine(self, label):
-        pass
+        # Remove impossible rules
+        seen = set()
+        new_rules = []
+        for rule in self.router.LFIB[label]:
+            if rule['out'] not in seen:
+                new_rules.append(rule)
+                seen.add(rule['out'])
+        return new_rules
+
 
     def known_resources(self):
         for _, fec in self.partial_forwarding_table.keys():

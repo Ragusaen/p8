@@ -266,7 +266,7 @@ def complex_find_arborescence(graph: Graph, egress: str, memory: int) -> List[Li
         return sum(1 for a in arborescences for s,_,_ in a if s == v) + len(arborescences)
 
     # We need at least 2 rules to make a usable arborescence
-    while max(memory_of_router(v) for v in graph.nodes()) < memory - 2:
+    while max(memory_of_router(v) for v in graph.nodes()) <= memory - 1:
         a = create_least_used_arborescence(graph, egress, edge_to_count)
         if len(a) == 0:
             break

@@ -88,6 +88,7 @@ def generate_failures_all(G, division = None, random_seed = 1):
 
 
 def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, per_flow_memory = None):
+    conf_name = conf_type + (f"_max-mem={per_flow_memory}" if per_flow_memory is not None else "")
     base_config = {
     #we need extra configuration here!!!!
         "topology": topofile,
@@ -98,7 +99,7 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, per_flow_
         "rsvp_tunnels_per_pair": 1,
         "vpn": False,
         "random_seed": random_seed,
-        "result_folder": os.path.join(conf["result_folder"], conf_type, topofile.split('/')[-1].split('.')[0]),
+        "result_folder": os.path.join(conf["result_folder"], conf_name, topofile.split('/')[-1].split('.')[0]),
         "flows_file": os.path.join(folder, "flows.yml")
     }
     if per_flow_memory is not None:
@@ -202,9 +203,9 @@ if __name__ == "__main__":
     with open(os.path.join(folder, "flows.yml"), "w") as file:
         yaml.dump(flows, file, default_flow_style=True, Dumper=NoAliasDumper)
 
-    def create(conf_type, max_memory = 0):
+    def create(conf_type, max_memory = None):
         dict_conf = generate_conf(n, conf_type = conf_type, topofile = topofile, random_seed = random_seed, per_flow_memory=max_memory)
-        if max_memory > 0:
+        if max_memory is not None:
             conf_name = f"conf_{conf_type}_max-mem={max_memory}.yml"
         else:
             conf_name = f"conf_{conf_type}.yml"
