@@ -133,7 +133,7 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, per_flow_
     elif conf_type == 'kf':
         base_config['method'] = 'kf'
     elif conf_type == 'inout-disjoint':
-        base_config['method'] = 'inoutdisjoint'
+        base_config['method'] = 'inout-disjoint'
         base_config['epochs'] = 1000
     else:
         raise Exception(f"Conf type {conf_type} not known")
@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
     p.add_argument("--K", type=int, default = 4, help="Maximum number of failed links.")
 
-    p.add_argument("--threshold",type=int, default = math.comb(20,4), help="Maximum number of failures to generate")
+    p.add_argument("--threshold",type=int, default = 1000, help="Maximum number of failures to generate")
 
     p.add_argument("--division",type=int, default = 1000, help="chunk size; number of failure scenarios per worker.")
 

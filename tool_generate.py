@@ -129,7 +129,8 @@ def main(conf):
                                  protection=conf["protection"],
                                  enable_tba=conf["tba"],
                                  enable_hd=conf["hd"],
-                                 enable_cfor=conf["cfor"]
+                                 enable_cfor=conf["cfor"],
+                                 enable_inout=conf["inout-disjoint"]
                           )
 
     # save config
