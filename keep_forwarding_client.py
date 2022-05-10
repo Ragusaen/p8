@@ -74,7 +74,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
 
     kf_traversal = build_kf_traversal(network.topology)
 
-    def true_sink(e: tuple[str, str]):
+    def true_sink(e: Tuple[str, str]):
         v, u = e
         u_degree = network.topology.degree[u]
         if u_degree > 2:
