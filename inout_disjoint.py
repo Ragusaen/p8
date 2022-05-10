@@ -49,17 +49,19 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
     router_memory_usage = {r: 0 for r in network.routers}
 
     forwarding_table = ForwardingTable()
-    weight_graph = network.topology.copy()
     ingress_to_paths_dict = {r: [] for r in ingress}
-    ingress_index = 0
     ingress_to_path_labels_dict = {r: [] for r in ingress}
     ingress_to_path_backtracking_labels_dict = {r: [] for r in ingress}
+    ingress_to_weight_graph_dict = {ing: network.topology.copy().to_directed() for ing in ingress}
+
+    for _, weighted_graph in ingress_to_weight_graph_dict.items():
+        reset_weights(weighted_graph, 0)
 
     for i in range(epochs):
         # select the next ingress router to even out memory usage
         ingress_router = ingress[i % len(ingress)]
 
-        path = nx.dijkstra_path(weight_graph, ingress_router, egress, "weight")
+        path = nx.single_source_bellman_ford(ingress_to_weight_graph_dict[ingress_router], ingress_router, egress, weight="weight")[1]
 
         # see if this path (with backtracking) surpasses the memory limit
         router_memory_usage_after = router_memory_usage.copy()
@@ -74,7 +76,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
             make_last_path = not [False if router_memory_usage_after[r] <= flow_max_memory else True for r in path].__contains__(True)
 
         # update weights in the network to change the shortest path
-        update_weights(weight_graph, path)
+        update_weights(ingress_to_weight_graph_dict[ingress_router], path)
 
         # if path violates memory limit, do not add it
         if max_memory_reached and not make_last_path:
@@ -94,7 +96,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
         ingress_to_path_labels_dict[ing] = list(dict.fromkeys(ingress_to_path_labels_dict[ing]))
         ingress_to_path_backtracking_labels_dict[ing] = list(dict.fromkeys(ingress_to_path_backtracking_labels_dict[ing]))
 
-        forwarding_table.extend(encode_paths(ingress_to_paths_dict[ing], ingress_to_path_labels_dict[ing], ingress_to_path_backtracking_labels_dict[ing]))
+        forwarding_table.extend(encode_paths_full_backtrack(ingress_to_paths_dict[ing], ingress_to_path_labels_dict[ing], ingress_to_path_backtracking_labels_dict[ing]))
 
     return forwarding_table.table
 
@@ -108,13 +110,13 @@ def update_weights(G: Graph, path):
     for v1, v2 in zip(path[:-1], path[1:]):
         weight = G[v1][v2]["weight"]
 
-        if weight == 0:
-            G[v1][v2]["weight"] = 100000
+        if weight <= 0:
+            G[v1][v2]["weight"] = 1
         else:
-            G[v1][v2]["weight"] = G[v1][v2]["weight"] * 2 + random.randint(1,10)
+            G[v1][v2]["weight"] = G[v1][v2]["weight"] + random.randint(1, 10)
 
 
-def encode_paths(paths: List, path_labels: List, backtracking_path_labels: List):
+def encode_paths_full_backtrack(paths: List, path_labels: List, backtracking_path_labels: List):
     ft = ForwardingTable()
 
     for i, path in enumerate(paths):
@@ -133,6 +135,27 @@ def encode_paths(paths: List, path_labels: List, backtracking_path_labels: List)
 
                 if t != path[len(path)-1]:
                     ft.add_rule((t, backtracking_path_labels[i]), (1, s, backtracking_path_labels[i]))
+
+    return ft
+
+
+def encode_paths_quick_next_path(paths: List, path_labels: List, backtracking_path_labels: List):
+    ft = ForwardingTable()
+
+    for i, path in enumerate(paths):
+        # for each edge in path
+        for s, t in zip(path[:-1], path[1:]):
+            # create forwarding using the path label
+            ft.add_rule((s, path_labels[i]), (1, t, path_labels[i]))
+
+            # if not last subpath
+            if i < len(paths) - 1:
+                # if link failed, bounce to next subpath
+                ft.add_rule((s, path_labels[i]), (2, s, path_labels[i+1]))
+
+                # create backtracking rules for next subpath
+                if t not in paths[i+1]:
+                    ft.add_rule((t, path_labels[i+1]), (1, s, path_labels[i+1]))
 
     return ft
 
