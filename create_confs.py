@@ -64,10 +64,19 @@ def generate_failures_random(G, n, division = None, random_seed = 1):
     # excess = reduce(lambda a,b: a+b, p) - n
     # p[-1] -= excess   #adjust.
 
+    edges = list(G.edges)
+
     for k in range(1,K+1):
-        X = combinations(list(G.edges),k)
-        F = random.choices(list(X),k=p[k])
-        F_list += F
+        for f in range(p[k]):
+            failed = set()
+            while (len(failed) < k):
+                e = random.choice(edges)
+                if e not in failed:
+                    failed.add(e)
+            F_list.append(tuple(failed))
+        # X = combinations(list(G.edges),k)
+        # F = random.choices(list(X),k=p[k])
+        # F_list += F
 
     if division:
         P = partition(F_list, division)
