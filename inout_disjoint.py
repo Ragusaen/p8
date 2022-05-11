@@ -176,7 +176,7 @@ class InOutDisjoint(MPLS_Client):
         self.partial_forwarding_table: dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]] = {}
 
         self.epochs = kwargs['epochs']
-        self.max_memory = kwargs['max_memory']
+        self.per_flow_memory = kwargs['per_flow_memory']
 
     def LFIB_compute_entry(self, fec: oFEC, single=False):
         for priority, next_hop, swap_fec in self.partial_forwarding_table[(self.router.name, fec)]:
@@ -200,10 +200,10 @@ class InOutDisjoint(MPLS_Client):
         if len(headends) == 0:
             return
 
-        if self.max_memory == 0:
-            ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.epochs, 100)
+        if self.per_flow_memory is None:
+            ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.epochs, flow_max_memory=20)
         else:
-            ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.epochs, self.max_memory)
+            ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.epochs, self.per_flow_memory)
 
         for (src, fec), entries in ft.items():
             src_client: InOutDisjoint = self.router.network.routers[src].clients["inout-disjoint"]
