@@ -71,8 +71,6 @@ class TargetBasedArborescence(MPLS_Client):
         headends = tuple(set(map(lambda x: x[0], self.demands.values()))) #lists cannot be hashed :|
         self.rooted_arborescences = self.arborescence_finder(self.router.network.topology, self.router.name, useable_memory)
 
-        print(f'Demands: {len(self.demands)}\tArborescences: {len(self.rooted_arborescences)}')
-
         # #Create graph for debugging
         # g = gv.Digraph(format="svg")
         #
