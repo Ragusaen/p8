@@ -98,9 +98,9 @@ def generate_all_latex():
 
         connectedness_table_output += add_failure_line_connectedness_table(filtered_data, len_f)
 
-        output_latex_content(f"connectedness_plot_data_lenf={len_f}.tex",
-                             latex_connectedness_plot(filtered_data, max_points),
-                             f"connectedness plot for |F| = {len_f}")
+        # output_latex_content(f"connectedness_plot_data_lenf={len_f}.tex",
+        #                      latex_connectedness_plot(filtered_data, max_points),
+        #                      f"connectedness plot for |F| = {len_f}")
 
     connectedness_table_output += end_connectedness_table_output()
     output_latex_content("connectedness_table.tex", connectedness_table_output, "connectedness table")
