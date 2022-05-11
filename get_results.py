@@ -107,7 +107,7 @@ def parse_result_data(result_folder) -> dict[str, TopologyResult]:
                     within_memory_limit = True
                     if conf_name.__contains__("max-mem="):
                         memory_cap = int(conf_name.split("max-mem=")[1])
-                        within_memory_limit = max_memory < num_flows * memory_cap
+                        within_memory_limit = max_memory <= num_flows * memory_cap
 
             result_dict[conf_name].append(TopologyResult(topology, total_links, num_flows, failure_scenarios, -1, fwd_gen_time, max_memory, within_memory_limit))
 
