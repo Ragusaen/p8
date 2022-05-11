@@ -236,7 +236,7 @@ if __name__ == "__main__":
     for mem in per_flow_memory:
         create('inout-disjoint', mem)
         create('cfor-disjoint', mem)
-#        create('tba-simple', mem)
+        create('tba-simple', mem)
         create('tba-complex', mem)
 
     if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):

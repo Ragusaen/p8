@@ -147,8 +147,8 @@ def create_least_used_arborescence(graph: Graph, egress: str, edge_to_count: Dic
                 heapq.heapify(unused_edges)
 
     # If we could not add any proper edges, just give up
-    if len(arborescence.edges) == 0:
-        return []
+    # if len(arborescence.edges) == 0:
+    #     return []
 
     # Stitch rest of arborescence together
     nodes_not_in_arborescence = set(graph.nodes()) - nodes_in_arborescence
@@ -268,12 +268,12 @@ def complex_find_arborescence(graph: Graph, egress: str, memory: int) -> List[Li
     # We need at least 2 rules to make a usable arborescence
     while max(memory_of_router(v) for v in graph.nodes()) <= memory - 1:
         a = create_least_used_arborescence(graph, egress, edge_to_count)
-        if len(a) == 0:
-            break
+        # if len(a) == 0:
+        #     break
         arborescences.append(a)
 
     # Prune the rules, assume last arborescence is least important
-    router_memory_usage = {v: sum(1 for a in arborescences for s,_,_ in a if s == v) for v in graph.nodes()}
+    router_memory_usage = {v: memory_of_router(v) for v in graph.nodes()}
     over_memory = {v for v, m in router_memory_usage.items() if m > memory}
 
     for v in over_memory:
@@ -285,4 +285,5 @@ def complex_find_arborescence(graph: Graph, egress: str, memory: int) -> List[Li
         for r in v_rules:
             arborescences[-1].remove(r)
 
+    assert(all(memory_of_router(v) <= memory for v in graph.nodes()))
     return arborescences
