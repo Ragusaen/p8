@@ -29,7 +29,7 @@ class ForwardingTable:
 
 def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: str, epochs, flow_max_memory) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
     def label(_ingress, _egress, path_index: int):
-        return oFEC("cfor", f"{_ingress}_to_{_egress}_path{path_index}", {"ingress": ingress, "egress": [egress], "iteration": 1, "switch": 1})
+        return oFEC("inout-disjoint", f"{_ingress}_to_{_egress}_path{path_index}", {"ingress": ingress, "egress": [egress], "path_index": path_index})
 
     def compute_memory_usage(ingress_to_paths_dict) -> Dict:
         memory_usage = {r: 0 for r in network.routers}

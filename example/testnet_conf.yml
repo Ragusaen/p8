@@ -1,18 +1,16 @@
-enable_RMPLS: false
+epochs: 1000
 ldp: false
+method: inout-disjoint
+per_flow_memory: 8
 php: false
+random_gen_method: 1
 random_seed: 1
-method: tba
-path: complex
-per_flow_memory: 3
-protection: none
-rsvp_num_lsps: 50
+random_weight_mode: equal
+result_folder: results/inout-disjoint_max-mem=8/example
 rsvp_tunnels_per_pair: 1
 vpn: false
+
+
+
 topology: example/testnet.json
 flows_file: example/testnet_flows.yml
-failure_chunk_file: example/fail_testnet.yaml
-result_folder: results
-vpn_ces_per_pe: 2
-vpn_num_services: 4
-vpn_pes_per_services: 8

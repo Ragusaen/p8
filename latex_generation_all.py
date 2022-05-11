@@ -221,12 +221,10 @@ def latex_connectedness_plot(data: dict, _max_points) -> str:
 def latex_loop_table(data) -> str:
     alg_to_res_dict = {}
 
-    filtered_data = dict(filter(lambda x: not x[0].__contains__("max-mem"), data.items()))
-
-    for alg in filtered_data.keys():
+    for alg in data.keys():
         num_links = 0
         num_looping_links = 0
-        for topology in filtered_data[alg]:
+        for topology in data[alg]:
             topology: TopologyResult
             num_links += topology.total_links
 
