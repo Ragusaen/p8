@@ -27,10 +27,9 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
 }
 
 alg_to_bar_config_dict = {
-    "cfor-disjoint": "north east lines",
-    "tba-simple": "north west lines",
+    "tba-simple": "dots",
     "inout-disjoint": "horizontal lines",
-    "tba-complex": "grid"
+    "tba-complex": "north east lines"
 }
 
 parser = argparse.ArgumentParser()

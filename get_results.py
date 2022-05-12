@@ -148,6 +148,7 @@ def compute_connectedness(result_data: dict) -> {}:
                 connectedness = 1.2
                 # this should never happen
                 # raise Exception("Topology had connectivity of 0.. very likely bug")
+                print(f"{conf_name} No failure scenarios for {topology}")
 
             topology.connectedness = connectedness
 

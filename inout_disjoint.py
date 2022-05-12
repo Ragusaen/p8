@@ -33,10 +33,10 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
         return oFEC("inout-disjoint", f"{_ingress}_to_{_egress}_path{path_index}",
                     {"ingress": ingress, "egress": [egress], "path_index": path_index})
 
-    def compute_memory_usage(ingress_to_paths_dict) -> Dict:
+    def compute_memory_usage(ing_to_paths_dict) -> Dict:
         memory_usage = {r: 0 for r in network.routers}
 
-        for _, paths in ingress_to_paths_dict.items():
+        for _, paths in ing_to_paths_dict.items():
             for i, path in enumerate(paths):
                 is_last_path = i == (len(paths) - 1)
 
@@ -79,7 +79,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: s
                     try_paths[ing].append(path)
 
         # see if adding this path surpasses the the memory limit
-        router_memory_usage = compute_memory_usage(ingress_to_paths_dict)
+        router_memory_usage = compute_memory_usage(try_paths)
         max_memory_reached = True in [False if router_memory_usage[r] <= flow_max_memory else True for r in path]
 
         # update weights in the network to change the shortest path
