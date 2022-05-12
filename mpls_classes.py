@@ -558,7 +558,7 @@ class Network(object):
         self.service_registry = dict()   # hash table with sets of PE routers for each MPLS service.
         # create and keep track of all routers in the network
         routers = dict()
-        self.routers = routers
+        self.routers: Dict[str, Router] = routers
 
         for n in topology.nodes():
             r = Router(self, n)

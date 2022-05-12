@@ -27,7 +27,7 @@ class ForwardingTable:
                 self.add_rule(lhs, rhs)
 
 
-def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: str, epochs, flow_max_memory) -> Dict[
+def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, str]], epochs: int, total_max_memory: int) -> Dict[
     Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
     def label(_ingress, _egress, path_index: int):
         return oFEC("inout-disjoint", f"{_ingress}_to_{_egress}_path{path_index}",
@@ -198,16 +198,15 @@ class InOutDisjoint(MPLS_Client):
         self.demands[f"{len(self.demands.items())}_{headend}_to_{self.router.name}"] = (headend, self.router.name)
 
     def commit_config(self):
-        headends = list(map(lambda x: x[0], self.demands.values()))
-        if len(headends) == 0:
+        # Only one router should generate dataplane!
+        if self.router.name != min(rname for rname in self.router.network.routers):
             return
 
-        if self.per_flow_memory is None:
-            ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.epochs,
-                                                  flow_max_memory=20)
-        else:
-            ft = generate_pseudo_forwarding_table(self.router.network, headends, self.router.name, self.epochs,
-                                                  self.per_flow_memory)
+        network = self.router.network
+
+        flows = [(headend, tailend) for tailend in network.routers for headend in map(lambda x: x[0], network.routers['router3'].clients[self.protocol].demands.values())]
+
+        ft = generate_pseudo_forwarding_table(self.router.network, flows, self.epochs, self.per_flow_memory * len(flows))
 
         for (src, fec), entries in ft.items():
             src_client: InOutDisjoint = self.router.network.routers[src].clients["inout-disjoint"]
