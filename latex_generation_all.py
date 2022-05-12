@@ -9,21 +9,22 @@ import re
 
 
 class AlgorithmPlotConfiguration:
-    def __init__(self, name: str, color: str, line_style: str):
+    def __init__(self, name: str, color: str, line_style: str, mark: str = "none"):
         self.name: str = name
         self.color: str = color
         self.line_style: str = line_style
+        self.mark: str = mark
 
 
 alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
-    "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dashed"),
-    "tba-simple": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "solid"),
-    "tba-complex": AlgorithmPlotConfiguration("Circular Arborescence", "yellow", "densely dashdotted"),
-    "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "red", "dotted"),
-    "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "loosely dotted"),
+    # "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dashed"),
+    "tba-simple": AlgorithmPlotConfiguration("Circular Arborescence", "black", "dash dotted"),
+    "tba-complex": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "solid", "diamond*"),
+    "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "green", "dotted"),
+    # "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "loosely dotted"),
     "kf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted"),
     "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashed"),
-    "inout-disjoint": AlgorithmPlotConfiguration("Ingress Egress Disjoint Paths", "magenta", "loosely dashdotted"),
+    "inout-disjoint": AlgorithmPlotConfiguration("Ingress Egress Disjoint Paths", "red", "dashed", "square*"),
 }
 
 alg_to_bar_config_dict = {
@@ -145,12 +146,13 @@ def latex_memory_bar_chart(data: dict) -> str:
 
     alg_to_coordinates = {}
     for alg in set(alg_longname_to_proper_alg_name.values()):
-        alg_to_coordinates[alg] = r"\addplot[ybar, pattern={" + alg_to_bar_config_dict[alg] + r"}] coordinates {"
+        alg_to_coordinates[alg] = r"\addplot[" + f"color={alg_to_plot_config_dict[alg].color}, {alg_to_plot_config_dict[alg].line_style}, thick, mark={alg_to_plot_config_dict[alg].mark}" + r", every mark/.append style={solid}] coordinates{"
         latex_plot_legend += f"{alg}, "
 
     latex_plot_legend += "}\n"
 
-    for (alg_longname, memory_group) in alg_longname_to_memory_group.items():
+    sorted_dict = sorted(list(alg_longname_to_memory_group.items()), key=lambda x: int(x[1]))
+    for (alg_longname, memory_group) in sorted_dict:
         connectedness = compute_average_connectedness_for_algorithm(filtered_data, alg_longname)
 
         failedness = 1.0-connectedness
