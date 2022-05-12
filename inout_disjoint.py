@@ -33,25 +33,16 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
         return oFEC("inout-disjoint", f"{_ingress}_to_{_egress}_path{path_index}",
                     {"ingress": _ingress, "egress": [_egress], "path_index": path_index})
 
-    def compute_memory_usage(ing_to_paths_dict) -> Dict:
+    def compute_memory_usage(_flow_to_paths_dict) -> Dict:
         memory_usage = {r: 0 for r in network.routers}
 
-        for _, paths in ing_to_paths_dict.items():
-            for i, path in enumerate(paths):
-                is_last_path = i == (len(paths) - 1)
+        ft = ForwardingTable()
+        for f in flows:
+            ft.extend(
+                encode_paths_quick_next_path(_flow_to_paths_dict[f], ["pseudo_label" for f in list(_flow_to_paths_dict.keys())]))
 
-                # for each edge in path
-                for s, t in zip(path[:-1], path[1:]):
-                    # create simple forwarding using the path label
-                    memory_usage[s] += 1
-
-                    # handle bouncing to next path
-                    if not is_last_path:
-                        memory_usage[s] += 1
-
-                        # create backtracking rules for next subpath
-                        if t not in paths[i + 1]:
-                            memory_usage[t] += 1
+        for (router, _), rules in ft.table.items():
+            memory_usage[router] += len(rules)
 
         return memory_usage
 
@@ -79,7 +70,7 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
 
         # see if adding this path surpasses the the memory limit
         router_memory_usage = compute_memory_usage(try_paths)
-        max_memory_reached = True in [False if router_memory_usage[r] <= total_max_memory else True for r in path]
+        max_memory_reached = True in [False if router_memory_usage[r] <= total_max_memory else True for r in network.routers]
 
         # update weights in the network to change the shortest path
         update_weights(flow_to_weight_graph_dict[flow], path)
