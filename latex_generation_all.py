@@ -69,7 +69,7 @@ def add_failure_line_connectedness_table(filtered_data, len_f):
          filtered_data]) + "\\\\ \n"
 
 
-def compute_average_connectedness_for_algorithm(data, alg) -> str:
+def compute_average_connectedness_for_algorithm(data, alg) -> float:
     return sum(c.connectedness for c in data[alg]) / len(data[alg])
 
 
@@ -150,12 +150,12 @@ def latex_memory_bar_chart(data: dict) -> str:
 
     latex_plot_legend += "}\n"
 
-    lowest_connectedness = 1
     for (alg_longname, memory_group) in alg_longname_to_memory_group.items():
         connectedness = compute_average_connectedness_for_algorithm(filtered_data, alg_longname)
-        if connectedness < lowest_connectedness:
-            lowest_connectedness = connectedness
-        alg_to_coordinates[alg_longname_to_proper_alg_name[alg_longname]] += f"({memory_group}, {connectedness}) "
+
+        failedness = 1.0-connectedness
+
+        alg_to_coordinates[alg_longname_to_proper_alg_name[alg_longname]] += f"({memory_group}, {failedness}) "
 
     for alg in alg_to_coordinates.keys():
         alg_to_coordinates[alg] += "};\n"
