@@ -31,7 +31,7 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
     Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
     def label(_ingress, _egress, path_index: int):
         return oFEC("inout-disjoint", f"{_ingress}_to_{_egress}_path{path_index}",
-                    {"ingress": ingress, "egress": [egress], "path_index": path_index})
+                    {"ingress": _ingress, "egress": [_egress], "path_index": path_index})
 
     def compute_memory_usage(ing_to_paths_dict) -> Dict:
         memory_usage = {r: 0 for r in network.routers}
@@ -55,50 +55,49 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
 
         return memory_usage
 
-    flow_max_memory *= len(ingress)
-
     forwarding_table = ForwardingTable()
-    ingress_to_paths_dict = {r: [] for r in ingress}
-    ingress_to_path_labels_dict = {r: [] for r in ingress}
-    ingress_to_weight_graph_dict = {ing: network.topology.copy().to_directed() for ing in ingress}
+    flow_to_paths_dict = {f: [] for f in flows}
+    flow_to_path_labels_dict = {f: [] for f in flows}
+    flow_to_weight_graph_dict = {f: network.topology.copy().to_directed() for f in flows}
 
-    for _, weighted_graph in ingress_to_weight_graph_dict.items():
+    for _, weighted_graph in flow_to_weight_graph_dict.items():
         reset_weights(weighted_graph, 0)
 
     for i in range(epochs):
         # select the next ingress router to even out memory usage
-        ingress_router = ingress[i % len(ingress)]
+        flow = flows[i % len(flows)]
+        ingress_router, egress_router = flow
 
-        path = nx.dijkstra_path(ingress_to_weight_graph_dict[ingress_router], ingress_router, egress, weight="weight")
+        path = nx.dijkstra_path(flow_to_weight_graph_dict[flow], ingress_router, egress_router, weight="weight")
 
         try_paths = {}
-        for ing, paths in ingress_to_paths_dict.items():
-            try_paths[ing] = paths.copy()
-            if ing == ingress_router:
-                if path not in try_paths[ing]:
-                    try_paths[ing].append(path)
+        for f, paths in flow_to_paths_dict.items():
+            try_paths[f] = paths.copy()
+            if f == flow:
+                if path not in try_paths[f]:
+                    try_paths[f].append(path)
 
         # see if adding this path surpasses the the memory limit
         router_memory_usage = compute_memory_usage(try_paths)
-        max_memory_reached = True in [False if router_memory_usage[r] <= flow_max_memory else True for r in path]
+        max_memory_reached = True in [False if router_memory_usage[r] <= total_max_memory else True for r in path]
 
         # update weights in the network to change the shortest path
-        update_weights(ingress_to_weight_graph_dict[ingress_router], path)
+        update_weights(flow_to_weight_graph_dict[flow], path)
 
         # if path violates memory limit, do not add it
         if max_memory_reached:
             continue
 
-        if path not in ingress_to_paths_dict[ingress_router]:
-            ingress_to_paths_dict[ingress_router].append(path)
-        ingress_to_path_labels_dict[ingress_router].append(
-            label(ingress_router, egress, len(ingress_to_paths_dict[ingress_router])))
+        if path not in flow_to_paths_dict[flow]:
+            flow_to_paths_dict[flow].append(path)
+        flow_to_path_labels_dict[flow].append(
+            label(ingress_router, egress_router, len(flow_to_paths_dict[flow])))
 
-    for ing in ingress:
+    for f in flows:
         # remove duplicate labels
-        ingress_to_path_labels_dict[ing] = list(dict.fromkeys(ingress_to_path_labels_dict[ing]))
+        flow_to_path_labels_dict[f] = list(dict.fromkeys(flow_to_path_labels_dict[f]))
         forwarding_table.extend(
-            encode_paths_quick_next_path(ingress_to_paths_dict[ing], ingress_to_path_labels_dict[ing]))
+            encode_paths_quick_next_path(flow_to_paths_dict[f], flow_to_path_labels_dict[f]))
 
     return forwarding_table.table
 
@@ -204,7 +203,7 @@ class InOutDisjoint(MPLS_Client):
 
         network = self.router.network
 
-        flows = [(headend, tailend) for tailend in network.routers for headend in map(lambda x: x[0], network.routers['router3'].clients[self.protocol].demands.values())]
+        flows = [(headend, tailend) for tailend in network.routers for headend in map(lambda x: x[0], network.routers[tailend].clients[self.protocol].demands.values())]
 
         ft = generate_pseudo_forwarding_table(self.router.network, flows, self.epochs, self.per_flow_memory * len(flows))
 
