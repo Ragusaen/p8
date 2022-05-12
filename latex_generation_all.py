@@ -58,7 +58,7 @@ class OutputData:
 
 
 def init_connectedness_table_output(result_data):
-    filtered_data = dict(filter(lambda x: not x[0].__contains__("max-mem"), result_data.items()))
+    filtered_data = results_data #dict(filter(lambda x: not x[0].__contains__("max-mem"), result_data.items()))
     return "\\begin{tabular}{c |" + " c" * len(filtered_data.keys()) + "}\n\t" + "$|F|$ & " + " & ".join(
         filtered_data.keys()) + "\\\\ \hline \n"
 
@@ -92,7 +92,7 @@ def generate_all_latex():
     print("Creating connectedness plot for each failure scenario cardinality")
     for len_f in range(0, 5):
         filtered_data = remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(results_data, len_f)
-        filtered_data = dict(filter(lambda x: not x[0].__contains__("max-mem"), filtered_data.items()))
+#        filtered_data = dict(filter(lambda x: not x[0].__contains__("max-mem"), filtered_data.items()))
         compute_connectedness(filtered_data)
 
         connectedness_table_output += add_failure_line_connectedness_table(filtered_data, len_f)
