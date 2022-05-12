@@ -232,7 +232,7 @@ if __name__ == "__main__":
     create('gft')
     create('kf')
 
-    per_flow_memory = [3, 5, 8]
+    per_flow_memory = [2, 3, 4, 5, 6, 7, 8, 9, 10]
     for mem in per_flow_memory:
         create('inout-disjoint', mem)
         create('tba-complex', mem)
