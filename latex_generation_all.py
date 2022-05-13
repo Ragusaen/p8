@@ -18,12 +18,12 @@ class AlgorithmPlotConfiguration:
 
 alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     # "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dashed"),
-    "tba-simple": AlgorithmPlotConfiguration("Circular Arborescence", "black", "dash dotted"),
+    "tba-simple": AlgorithmPlotConfiguration("Circular Arborescence", "black", "dash dotted", "o*"),
     "tba-complex": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "solid", "diamond*"),
-    "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "green", "dotted"),
+    "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "green", "dotted", "triangle*"),
     # "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "loosely dotted"),
     "kf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted"),
-    "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashed"),
+    "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashed", "ocircle*"),
     "inout-disjoint": AlgorithmPlotConfiguration("Ingress Egress Disjoint Paths", "red", "dashed", "square*"),
 }
 
@@ -130,32 +130,40 @@ def output_latex_content(file_name: str, content: str, content_type: str):
 def latex_memory_bar_chart(data: dict) -> str:
     latex_plot_legend = r"\legend{"
     skip_algs = set()
+    skip_algs.add("Keep Forwarding")
     alg_longname_to_proper_alg_name = {}
-    alg_longname_to_memory_group = {}
+    memory_to_alg_dict = {i: [] for i in range(2, 11)}
+    algs = set()
+    memories = [2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-    filtered_data = dict(filter(lambda x: x[0].__contains__("max-mem"), data.items()))
-
-    for alg in filtered_data.keys():
+    for alg in data.keys():
         alg: str
-        if not alg.__contains__("max-mem"):
-            skip_algs.add(alg)
-            continue
-        (alg_proper_name, memory_group) = re.split("_max-mem=", alg)
-        alg_longname_to_proper_alg_name[alg] = alg_proper_name
-        alg_longname_to_memory_group[alg] = memory_group
+        if "max-mem" in alg:
+            (alg_proper_name, memory_group) = re.split("_max-mem=", alg)
+            alg_longname_to_proper_alg_name[alg] = alg_proper_name
+            memory_to_alg_dict[int(memory_group)].append(alg)
+            algs.add(alg_proper_name)
+        else:
+            max_memory_topology = max(data[alg], key=lambda it: it.max_memory / it.num_flows)
+            max_memory = int(max_memory_topology.max_memory / max_memory_topology.num_flows)
+            filtered_memories = list(filter(lambda it: it > max_memory, memories))
+            for memory in filtered_memories:
+                memory_to_alg_dict[memory].append(alg)
+            algs.add(alg)
 
     alg_to_coordinates = {}
-    for alg in set(alg_longname_to_proper_alg_name.values()):
-        alg_to_coordinates[alg] = r"\addplot[" + f"color={alg_to_plot_config_dict[alg].color}, {alg_to_plot_config_dict[alg].line_style}, thick, mark={alg_to_plot_config_dict[alg].mark}" + r", every mark/.append style={solid}] coordinates{"
+    for alg in algs:
+        alg_to_coordinates[
+            alg] = r"\addplot[" + f"color={alg_to_plot_config_dict[alg].color}, {alg_to_plot_config_dict[alg].line_style}, thick, mark={alg_to_plot_config_dict[alg].mark}" + r", every mark/.append style={solid}] coordinates{"
         latex_plot_legend += f"{alg}, "
 
     latex_plot_legend += "}\n"
 
-    sorted_dict = sorted(list(alg_longname_to_memory_group.items()), key=lambda x: int(x[1]))
+    sorted_dict = sorted(list(memory_to_alg_dict.items()), key=lambda x: int(x[0]))
     for (alg_longname, memory_group) in sorted_dict:
         connectedness = compute_average_connectedness_for_algorithm(filtered_data, alg_longname)
 
-        failedness = 1.0-connectedness
+        failedness = 1.0 - connectedness
 
         alg_to_coordinates[alg_longname_to_proper_alg_name[alg_longname]] += f"({memory_group}, {failedness}) "
 
