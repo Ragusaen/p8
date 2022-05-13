@@ -18,14 +18,14 @@ class AlgorithmPlotConfiguration:
 
 alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     # "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dashed"),
-    "tba-simple": AlgorithmPlotConfiguration("Circular Arborescence", "black", "dash dotted", "o*"),
-    "tba-complex": AlgorithmPlotConfiguration("Circular Arborescence", "blue", "solid", "diamond*"),
+    "tba-simple": AlgorithmPlotConfiguration("Basic Circular Arborescence", "black", "dash dot", "+"),
+    "tba-complex": AlgorithmPlotConfiguration("Extended Circular Arborescence", "blue", "dashed", "diamond*"),
     "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "green", "dotted", "triangle*"),
     # "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "loosely dotted"),
     "kf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted"),
-    "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashed", "*"),
-    "inout-disjoint": AlgorithmPlotConfiguration("Ingress Egress Disjoint Paths", "red", "dashed", "square*"),
-    "rmpls": AlgorithmPlotConfiguration("R-MPLS", "gray", "densely dashed", "otimes*"),
+    "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashed", "x"),
+    "inout-disjoint": AlgorithmPlotConfiguration("Forward Backward Routing", "red", "solid", "square*"),
+    "rmpls": AlgorithmPlotConfiguration("R-MPLS", "gray", "densely dashed", "*"),
 }
 
 alg_to_bar_config_dict = {
