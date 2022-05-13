@@ -145,6 +145,10 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, per_flow_
     elif conf_type == 'inout-disjoint':
         base_config['method'] = 'inout-disjoint'
         base_config['epochs'] = 1000
+    elif conf_type == 'rmpls':
+        base_config['enable_RMPLS'] = True
+        base_config['protection'] = None
+        base_config['method'] = 'rsvp'
     else:
         raise Exception(f"Conf type {conf_type} not known")
 
@@ -225,12 +229,13 @@ if __name__ == "__main__":
             documents = yaml.dump(dict_conf, file, Dumper=NoAliasDumper)
 
     create('rsvp-fn')    # conf file with RSVP(FRR), no RMPLS
-#    create('tba-multi')
+    create('tba-simple')
 #    create('hd')
 #    create('cfor-short')
 #    create('cfor-arb')
     create('gft')
     create('kf')
+    create('rmpls')
 
     per_flow_memory = [2, 3, 4, 5, 6, 7, 8, 9, 10]
     for mem in per_flow_memory:
