@@ -119,6 +119,7 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, per_flow_
     elif conf_type == "tba-simple":
         base_config["method"] = "tba"
         base_config['path'] = 'simple'
+        base_config['per_flow_memory'] = -1
     elif conf_type == "tba-complex":
         base_config["method"] = "tba"
         base_config['path'] = 'complex'
