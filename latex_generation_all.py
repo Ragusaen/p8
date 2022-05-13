@@ -23,8 +23,9 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "green", "dotted", "triangle*"),
     # "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "loosely dotted"),
     "kf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted"),
-    "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashed", "ocircle*"),
+    "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashed", "*"),
     "inout-disjoint": AlgorithmPlotConfiguration("Ingress Egress Disjoint Paths", "red", "dashed", "square*"),
+    "rmpls": AlgorithmPlotConfiguration("R-MPLS", "gray", "densely dashed", "otimes*"),
 }
 
 alg_to_bar_config_dict = {
@@ -144,6 +145,7 @@ def latex_memory_bar_chart(data: dict) -> str:
             memory_to_alg_dict[int(memory_group)].append(alg)
             algs.add(alg_proper_name)
         else:
+            alg_longname_to_proper_alg_name[alg] = alg
             max_memory_topology = max(data[alg], key=lambda it: it.max_memory / it.num_flows)
             max_memory = int(max_memory_topology.max_memory / max_memory_topology.num_flows)
             filtered_memories = list(filter(lambda it: it > max_memory, memories))
@@ -155,17 +157,18 @@ def latex_memory_bar_chart(data: dict) -> str:
     for alg in algs:
         alg_to_coordinates[
             alg] = r"\addplot[" + f"color={alg_to_plot_config_dict[alg].color}, {alg_to_plot_config_dict[alg].line_style}, thick, mark={alg_to_plot_config_dict[alg].mark}" + r", every mark/.append style={solid}] coordinates{"
-        latex_plot_legend += f"{alg}, "
+        latex_plot_legend += f"{alg_to_plot_config_dict[alg].name}, "
 
     latex_plot_legend += "}\n"
 
     sorted_dict = sorted(list(memory_to_alg_dict.items()), key=lambda x: int(x[0]))
-    for (alg_longname, memory_group) in sorted_dict:
-        connectedness = compute_average_connectedness_for_algorithm(filtered_data, alg_longname)
+    for (memory_group, algs) in sorted_dict:
+        for alg_longname in algs:
+            connectedness = compute_average_connectedness_for_algorithm(data, alg_longname)
 
-        failedness = 1.0 - connectedness
+            failedness = 1.0 - connectedness
 
-        alg_to_coordinates[alg_longname_to_proper_alg_name[alg_longname]] += f"({memory_group}, {failedness}) "
+            alg_to_coordinates[alg_longname_to_proper_alg_name[alg_longname]] += f"({memory_group}, {failedness}) "
 
     for alg in alg_to_coordinates.keys():
         alg_to_coordinates[alg] += "};\n"
