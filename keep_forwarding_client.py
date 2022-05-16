@@ -170,7 +170,7 @@ class KeepForwarding(MPLS_Client):
         for demand, (ingress, egress) in self.demands.items():
             ft = generate_pseudo_forwarding_table(self.router.network, ingress, egress)
 
-            ft.to_graphviz(f'kf_{ingress}_{egress}', self.router.network.topology)
+            #ft.to_graphviz(f'kf_{ingress}_{egress}', self.router.network.topology)
             #Clean the forwarding table
             for _, rules in ft.table.items():
                 seen = set()
