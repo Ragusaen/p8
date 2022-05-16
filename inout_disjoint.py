@@ -39,7 +39,7 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
         ft = ForwardingTable()
         for f in flows:
             ft.extend(
-                encode_paths_quick_next_path(_flow_to_paths_dict[f], ["pseudo_label" for f in list(_flow_to_paths_dict.keys())]))
+                encode_paths_quick_next_path(_flow_to_paths_dict[f], ["pseudo_label" for _ in list(_flow_to_paths_dict[f])]))
 
         for (router, _), rules in ft.table.items():
             memory_usage[router] += len(rules)
