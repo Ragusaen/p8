@@ -160,8 +160,6 @@ class KeepForwarding(MPLS_Client):
         self.demands[f"{len(self.demands.items())}_{headend}_to_{self.router.name}"] = (headend, self.router.name)
 
     def commit_config(self):
-        a = ForwardingTable()
-        a.to_graphviz('test', self.router.network.topology)
         for demand, (ingress, egress) in self.demands.items():
             ft = generate_pseudo_forwarding_table(self.router.network, ingress, egress)
 
