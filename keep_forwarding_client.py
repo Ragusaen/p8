@@ -6,7 +6,7 @@ import networkx.exception
 from mpls_classes import *
 from functools import *
 from networkx import shortest_path
-from cfor import ForwardingTable
+from ForwardingTable import ForwardingTable
 
 from typing import Dict, Tuple, List, Callable
 
@@ -74,14 +74,19 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
 
     kf_traversal = build_kf_traversal(network.topology)
 
-    def true_sink(e: Tuple[str, str]):
+    def true_sink(e: Tuple[str, str], start=None):
+        if start is None:
+            start = e[1]
+        elif e[1] == start:
+            return start
+
         v, u = e
         u_degree = network.topology.degree[u]
         if u_degree > 2:
             return u
         elif u_degree == 2:
             u_edges = list(network.topology.edges(u))
-            return true_sink([(s,t) for s,t in u_edges if t != v][0])
+            return true_sink([(s,t) for s,t in u_edges if t != v][0], start)
         else:
             return v
 
@@ -155,6 +160,8 @@ class KeepForwarding(MPLS_Client):
         self.demands[f"{len(self.demands.items())}_{headend}_to_{self.router.name}"] = (headend, self.router.name)
 
     def commit_config(self):
+        a = ForwardingTable()
+        a.to_graphviz('test', self.router.network.topology)
         for demand, (ingress, egress) in self.demands.items():
             ft = generate_pseudo_forwarding_table(self.router.network, ingress, egress)
 
