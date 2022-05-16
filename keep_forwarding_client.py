@@ -6,7 +6,8 @@ import networkx.exception
 from mpls_classes import *
 from functools import *
 from networkx import shortest_path
-from cfor import ForwardingTable
+
+from ForwardingTable import ForwardingTable
 
 from typing import Dict, Tuple, List, Callable
 
@@ -64,11 +65,12 @@ def build_kf_traversal(topology: Graph) -> Dict[Tuple[str,str], List[str]]:
     return trav_dict
 
 
-def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
+def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str) -> ForwardingTable:
     router_to_label = {r: oFEC('kf', f'{ingress}_to_{egress}_last_at_{r}', {'egress': egress, 'ingress': ingress}) for r in network.routers.keys()}
 
     edges: set[tuple[str, str]] = set([(n1, n2) for (n1, n2) in network.topology.edges if n1 != n2] \
-                                      + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2])
+                                      + [(n2, n1) for (n1, n2) in network.topology.edges if n1 != n2] \
+                                      + [(n,n) for n in network.topology.nodes])
     network.compute_dijkstra(weight=1)
     D: dict[str, int] = {r: network.routers[r].dist[egress] for r in network.routers.keys()}
 
@@ -88,7 +90,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
     ft = ForwardingTable()
 
     for src, tgt in edges:
-        if tgt == egress or src == egress:
+        if tgt == egress:
             continue
 
         priority = 0
@@ -113,7 +115,12 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
         else:
             add_ordered_rules([(s,t) for s,t in out_edges if D[t] < D[s]])
 
-            for nh in kf_traversal[(src, tgt)]:
+            if src == tgt:
+                s,t = next((s,t) for s,t in kf_traversal.keys() if t == tgt)
+            else:
+                s,t = (src,tgt)
+
+            for nh in kf_traversal[(s,t)]:
                 ft.add_rule((tgt, router_to_label[src]), (priority, nh, router_to_label[tgt]))
                 priority += 1
 
@@ -121,7 +128,7 @@ def generate_pseudo_forwarding_table(network: Network, ingress: str, egress: str
 
         ft.add_rule((tgt, router_to_label[src]), (priority, src, router_to_label[tgt]))
 
-    return ft.table
+    return ft
 
 
 class KeepForwarding(MPLS_Client):
@@ -158,8 +165,9 @@ class KeepForwarding(MPLS_Client):
         for demand, (ingress, egress) in self.demands.items():
             ft = generate_pseudo_forwarding_table(self.router.network, ingress, egress)
 
+            ft.to_graphviz(f'kf_{ingress}_{egress}', self.router.network.topology)
             #Clean the forwarding table
-            for _, rules in ft.items():
+            for _, rules in ft.table.items():
                 seen = set()
                 remove = set()
                 for rule in rules:
@@ -170,7 +178,8 @@ class KeepForwarding(MPLS_Client):
                 for rule in remove:
                     rules.remove(rule)
 
-            for (src, fec), entries in ft.items():
+
+            for (src, fec), entries in ft.table.items():
                 src_client: KeepForwarding = self.router.network.routers[src].clients["kf"]
 
                 if (src, fec) not in src_client.partial_forwarding_table:

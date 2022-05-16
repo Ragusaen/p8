@@ -7,24 +7,11 @@ from functools import *
 from networkx import shortest_path
 import networkx as nx
 
+from ForwardingTable import ForwardingTable
+
 from itertools import islice
 
 from typing import Dict, Tuple, List, Callable
-
-
-class ForwardingTable:
-    def __init__(self):
-        self.table: dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]] = {}
-
-    def add_rule(self, key: Tuple[str, oFEC], value: Tuple[int, str, oFEC]):
-        if not self.table.keys().__contains__(key):
-            self.table[key] = []
-        self.table[key].append(value)
-
-    def extend(self, other):
-        for lhs, rhs_list in other.table.items():
-            for rhs in rhs_list:
-                self.add_rule(lhs, rhs)
 
 
 def generate_pseudo_forwarding_table(network: Network, ingress: [str], egress: str, num_down_paths: int = 1, num_cycling_paths: int = 1) -> Dict[Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
