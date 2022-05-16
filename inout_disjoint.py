@@ -1,7 +1,9 @@
 import itertools
+import os.path
 
 import networkx.exception
 
+from ForwardingTable import ForwardingTable
 from mpls_classes import *
 from functools import *
 from networkx import shortest_path
@@ -12,23 +14,7 @@ from itertools import islice
 from typing import Dict, Tuple, List, Callable
 
 
-class ForwardingTable:
-    def __init__(self):
-        self.table: dict[tuple[str, oFEC], list[tuple[int, str, oFEC]]] = {}
-
-    def add_rule(self, key: Tuple[str, oFEC], value: Tuple[int, str, oFEC]):
-        if not self.table.keys().__contains__(key):
-            self.table[key] = []
-        self.table[key].append(value)
-
-    def extend(self, other):
-        for lhs, rhs_list in other.table.items():
-            for rhs in rhs_list:
-                self.add_rule(lhs, rhs)
-
-
-def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, str]], epochs: int, total_max_memory: int) -> Dict[
-    Tuple[str, oFEC], List[Tuple[int, str, oFEC]]]:
+def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, str]], epochs: int, total_max_memory: int) -> ForwardingTable:
     def label(_ingress, _egress, path_index: int):
         return oFEC("inout-disjoint", f"{_ingress}_to_{_egress}_path{path_index}",
                     {"ingress": _ingress, "egress": [_egress], "path_index": path_index})
@@ -39,7 +25,7 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
         ft = ForwardingTable()
         for f in flows:
             ft.extend(
-                encode_paths_quick_next_path(_flow_to_paths_dict[f], ["pseudo_label" for f in list(_flow_to_paths_dict.keys())]))
+                encode_paths_quick_next_path(_flow_to_paths_dict[f], ["pseudo_label" for _ in list(_flow_to_paths_dict[f])]))
 
         for (router, _), rules in ft.table.items():
             memory_usage[router] += len(rules)
@@ -90,7 +76,7 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
         forwarding_table.extend(
             encode_paths_quick_next_path(flow_to_paths_dict[f], flow_to_path_labels_dict[f]))
 
-    return forwarding_table.table
+    return forwarding_table
 
 
 def reset_weights(G: Graph, value):
@@ -131,21 +117,59 @@ def encode_paths_full_backtrack(paths: List, path_labels: List, backtracking_pat
 
     return ft
 
-
-def encode_paths_quick_next_path(paths: List, path_labels: List):
+def encode_paths_quick_next_path_old(paths: List, path_labels: List):
     ft = ForwardingTable()
 
     for i, path in enumerate(paths):
         is_last_path = i == (len(paths) - 1)
 
         # for each edge in path
-        for s, t in zip(path[:-1], path[1:]):
+        for j, (s, t) in enumerate(zip(path[:-1], path[1:])):
             # create simple forwarding using the path label
             ft.add_rule((s, path_labels[i]), (1, t, path_labels[i]))
 
             # handle bouncing to next path
             if not is_last_path:
                 ft.add_rule((s, path_labels[i]), (2, s, path_labels[i + 1]))
+
+                # create backtracking rules for next subpath
+                if t not in paths[i + 1]:
+                    ft.add_rule((t, path_labels[i + 1]), (1, s, path_labels[i + 1]))
+
+    return ft
+
+def encode_paths_quick_next_path(paths: List, path_labels: List):
+    return encode_paths_quick_next_path_old(paths, path_labels)
+    ft = ForwardingTable()
+
+    if len(paths) == 0:
+        return ft
+
+    # Find good ordering of paths
+    new_path_order = [paths.pop(0)]
+    for i in range(len(paths)):
+        # Find unused path that has longest common prefix and then by most overlapping vertices
+        p = max(paths, key=lambda p: (len(os.path.commonprefix([p, new_path_order[i]]))))
+
+        paths.remove(p)
+        new_path_order.append(p)
+    paths = new_path_order
+
+    path_common_prefix_with_previous = [0] + [len(os.path.commonprefix([paths[i], paths[i-1]])) - 1 for i in range(1, len(paths))]
+
+    for i, path in enumerate(paths):
+        is_last_path = i == (len(paths) - 1)
+
+        # for each edge in path
+        for j, (s, t) in enumerate(zip(path[:-1], path[1:])):
+            # create simple forwarding using the path label
+            if j >= path_common_prefix_with_previous[i]:
+                ft.add_rule((s, path_labels[i]), (1, t, path_labels[i]))
+
+            # handle bouncing to next path
+            if not is_last_path:
+                if j >= path_common_prefix_with_previous[i+1]:
+                    ft.add_rule((s, path_labels[i]), (2, s, path_labels[i + 1]))
 
                 # create backtracking rules for next subpath
                 if t not in paths[i + 1]:
@@ -198,7 +222,9 @@ class InOutDisjoint(MPLS_Client):
 
         ft = generate_pseudo_forwarding_table(self.router.network, flows, self.epochs, self.per_flow_memory * len(flows))
 
-        for (src, fec), entries in ft.items():
+        # ft.to_graphviz('inout', self.router.network.topology)
+
+        for (src, fec), entries in ft.table.items():
             src_client: InOutDisjoint = self.router.network.routers[src].clients["inout-disjoint"]
 
             if (src, fec) not in src_client.partial_forwarding_table:

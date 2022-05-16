@@ -1,8 +1,7 @@
 epochs: 1000
 ldp: false
-method: tba
-path: simple
-per_flow_memory: 5
+method: inout-disjoint
+per_flow_memory: 100
 php: false
 random_gen_method: 1
 random_seed: 1
