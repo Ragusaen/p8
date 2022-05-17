@@ -26,6 +26,7 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashed", "x"),
     "inout-disjoint": AlgorithmPlotConfiguration("Forward Backward Routing", "red", "solid", "square*"),
     "rmpls": AlgorithmPlotConfiguration("R-MPLS", "gray", "densely dashed", "*"),
+    "plinko4": AlgorithmPlotConfiguration('Plinko-4', 'purple', 'dash dash dot dot')
 }
 
 alg_to_bar_config_dict = {

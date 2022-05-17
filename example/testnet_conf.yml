@@ -1,13 +1,13 @@
 epochs: 1000
 ldp: false
-method: tba
-path: simple
+method: rsvp
+protection: plinko4
 per_flow_memory: 5
 php: false
 random_gen_method: 1
 random_seed: 1
 random_weight_mode: equal
-result_folder: results/inout-disjoint_max-mem=8/example
+result_folder: results/example
 rsvp_tunnels_per_pair: 1
 vpn: false
 topology: example/testnet.json
