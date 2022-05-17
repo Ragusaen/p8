@@ -102,7 +102,7 @@ def create_least_used_arborescence(graph: Graph, egress: str, edge_to_count: Dic
     subgraph: DiGraph = graph.to_directed()
 
     def h(e):
-        return (edge_to_count[(e[1], e[0])], -arb_node_distance[e[1]], edge_to_count[e])
+        return (-arb_node_distance[e[1]], edge_to_count[e], edge_to_count[(e[1], e[0])])
 
     unused_edges = list(map(lambda ec: (h(ec[0]), ec[0]), filter(lambda x: x[1] == 0, edge_to_count.items())))
     heapq.heapify(unused_edges)

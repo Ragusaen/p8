@@ -37,6 +37,44 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
     flow_to_path_labels_dict = {f: [] for f in flows}
     flow_to_weight_graph_dict = {f: network.topology.copy().to_directed() for f in flows}
 
+    def path_gen(f: Tuple[str,str]):
+        src, tgt = f
+        paths = nx.edge_disjoint_paths(network.topology, src, tgt)
+
+        wG: nx.DiGraph = network.topology.to_directed()
+        for v,u in wG.edges():
+            wG[v][u]['weight'] = 1
+
+        unused_edges: Set[Tuple[str, str]] = set(wG.edges)
+        for p in paths:
+            for e in zip(p[:-1], p[1:]):
+                unused_edges.discard(e)
+            yield p
+
+        while True:
+            sp_matrix = dict(nx.all_pairs_dijkstra_path(wG, weight='weight'))
+
+            best_edge = min(unused_edges, key= lambda e: len(sp_matrix[src][e[0]]) + len(sp_matrix[e[1]][tgt]), default=None)
+
+            if best_edge is not None:
+                unused_edges.remove(best_edge)
+                try:
+                    fp = nx.dijkstra_path(wG, src, best_edge[0], weight='weight')
+                    wG2 = wG.copy()
+                    wG2.remove_edges_from(list(zip(fp[:-1], fp[1:])) + [best_edge])
+                    p = fp + nx.dijkstra_path(wG2, best_edge[1], tgt, weight='weight')
+                except:
+                    continue
+            else:
+                p = sp_matrix[src][tgt]
+
+            for u,v in zip(p[:-1], p[1:]):
+                wG[u][v]['weight'] *= 2 if wG[u][v]['weight'] > 1 else 20
+
+            yield p
+
+    flow_to_path_generator = {f: path_gen(f) for f in flows}
+
     for _, weighted_graph in flow_to_weight_graph_dict.items():
         reset_weights(weighted_graph, 0)
 
@@ -45,7 +83,7 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
         flow = flows[i % len(flows)]
         ingress_router, egress_router = flow
 
-        path = nx.dijkstra_path(flow_to_weight_graph_dict[flow], ingress_router, egress_router, weight="weight")
+        path = next(flow_to_path_generator[flow])
 
         try_paths = {}
         for f, paths in flow_to_paths_dict.items():
@@ -57,9 +95,6 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
         # see if adding this path surpasses the the memory limit
         router_memory_usage = compute_memory_usage(try_paths)
         max_memory_reached = True in [False if router_memory_usage[r] <= total_max_memory else True for r in network.routers]
-
-        # update weights in the network to change the shortest path
-        update_weights(flow_to_weight_graph_dict[flow], path)
 
         # if path violates memory limit, do not add it
         if max_memory_reached:
@@ -157,6 +192,9 @@ def encode_paths_quick_next_path(paths: List, path_labels: List):
     paths = new_path_order
 
     path_common_prefix_with_previous = [0] + [len(os.path.commonprefix([paths[i], paths[i-1]])) - 1 for i in range(1, len(paths))]
+
+    if path_labels[0] != 'pseudo_label':
+        print(paths)
 
     for i, path in enumerate(paths):
         is_last_path = i == (len(paths) - 1)
