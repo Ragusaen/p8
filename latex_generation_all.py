@@ -6,6 +6,7 @@ import overleaf
 import time
 from datetime import datetime
 import re
+import math
 
 
 class AlgorithmPlotConfiguration:
@@ -18,13 +19,13 @@ class AlgorithmPlotConfiguration:
 
 alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     # "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dashed"),
-    "tba-simple": AlgorithmPlotConfiguration("Basic Circular Arborescence", "black", "dash dot", "+"),
-    "tba-complex": AlgorithmPlotConfiguration("Extended Circular Arborescence", "blue", "dashed", "diamond*"),
-    "rsvp-fn": AlgorithmPlotConfiguration("RSVP Facility Node Protection", "green", "dotted", "triangle*"),
+    "tba-simple": AlgorithmPlotConfiguration("Basic CA", "black", "dash dot", "+"),
+    "tba-complex": AlgorithmPlotConfiguration("Extended CA", "blue", "dashed", "diamond*"),
+    "rsvp-fn": AlgorithmPlotConfiguration("RSVP-FN", "green", "dotted", "triangle*"),
     # "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "loosely dotted"),
-    "kf": AlgorithmPlotConfiguration("Keep Forwarding", "cyan", "densely dotted"),
-    "gft": AlgorithmPlotConfiguration("Grafting DAG", "orange", "loosely dashed", "x"),
-    "inout-disjoint": AlgorithmPlotConfiguration("Forward Backward Routing", "red", "solid", "square*"),
+    "kf": AlgorithmPlotConfiguration("KF", "cyan", "densely dotted"),
+    "gft": AlgorithmPlotConfiguration("DAG-FRR", "orange", "loosely dashed", "x"),
+    "inout-disjoint": AlgorithmPlotConfiguration("FBR", "red", "solid", "square*"),
     "rmpls": AlgorithmPlotConfiguration("R-MPLS", "gray", "densely dashed", "*"),
 }
 
@@ -59,10 +60,9 @@ class OutputData:
         self.content_type: str = content_type
 
 
-def init_connectedness_table_output(result_data):
-    filtered_data = results_data #dict(filter(lambda x: not x[0].__contains__("max-mem"), result_data.items()))
-    return "\\begin{tabular}{c |" + " c" * len(filtered_data.keys()) + "}\n\t" + "$|F|$ & " + " & ".join(
-        filtered_data.keys()) + "\\\\ \hline \n"
+def init_connectedness_table_output(data):
+    return "\\begin{tabular}{c |" + " c" * len(data.keys()) + "}\n\t" + "$|F|$ & " + " & ".join(
+        data.keys()) + "\\\\ \hline \n"
 
 
 def add_failure_line_connectedness_table(filtered_data, len_f):
@@ -88,26 +88,34 @@ def generate_all_latex():
     if not os.path.exists(latex_dir) or not os.path.isdir(latex_dir):
         os.mkdir(latex_dir)
 
-    connectedness_table_output = init_connectedness_table_output(results_data)
+    max_memories = [3, 5, 8]
+    max_memories_filtered_data = dict({alg: results_data[alg] for alg in results_data if (
+                "_max-mem=" in alg and int(alg.split("_max-mem=")[1]) in max_memories) or "_max-mem=" not in alg})
+    max_memories_filtered_data2 = {}
+    for k, v in max_memories_filtered_data.items():
+        if "_max-mem=" in k:
+            key = k.split("_max-mem=")[0] + "-" + k.split("_max-mem=")[1]
+            max_memories_filtered_data2[key] = v
+        else:
+            max_memories_filtered_data2[k] = v
+    connectedness_table_output = init_connectedness_table_output(max_memories_filtered_data2)
 
     # generate latex code for connectedness plot for each failure scenario cardinality
-    print("Creating connectedness plot for each failure scenario cardinality")
+    print("Creating connectedness table with each failure scenario cardinality")
     for len_f in range(0, 5):
-        filtered_data = remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(results_data, len_f)
-#        filtered_data = dict(filter(lambda x: not x[0].__contains__("max-mem"), filtered_data.items()))
+        filtered_data = remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(max_memories_filtered_data, len_f)
+
         compute_connectedness(filtered_data)
 
         connectedness_table_output += add_failure_line_connectedness_table(filtered_data, len_f)
-
-        # output_latex_content(f"connectedness_plot_data_lenf={len_f}.tex",
-        #                      latex_connectedness_plot(filtered_data, max_points),
-        #                      f"connectedness plot for |F| = {len_f}")
 
     connectedness_table_output += end_connectedness_table_output()
     output_latex_content("connectedness_table.tex", connectedness_table_output, "connectedness table")
     output_latex_content("connectedness_plot_data.tex", latex_connectedness_plot(results_data, max_points),
                          "connectedness plot")
     output_latex_content("memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
+    no_keep_forwarding_data = dict({alg: results_data[alg] for alg in results_data.keys() if alg != 'kf'})
+    output_latex_content("memory_plot_data_no-kf.tex", latex_memory_plot(no_keep_forwarding_data, max_points), "memory plot without keep forwarding")
     output_latex_content("memory_bar_chart_data.tex", latex_memory_bar_chart(results_data), "memory bar chart")
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
 
@@ -133,9 +141,10 @@ def latex_memory_bar_chart(data: dict) -> str:
     skip_algs = set()
     skip_algs.add("Keep Forwarding")
     alg_longname_to_proper_alg_name = {}
-    memory_to_alg_dict = {i: [] for i in range(2, 11)}
     algs = set()
-    memories = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+    mem_plot_cap = 20
+    memories = [i for i in range(2,mem_plot_cap+1)]
+    memory_to_alg_dict = {i: [] for i in range(2, mem_plot_cap+1)}
 
     for alg in data.keys():
         alg: str
@@ -147,7 +156,7 @@ def latex_memory_bar_chart(data: dict) -> str:
         else:
             alg_longname_to_proper_alg_name[alg] = alg
             max_memory_topology = max(data[alg], key=lambda it: it.max_memory / it.num_flows)
-            max_memory = int(max_memory_topology.max_memory / max_memory_topology.num_flows)
+            max_memory = int(math.ceil((max_memory_topology.max_memory / max_memory_topology.num_flows)))
             filtered_memories = list(filter(lambda it: it > max_memory, memories))
             for memory in filtered_memories:
                 memory_to_alg_dict[memory].append(alg)
@@ -277,7 +286,7 @@ def latex_memory_plot(data, _max_points) -> str:
     for (alg, topologies) in data.items():
         if skip_algs.__contains__(alg):
             continue
-        cactus_data = sorted(topologies, key=lambda topology: topology.max_memory)
+        cactus_data = sorted(topologies, key=lambda topology: topology.max_memory / topology.num_flows)
 
         skip_number = len(cactus_data) / _max_points
         if skip_number < 1:
@@ -292,7 +301,7 @@ def latex_memory_plot(data, _max_points) -> str:
         for i in range(0, len(cactus_data), int(skip_number)):
             if counter > _max_points:
                 break
-            latex_plot_data += f"({counter}, {cactus_data[i].max_memory}) %{cactus_data[i].topology_name}\n"
+            latex_plot_data += f"({counter}, {cactus_data[i].max_memory / cactus_data[i].num_flows}) %{cactus_data[i].topology_name}\n"
             counter += 1
         latex_plot_data += r"};" + "\n"
 
