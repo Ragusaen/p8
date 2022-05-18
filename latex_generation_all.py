@@ -111,6 +111,7 @@ def generate_all_latex():
     output_latex_content("memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
     output_latex_content("memory_bar_chart_data.tex", latex_memory_bar_chart(results_data), "memory bar chart")
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
+    output_latex_content('scatter_tba_vs_inout_data.tex', latex_scatter_plot(results_data, 'tba-complex_max-mem=5', 'inout-disjoint_max-mem=5'), 'scatter plot')
 
     if overleaf_upload:
         overleaf.push()
@@ -129,7 +130,7 @@ def output_latex_content(file_name: str, content: str, content_type: str):
             print(f"ERROR: Failed uploading {content_type} at 'figures/results_auto_generated/{file_name}'")
 
 
-def latex_memory_bar_chart(data: dict) -> str:
+def latex_memory_bar_chart(data: dict[str, list[TopologyResult]]) -> str:
     latex_plot_legend = r"\legend{"
     skip_algs = set()
     skip_algs.add("Keep Forwarding")
@@ -175,6 +176,14 @@ def latex_memory_bar_chart(data: dict) -> str:
         alg_to_coordinates[alg] += "};\n"
 
     return latex_plot_legend + ''.join(alg_to_coordinates.values())
+
+def latex_scatter_plot(data: dict[str, list[TopologyResult]], alg1: str, alg2: str) -> str:
+    def get_connectedness(r: list[TopologyResult]):
+        return map(lambda tr: tr.connectedness, r)
+
+    datapoints = zip(get_connectedness(data[alg1]), get_connectedness(data[alg2]))
+
+    return ''.join(map(lambda dp: str(dp), datapoints))
 
 
 def remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(data: {str: TopologyResult}, lenf: int) -> {
