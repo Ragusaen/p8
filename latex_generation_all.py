@@ -75,6 +75,8 @@ def add_failure_line_connectedness_table(filtered_data, len_f):
 def compute_average_connectedness_for_algorithm(data, alg) -> float:
     return sum(c.connectedness for c in data[alg]) / len(data[alg])
 
+def compute_average_connectivity_for_algorithm(data, alg) -> float:
+    return sum(top.connectivity for top in data[alg]) / len(data[alg])
 
 def end_connectedness_table_output():
     return "\end{tabular}"
@@ -114,16 +116,17 @@ def generate_all_latex():
     output_latex_content("connectedness_table.tex", connectedness_table_output, "connectedness table")
     output_latex_content("connectedness_plot_data.tex", latex_connectedness_plot(results_data, max_points),
                          "connectedness plot")
+
+
     output_latex_content("memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
     no_keep_forwarding_data = dict({alg: results_data[alg] for alg in results_data.keys() if alg != 'kf'})
     output_latex_content("memory_plot_data_no-kf.tex", latex_memory_plot(no_keep_forwarding_data, max_points), "memory plot without keep forwarding")
-    output_latex_content("memory_bar_chart_data.tex", latex_memory_bar_chart(results_data), "memory bar chart")
+    output_latex_content("memory_failure_data.tex", latex_memory_failure_rate_plot(results_data), "memory bar chart")
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
 
     if overleaf_upload:
         overleaf.push()
     print(f"Time taken to generate latex: {time.time() - start_time}")
-
 
 def output_latex_content(file_name: str, content: str, content_type: str):
     content = "% timestamp:" + datetime.now().strftime("%d/%m/%Y %H:%M:%S") + "\n" + content
@@ -137,7 +140,7 @@ def output_latex_content(file_name: str, content: str, content_type: str):
             print(f"ERROR: Failed uploading {content_type} at 'figures/results_auto_generated/{file_name}'")
 
 
-def latex_memory_bar_chart(data: dict) -> str:
+def latex_memory_failure_rate_plot(data: dict) -> str:
     latex_plot_legend = r"\legend{"
     skip_algs = set()
     skip_algs.add("Keep Forwarding")
@@ -175,8 +178,8 @@ def latex_memory_bar_chart(data: dict) -> str:
     for (memory_group, algs) in sorted_dict:
         for alg_longname in algs:
             connectedness = compute_average_connectedness_for_algorithm(data, alg_longname)
-
             failedness = 1.0 - connectedness
+            #failedness = 1.0 - compute_average_connectivity_for_algorithm(data, alg_longname)
 
             alg_to_coordinates[alg_longname_to_proper_alg_name[alg_longname]] += f"({memory_group}, {failedness}) "
 
@@ -197,7 +200,7 @@ def remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(data: {
             failure_scenarios = list(filter(lambda scenario: scenario.failed_links == lenf, topology.failure_scenarios))
             filtered_data[conf].append(
                 TopologyResult(topology.topology_name, topology.total_links, topology.num_flows, failure_scenarios, -1,
-                               topology.fwd_gen_time, topology.max_memory, topology.within_memory_limit))
+                               topology.fwd_gen_time, topology.max_memory, topology.within_memory_limit, -1))
 
     return filtered_data
 

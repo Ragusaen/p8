@@ -20,12 +20,13 @@ class CommonResultData:
 
 
 class TopologyResult:
-    def __init__(self, topology_name, total_links, num_flows, failure_scenarios, connectedness, fwd_gen_time, max_memory, within_memory_limit):
+    def __init__(self, topology_name, total_links, num_flows, failure_scenarios, connectedness, fwd_gen_time, max_memory, within_memory_limit, connectivity):
         self.topology_name = topology_name
         self.total_links = total_links
         self.num_flows = num_flows
         self.failure_scenarios = failure_scenarios
         self.connectedness = connectedness
+        self.connectivity = connectivity
         self.fwd_gen_time = fwd_gen_time
         self.max_memory = max_memory
         self.within_memory_limit = within_memory_limit
@@ -109,7 +110,7 @@ def parse_result_data(result_folder) -> dict[str, TopologyResult]:
                         memory_cap = int(conf_name.split("max-mem=")[1])
                         within_memory_limit = max_memory <= num_flows * memory_cap
 
-            result_dict[conf_name].append(TopologyResult(topology, total_links, num_flows, failure_scenarios, -1, fwd_gen_time, max_memory, within_memory_limit))
+            result_dict[conf_name].append(TopologyResult(topology, total_links, num_flows, failure_scenarios, -1, fwd_gen_time, max_memory, within_memory_limit, -1))
 
     compute_connectedness(result_dict)
 
@@ -131,8 +132,14 @@ def compute_connectedness(result_data: dict) -> {}:
             topology: TopologyResult
             normalisation_sum = 0
             connectedness = 0
+            tot_successful = 0
+            tot_connected = 0
             for failure_scenario in topology.failure_scenarios:
                 failure_scenario: FailureScenarioData
+
+                tot_connected += failure_scenario.connected_flows
+                tot_successful += failure_scenario.successful_flows
+
                 p = __compute_probability(failure_scenario.failed_links, topology.total_links)
                 normalisation_sum += p
 
@@ -141,6 +148,10 @@ def compute_connectedness(result_data: dict) -> {}:
                 else:
                     connectedness += p
 
+            if(tot_connected == 0):
+                topology.connectivity = 1
+            else:
+                topology.connectivity = tot_successful / tot_connected
             # Normalise
             if normalisation_sum > 0:
                 connectedness = connectedness / normalisation_sum
