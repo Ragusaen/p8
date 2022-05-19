@@ -2724,6 +2724,7 @@ class MPLS_packet(object):
         self.exit_code = None     # 0 means success, None is not finished yet, other are errors.
         self.success = None
         self.targets = targets
+        self.num_hops = 0
 
     def info(self):
         print(".....INFO.....")
@@ -2782,6 +2783,7 @@ class MPLS_packet(object):
 
         curr_r = self.traceroute[-1]
         outer_lbl = self.stack[-1]
+        self.num_hops += 1
 
         if self.verbose:
             print()
@@ -3002,6 +3004,7 @@ class Simulator(object):
         self.random_seed = random_seed
         self.count_connected = 0
         self.looping_links = 0
+        self.num_hops: dict[Tuple[str,str], int] = {}
 
         if restricted_topology is not None:
             self.topology = restricted_topology
@@ -3049,6 +3052,8 @@ class Simulator(object):
                 if res and last_router_name not in good_targets:
                     res = False
 
+                if res:
+                    self.num_hops[(tup[0][0], tup[1][0])] = p.num_hops
 
                 if verbose:
                     print(f"label: {in_label}, Initial result: {res}")
