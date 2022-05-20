@@ -120,6 +120,7 @@ def generate_all_latex():
     output_latex_content("memory_bar_chart_data.tex", latex_memory_bar_chart(results_data), "memory bar chart")
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
     output_latex_content('scatter_tba_vs_inout_data.tex', latex_scatter_plot(results_data, 'tba-complex_max-mem=5', 'inout-disjoint_max-mem=5'), 'scatter plot')
+    output_latex_content("number_of_hops_plot_mean.tex", latex_num_hops_plot(results_data), "number of hops plot")
 
     if overleaf_upload:
         overleaf.push()
@@ -136,6 +137,26 @@ def output_latex_content(file_name: str, content: str, content_type: str):
             overleaf.set_file_text(content, f"figures/results_auto_generated/{file_name}")
         except:
             print(f"ERROR: Failed uploading {content_type} at 'figures/results_auto_generated/{file_name}'")
+
+def latex_num_hops_plot(data: dict[str, list[TopologyResult]]) -> str:
+    latex_plot_legend = r"\legend{" + ''.join([alg_to_plot_config_dict[alg].name for alg in data.keys()]) + "}\n"
+
+    latex_plot_data = ""
+    for (alg, topologies) in data.items():
+        alg: str
+
+        cactus_data = sorted(topologies, key=lambda topology: topology.connectedness)
+
+        latex_plot_data += r"\addplot[mark=none" + \
+                           ", color=" + alg_to_plot_config_dict[alg].color + \
+                           ", " + alg_to_plot_config_dict[alg].line_style + \
+                           ", thick] coordinates{" + "\n"
+
+        for i in range(0, len(cactus_data)):
+            latex_plot_data += f"({i}, {cactus_data[i].hops_mean}) %{cactus_data[i].topology_name}\n"
+        latex_plot_data += r"};" + "\n"
+
+    return latex_plot_legend + latex_plot_data
 
 
 def latex_memory_bar_chart(data: dict[str, list[TopologyResult]]) -> str:
