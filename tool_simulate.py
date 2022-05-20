@@ -164,7 +164,8 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
 
     loops = codes[1]  # p8: we do not know what this is
     #f.write("attempted: {0}; succeses: {1}; loops: {2}; failed_links: {3}; connectivity: {4}\n".format(total, success, loops, len(F), success/total))
-    f.write(f"len(F):{len(F)} looping_links:{s.looping_links} successful_flows:{successful_flows} connected_flows:{initially_connected}\n")
+    f.write(f"len(F):{len(F)} looping_links:{s.looping_links} successful_flows:{successful_flows} connected_flows:{initially_connected} hops_max:{max(s.num_hops.values(), default=-1)} hops_mean:{-1 if len(s.num_hops.values()) == 0 else sum(s.num_hops.values())/len(s.num_hops.values())}\n")
+
     if len(F) == 0:
         common = open(os.path.join(os.path.dirname(f.name), "common"), "w")
         common.write(f"len(E):{links} num_flows:{total_flows} fwd_gen_time:{stats['fwd_gen_time']} memory:{router_memory_str}")
