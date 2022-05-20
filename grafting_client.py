@@ -27,7 +27,8 @@ def find_partial_arborescences(graph: Graph, egress: str) -> List[List[Tuple[str
                 break
             e = random.choice(edges_to_consider)
             arbs[i].append(e)
-            edges.remove(e)
+            if e in edges:
+                edges.remove(e)
 
     return arbs
 
