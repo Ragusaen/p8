@@ -27,7 +27,7 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "gft": AlgorithmPlotConfiguration("DAG-FRR", "orange", "loosely dashed", "x"),
     "inout-disjoint": AlgorithmPlotConfiguration("FBR", "red", "solid", "square*"),
     "rmpls": AlgorithmPlotConfiguration("R-MPLS", "gray", "densely dashed", "*"),
-    "plinko4": AlgorithmPlotConfiguration('Plinko-4', 'purple', 'dash dash dot dot')
+    "plinko4": AlgorithmPlotConfiguration('Plinko-4', 'purple', 'loosely dotted')
 }
 
 alg_to_bar_config_dict = {
@@ -117,12 +117,13 @@ def generate_all_latex():
     output_latex_content("connectedness_plot_data.tex", latex_connectedness_plot(results_data, max_points),
                          "connectedness plot")
 
-
     output_latex_content("memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
     no_keep_forwarding_data = dict({alg: results_data[alg] for alg in results_data.keys() if alg != 'kf'})
     output_latex_content("memory_plot_data_no-kf.tex", latex_memory_plot(no_keep_forwarding_data, max_points), "memory plot without keep forwarding")
     output_latex_content("memory_failure_data.tex", latex_memory_failure_rate_plot(results_data), "memory bar chart")
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
+    #output_latex_content('scatter_tba_vs_inout_data.tex', latex_scatter_plot(results_data, 'tba-complex_max-mem=5', 'inout-disjoint_max-mem=5'), 'scatter plot')
+    output_latex_content("fwd_gen_time_data.tex", latex_gen_time_plot(results_data), "forwarding table generation time")
 
     if overleaf_upload:
         overleaf.push()
@@ -140,13 +141,59 @@ def output_latex_content(file_name: str, content: str, content_type: str):
             print(f"ERROR: Failed uploading {content_type} at 'figures/results_auto_generated/{file_name}'")
 
 
-def latex_memory_failure_rate_plot(data: dict) -> str:
+def latex_gen_time_plot(data: dict[str, list[TopologyResult]]) -> str:
+    latex_plot_legend = r"\legend{"
+    algs = set()
+    skip_algs = set()
+    skip_algs.add("kf")
+    skip_algs.add("plinko4")
+    memories = ["4"]
+
+    for alg in data.keys():
+        if alg in skip_algs:
+            continue
+
+        if "max-mem" in alg:
+            (alg_proper_name, memory_group) = re.split("_max-mem=", alg)
+            if memory_group not in memories:
+                continue
+            latex_plot_legend += f"{alg_to_plot_config_dict[alg_proper_name].name + memory_group}, "
+            algs.add(alg)
+        else:
+            algs.add(alg)
+            latex_plot_legend += f"{alg_to_plot_config_dict[alg].name}, "
+    latex_plot_legend += "}\n"
+
+    latex_plot_data = ""
+
+    for (alg, topologies) in data.items():
+        if alg not in algs:
+            continue
+
+        cactus_data = sorted(topologies, key=lambda topology: topology.fwd_gen_time)
+
+        latex_plot_data += r"\addplot[mark=none" + \
+                           ", color=" + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].color + \
+                           ", " + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].line_style + \
+                           ", thick] coordinates{" + "\n"
+
+        counter = 0
+        for i in range(0, len(cactus_data)):
+            latex_plot_data += f"({counter}, {cactus_data[i].fwd_gen_time / 1000000000}) %{cactus_data[i].topology_name}\n"
+            counter += 1
+        latex_plot_data += r"};" + "\n"
+
+    return latex_plot_legend + latex_plot_data
+
+
+def latex_memory_failure_rate_plot(data: dict[str, list[TopologyResult]]) -> str:
     latex_plot_legend = r"\legend{"
     skip_algs = set()
     skip_algs.add("Keep Forwarding")
+    skip_algs.add("Plinko-4")
     alg_longname_to_proper_alg_name = {}
     algs = set()
-    mem_plot_cap = 20
+    mem_plot_cap = 25
     memories = [i for i in range(2,mem_plot_cap+1)]
     memory_to_alg_dict = {i: [] for i in range(2, mem_plot_cap+1)}
 
@@ -187,6 +234,14 @@ def latex_memory_failure_rate_plot(data: dict) -> str:
         alg_to_coordinates[alg] += "};\n"
 
     return latex_plot_legend + ''.join(alg_to_coordinates.values())
+
+def latex_scatter_plot(data: dict[str, list[TopologyResult]], alg1: str, alg2: str) -> str:
+    def get_connectedness(r: list[TopologyResult]):
+        return map(lambda tr: tr.connectedness, r)
+
+    datapoints = zip(get_connectedness(data[alg1]), get_connectedness(data[alg2]))
+
+    return ''.join(map(lambda dp: str(dp), datapoints))
 
 
 def remove_failure_scenarios_that_are_not_of_correct_failure_cardinality(data: {str: TopologyResult}, lenf: int) -> {

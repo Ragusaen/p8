@@ -80,8 +80,8 @@ def __parse_single_line_in_failure_scenario(line: str):
     return FailureScenarioData(failed_links, looping_links, successful_flows, connected_flows)
 
 
-def parse_result_data(result_folder) -> dict[str, TopologyResult]:
-    result_dict: dict[str:TopologyResult] = {}
+def parse_result_data(result_folder) -> dict[str, list[TopologyResult]]:
+    result_dict: dict[str, list[TopologyResult]] = {}
     conf_progress = 1
     for conf_name in os.listdir(result_folder):
         print(f"\nParsing results from algorithm {conf_name} - {conf_progress}/{len(os.listdir(result_folder))}")

@@ -135,6 +135,14 @@ def encode_paths_full_backtrack(paths: List, path_labels: List, backtracking_pat
 def encode_paths_quick_next_path(paths: List, path_labels: List):
     ft = ForwardingTable()
 
+    if len(paths) == 0:
+        return ft
+
+    new_paths = [paths[0]]
+    for i in range(1, len(paths)):
+        new_paths.append(min(paths[i:], key=lambda p: len(set(p).intersection(set(paths[i-1])))))
+    paths = new_paths
+
     for i, path in enumerate(paths):
         is_last_path = i == (len(paths) - 1)
 
