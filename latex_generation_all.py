@@ -119,12 +119,13 @@ def generate_all_latex():
                          "connectedness plot")
 
     output_latex_content("memory_plot_data.tex", latex_memory_plot(results_data, max_points), "memory plot")
-    no_keep_forwarding_data = dict({alg: results_data[alg] for alg in results_data.keys() if alg != 'kf'})
+    no_keep_forwarding_data = dict({alg: results_data[alg] for alg in results_data.keys() if alg != 'kf' or alg != 'plinko4'})
     output_latex_content("memory_plot_data_no-kf.tex", latex_memory_plot(no_keep_forwarding_data, max_points), "memory plot without keep forwarding")
     output_latex_content("memory_failure_data.tex", latex_memory_failure_rate_plot(results_data), "memory bar chart")
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
     # output_latex_content('scatter_tba_vs_inout_data.tex', latex_scatter_plot(results_data, 'tba-complex_max-mem=5', 'inout-disjoint_max-mem=5'), 'scatter plot')
-    output_latex_content("latency_mean_plot_data.tex", latex_latency_mean_plot(results_data), "number of hops plot (latency)")
+    output_latex_content("latency_average_max_data.tex", latex_average_max_latency_plot(results_data), "average max number of hops plot (latency)")
+    output_latex_content("latency_average_mean_data.tex", latex_average_mean_latency__plot(results_data), "average mean number of hops plot (latency)")
     output_latex_content("fwd_gen_time_data.tex", latex_gen_time_plot(results_data), "forwarding table generation time")
 
     if overleaf_upload:
@@ -134,7 +135,7 @@ def generate_all_latex():
 
 def output_latex_content(file_name: str, content: str, content_type: str):
     content = "% timestamp:" + datetime.now().strftime("%d/%m/%Y %H:%M:%S") + "\n" + content
-    print(f"Writing {content_type} to file: 'latex/{content_type}'")
+    print(f"Writing {content_type} to file: 'latex/{file_name}'")
     latex_file_table = open(os.path.join(os.path.dirname(__file__), f"latex/{file_name}"), "w")
     latex_file_table.write(content)
     if overleaf_upload:
@@ -144,7 +145,7 @@ def output_latex_content(file_name: str, content: str, content_type: str):
             print(f"ERROR: Failed uploading {content_type} at 'figures/results_auto_generated/{file_name}'")
 
 
-def latex_latency_mean_plot(data: dict[str, list[TopologyResult]]) -> str:
+def latex_average_max_latency_plot(data: dict[str, list[TopologyResult]]) -> str:
     latex_plot_legend = r"\legend{"
     algs = set()
     skip_algs = set()
@@ -195,7 +196,69 @@ def latex_latency_mean_plot(data: dict[str, list[TopologyResult]]) -> str:
                            ", " + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].line_style + \
                            ", thick] coordinates{" + "\n"
 
-        average_hops_mean: list[(TopologyResult, float)] = [(top, sum([failure_scenario.hops_max for failure_scenario in top.failure_scenarios if (top.topology_name, top.failure_scenarios.index(failure_scenario)) in full_connected_failure_scenarios], 0) / len(list(filter(lambda x: x[0] == top.topology_name, full_connected_failure_scenarios))), full_connected_failure_scenarios) for top in topologies]
+        average_hops_max: list[(TopologyResult, float)] = [(top, sum([failure_scenario.hops_max for failure_scenario in top.failure_scenarios if (top.topology_name, top.failure_scenarios.index(failure_scenario)) in full_connected_failure_scenarios], 0) / len(list(filter(lambda x: x[0] == top.topology_name, full_connected_failure_scenarios))), full_connected_failure_scenarios) for top in topologies]
+
+        cactus_data = sorted(average_hops_max, key=lambda x: x[1])
+
+        latex_plot_data += ''.join(map(lambda data: f"({data[0]}, {data[1][1]}) % {data[1][0].topology_name}\n", list(enumerate(cactus_data, 1)))) + "};\n"
+
+    return latex_plot_legend + latex_plot_data
+
+
+def latex_average_mean_latency__plot(data: dict[str, list[TopologyResult]]) -> str:
+    latex_plot_legend = r"\legend{"
+    algs = set()
+    skip_algs = set()
+    skip_algs.add("kf")
+    skip_algs.add("plinko4")
+    memories = ["4"]
+
+    for alg in data.keys():
+        if alg in skip_algs:
+            continue
+
+        if "max-mem" in alg:
+            (alg_proper_name, memory_group) = re.split("_max-mem=", alg)
+            if memory_group not in memories:
+                continue
+            latex_plot_legend += f"{alg_to_plot_config_dict[alg_proper_name].name + memory_group}, "
+            algs.add(alg)
+        else:
+            algs.add(alg)
+            latex_plot_legend += f"{alg_to_plot_config_dict[alg].name}, "
+    latex_plot_legend += "}\n"
+
+    full_connected_failure_scenarios: set[(TopologyResult, int)] = set()
+    for topology in list(data.items())[0][1]:
+        topology: TopologyResult
+        for i in range(len(topology.failure_scenarios)):
+            full_connected_failure_scenarios.add((topology.topology_name, i))
+
+    for (alg, topologies) in data.items():
+        if alg in skip_algs:
+            continue
+        for topology in topologies:
+            topology: TopologyResult
+            for i, fs in enumerate(topology.failure_scenarios):
+                fs: FailureScenarioData
+                if fs.successful_flows != fs.connected_flows:
+                    full_connected_failure_scenarios.discard((topology.topology_name, i))
+
+
+
+    latex_plot_data = ""
+    for (alg, topologies) in data.items():
+        alg: str
+        topologies: list[TopologyResult]
+        if alg not in algs:
+            continue
+
+        latex_plot_data += r"\addplot[mark=none" + \
+                           ", color=" + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].color + \
+                           ", " + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].line_style + \
+                           ", thick] coordinates{" + "\n"
+
+        average_hops_mean: list[(TopologyResult, float)] = [(top, sum([failure_scenario.hops_mean for failure_scenario in top.failure_scenarios if (top.topology_name, top.failure_scenarios.index(failure_scenario)) in full_connected_failure_scenarios], 0) / len(list(filter(lambda x: x[0] == top.topology_name, full_connected_failure_scenarios))), full_connected_failure_scenarios) for top in topologies]
 
         cactus_data = sorted(average_hops_mean, key=lambda x: x[1])
 
