@@ -15,8 +15,8 @@ def find_partial_arborescences(graph: Graph, egress: str) -> List[List[Tuple[str
     arbs = []
 
     for n in graph.neighbors(egress):
-        arbs.append([(n, egress)])
         if (n, egress) in edges:
+            arbs.append([(n, egress)])
             edges.remove((n, egress))
 
     for i in range(len(arbs)):
