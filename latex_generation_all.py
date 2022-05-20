@@ -7,6 +7,7 @@ import time
 from datetime import datetime
 import re
 import math
+import functools
 
 
 class AlgorithmPlotConfiguration:
@@ -119,7 +120,7 @@ def generate_all_latex():
     output_latex_content("memory_plot_data_no-kf.tex", latex_memory_plot(no_keep_forwarding_data, max_points), "memory plot without keep forwarding")
     output_latex_content("memory_bar_chart_data.tex", latex_memory_bar_chart(results_data), "memory bar chart")
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
-    output_latex_content('scatter_tba_vs_inout_data.tex', latex_scatter_plot(results_data, 'tba-complex_max-mem=5', 'inout-disjoint_max-mem=5'), 'scatter plot')
+    # output_latex_content('scatter_tba_vs_inout_data.tex', latex_scatter_plot(results_data, 'tba-complex_max-mem=5', 'inout-disjoint_max-mem=5'), 'scatter plot')
     output_latex_content("number_of_hops_plot_mean.tex", latex_num_hops_plot(results_data), "number of hops plot")
 
     if overleaf_upload:
@@ -138,22 +139,27 @@ def output_latex_content(file_name: str, content: str, content_type: str):
         except:
             print(f"ERROR: Failed uploading {content_type} at 'figures/results_auto_generated/{file_name}'")
 
+
 def latex_num_hops_plot(data: dict[str, list[TopologyResult]]) -> str:
     latex_plot_legend = r"\legend{" + ''.join([alg_to_plot_config_dict[alg].name for alg in data.keys()]) + "}\n"
 
     latex_plot_data = ""
     for (alg, topologies) in data.items():
         alg: str
-
-        cactus_data = sorted(topologies, key=lambda topology: topology.connectedness)
+        topologies: list[TopologyResult]
 
         latex_plot_data += r"\addplot[mark=none" + \
                            ", color=" + alg_to_plot_config_dict[alg].color + \
                            ", " + alg_to_plot_config_dict[alg].line_style + \
                            ", thick] coordinates{" + "\n"
 
-        for i in range(0, len(cactus_data)):
-            latex_plot_data += f"({i}, {cactus_data[i].hops_mean}) %{cactus_data[i].topology_name}\n"
+        average_hops_mean: list[(TopologyResult, float)] = \
+            [(top, sum([failure_scenario.hops_mean for failure_scenario in top.failure_scenarios], 0) / len(top.failure_scenarios)) for top in topologies]
+
+        cactus_data = sorted(average_hops_mean, key=lambda x: x[1])
+
+        latex_plot_data += ''.join(map(lambda i, top, avg: f"({i}, {avg}) % {top}", enumerate(cactus_data, 1)))
+
         latex_plot_data += r"};" + "\n"
 
     return latex_plot_legend + latex_plot_data
