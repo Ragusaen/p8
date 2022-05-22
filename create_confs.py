@@ -146,6 +146,11 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, per_flow_
     elif conf_type == 'inout-disjoint':
         base_config['method'] = 'inout-disjoint'
         base_config['epochs'] = 1000
+        base_config['backtrack'] = 'partial'
+    elif conf_type == 'inout-disjoint-full':
+        base_config['method'] = 'inout-disjoint'
+        base_config['epochs'] = 1000
+        base_config['backtrack'] = 'full'
     elif conf_type == 'rmpls':
         base_config['enable_RMPLS'] = True
         base_config['protection'] = None
@@ -245,6 +250,7 @@ if __name__ == "__main__":
     per_flow_memory = [2, 3, 4, 5, 6, 7, 8, 9, 10]
     for mem in per_flow_memory:
         create('inout-disjoint', mem)
+        create('inout-disjoint-full', mem)
         create('tba-complex', mem)
 
     if not (args.keep_failure_chunks and os.path.exists(os.path.join(folder, "failure_chunks"))):

@@ -27,6 +27,7 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "kf": AlgorithmPlotConfiguration("KF", "cyan", "densely dotted"),
     "gft": AlgorithmPlotConfiguration("DAG-FRR", "orange", "loosely dashed", "x"),
     "inout-disjoint": AlgorithmPlotConfiguration("FBR", "red", "solid", "square*"),
+    "inout-disjoint-full": AlgorithmPlotConfiguration('FBR-full', 'blue', 'dashed', 'circle*'),
     "rmpls": AlgorithmPlotConfiguration("R-MPLS", "gray", "densely dashed", "*"),
     "plinko4": AlgorithmPlotConfiguration('Plinko-4', 'purple', 'loosely dotted')
 }
@@ -34,7 +35,8 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
 alg_to_bar_config_dict = {
     "tba-simple": "dots",
     "inout-disjoint": "horizontal lines",
-    "tba-complex": "north east lines"
+    "tba-complex": "north east lines",
+    "inout-disjoint-full": 'vertical lines'
 }
 
 parser = argparse.ArgumentParser()
@@ -127,6 +129,7 @@ def generate_all_latex():
     output_latex_content("latency_average_max_data.tex", latex_average_max_latency_plot(results_data), "average max number of hops plot (latency)")
     output_latex_content("latency_average_mean_data.tex", latex_average_mean_latency__plot(results_data), "average mean number of hops plot (latency)")
     output_latex_content("fwd_gen_time_data.tex", latex_gen_time_plot(results_data), "forwarding table generation time")
+
 
     if overleaf_upload:
         overleaf.push()

@@ -23,7 +23,7 @@ class ForwardingTable:
 
     def to_graphviz(self, name: str, G: nx.Graph = nx.Graph()):
         fecs = set(map(lambda x: x[1], self.table.keys()))
-        fec_to_color = dict(zip(fecs, len(fecs)*['blue', 'green', 'red', 'purple', 'orange', 'cyan']))
+        fec_to_color = dict(zip(fecs, (len(fecs)//12 +1)*['blue','red','green','magenta','orange','cyan','indigo','gold','aquamarine','olive','pink','lightsalmon','maroon']))
         g = gv.Digraph(format='svg')
 
         for s,t in G.edges:
