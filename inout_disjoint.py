@@ -80,7 +80,7 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
     for f in flows:
         # remove duplicate labels
         encoded_path = path_encoder(flow_to_paths_dict[f], create_label_generator(f))
-        encoded_path.to_graphviz(f'ft {f[0]} -> {f[1]}', network.topology)
+        #encoded_path.to_graphviz(f'ft {f[0]} -> {f[1]}', network.topology)
         forwarding_table.extend(encoded_path)
 
     return forwarding_table.table
