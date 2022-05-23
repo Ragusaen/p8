@@ -22,7 +22,7 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     # "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dashed"),
     "tba-simple": AlgorithmPlotConfiguration("Basic CA", "black", "dash dot", "+"),
     "tba-complex": AlgorithmPlotConfiguration("Ext. CA", "blue", "dashed", "diamond*"),
-    "rsvp-fn": AlgorithmPlotConfiguration("RSVP-FN", "green", "dotted", "triangle*"),
+    "rsvp-fn": AlgorithmPlotConfiguration("RSVP-FN", "dgreen", "dotted", "triangle*"),
     # "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "loosely dotted"),
     "kf": AlgorithmPlotConfiguration("KF", "cyan", "densely dotted"),
     "gft": AlgorithmPlotConfiguration("DAG-FRR", "orange", "loosely dashed", "x"),
