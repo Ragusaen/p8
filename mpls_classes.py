@@ -2725,6 +2725,7 @@ class MPLS_packet(object):
         self.success = None
         self.targets = targets
         self.num_hops = 0
+        self.num_local_lookups = 0
 
     def info(self):
         print(".....INFO.....")
@@ -2920,6 +2921,7 @@ class MPLS_packet(object):
 
             if outgoing_iface == curr_r.LOCAL_LOOKUP:
                 p.cause = " FORWARDING recurrent: attempt to process next level on {}".format(curr_r.name)
+                self.num_local_lookups += 1
                 self.exit_code = 5
                 if p.verbose:
                     print(p.cause)
@@ -3005,6 +3007,7 @@ class Simulator(object):
         self.count_connected = 0
         self.looping_links = 0
         self.num_hops: dict[Tuple[str,str], int] = {}
+        self.num_ll: dict[Tuple[str, str], int] = {}
 
         if restricted_topology is not None:
             self.topology = restricted_topology
@@ -3054,6 +3057,7 @@ class Simulator(object):
 
                 if res:
                     self.num_hops[(tup[0][0], tup[1][0])] = p.num_hops
+                    self.num_ll[(tup[0][0], tup[1][0])] = p.num_local_lookups
 
                 if verbose:
                     print(f"label: {in_label}, Initial result: {res}")
