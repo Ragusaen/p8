@@ -101,6 +101,7 @@ def update_weights(G: Graph, path):
         G[v1][v2]["weight"] = G[v1][v2]["weight"] * 2 + 1
 
 
+
 def encode_paths_full_backtrack(paths: List[str], label_generator: Iterator[oFEC]):
     ft = ForwardingTable()
 
