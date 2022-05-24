@@ -127,7 +127,7 @@ def generate_all_latex():
     output_latex_content("memory_failure_data.tex", latex_memory_failure_rate_plot(results_data), "memory bar chart")
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
     # output_latex_content('scatter_tba_vs_inout_data.tex', latex_scatter_plot(results_data, 'tba-complex_max-mem=5', 'inout-disjoint_max-mem=5'), 'scatter plot')
-    output_latex_content("latency_average_max_data.tex", latex_average_max_latency_plot(results_data), "average max number of hops plot (latency)")
+    # output_latex_content("latency_average_max_data.tex", latex_average_max_latency_plot(results_data), "average max number of hops plot (latency)")
     output_latex_content("latency_average_mean_data.tex", latex_average_mean_latency__plot(results_data), "average mean number of hops plot (latency)")
     output_latex_content("fwd_gen_time_data.tex", latex_gen_time_plot(results_data), "forwarding table generation time")
 
@@ -267,7 +267,7 @@ def latex_average_mean_latency__plot(data: Dict[str, List[TopologyResult]]) -> s
 
         cactus_data = sorted(average_hops_mean, key=lambda x: x[1])
 
-        latex_plot_data += ''.join(map(lambda data: f"({filtered_data[0]}, {filtered_data[1][1]}) % {filtered_data[1][0].topology_name}\n", list(enumerate(cactus_data, 1)))) + "};\n"
+        latex_plot_data += ''.join(map(lambda data: f"({data[0]}, {data[1][1]}) % {data[1][0].topology_name}\n", list(enumerate(cactus_data, 1)))) + "};\n"
 
     return latex_plot_legend + latex_plot_data
 
