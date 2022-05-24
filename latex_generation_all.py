@@ -21,16 +21,16 @@ class AlgorithmPlotConfiguration:
 
 alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     # "cfor-disjoint": AlgorithmPlotConfiguration("Continue Forwarding", "black", "dashed"),
-    "tba-simple": AlgorithmPlotConfiguration("Basic CA", "black", "dash dot", "+"),
-    "tba-complex": AlgorithmPlotConfiguration("Ext. CA", "blue", "dashed", "diamond*"),
+    "tba-simple": AlgorithmPlotConfiguration("B-CA", "black", "dash dot", "+"),
+    "tba-complex": AlgorithmPlotConfiguration("E-CA", "blue", "dashed", "diamond*"),
     "rsvp-fn": AlgorithmPlotConfiguration("RSVP-FN", "dgreen", "dotted", "triangle*"),
     # "hd": AlgorithmPlotConfiguration("Hop Distance", "green", "loosely dotted"),
     "kf": AlgorithmPlotConfiguration("KF", "cyan", "densely dotted"),
-    "gft": AlgorithmPlotConfiguration("DAG-FRR", "orange", "loosely dashed", "x"),
+    "gft": AlgorithmPlotConfiguration("GFT-CA", "orange", "loosely dashed", "x"),
     "inout-disjoint": AlgorithmPlotConfiguration("FBR", "red", "solid", "square*"),
     "inout-disjoint-full": AlgorithmPlotConfiguration('FBR-full', 'blue', 'dashed', 'circle*'),
     "rmpls": AlgorithmPlotConfiguration("R-MPLS", "gray", "densely dashed", "*"),
-    "plinko4": AlgorithmPlotConfiguration('Plinko-4', 'purple', 'loosely dotted')
+    "plinko4": AlgorithmPlotConfiguration('Plinko', 'purple', 'loosely dotted')
 }
 
 alg_to_bar_config_dict = {
