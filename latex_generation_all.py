@@ -185,10 +185,10 @@ def latex_average_max_latency_plot(data: dict[str, list[TopologyResult]]) -> str
                 if fs.successful_flows != fs.connected_flows:
                     full_connected_failure_scenarios.discard((topology.topology_name, i))
 
-
+    filtered_data = {alg: data[alg] for alg in algs}
 
     latex_plot_data = ""
-    for (alg, topologies) in data.items():
+    for (alg, topologies) in filtered_data.items():
         alg: str
         topologies: list[TopologyResult]
         if alg not in algs:
@@ -199,11 +199,12 @@ def latex_average_max_latency_plot(data: dict[str, list[TopologyResult]]) -> str
                            ", " + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].line_style + \
                            ", thick] coordinates{" + "\n"
 
-        average_hops_max: list[(TopologyResult, float)] = [(top, sum([failure_scenario.hops_max for failure_scenario in top.failure_scenarios if (top.topology_name, top.failure_scenarios.index(failure_scenario)) in full_connected_failure_scenarios], 0) / len(list(filter(lambda x: x[0] == top.topology_name, full_connected_failure_scenarios))), full_connected_failure_scenarios) for top in topologies]
+        average_hops_max: list[(TopologyResult, float)] = \
+            [(top, sum([failure_scenario.hops_max for failure_scenario in top.failure_scenarios if (top.topology_name, top.failure_scenarios.index(failure_scenario)) in full_connected_failure_scenarios], 0) / len(list(filter(lambda x: x[0] == top.topology_name, full_connected_failure_scenarios))), full_connected_failure_scenarios) for top in topologies]
 
         cactus_data = sorted(average_hops_max, key=lambda x: x[1])
 
-        latex_plot_data += ''.join(map(lambda data: f"({data[0]}, {data[1][1]}) % {data[1][0].topology_name}\n", list(enumerate(cactus_data, 1)))) + "};\n"
+        latex_plot_data += ''.join(map(lambda data: f"({filtered_data[0]}, {filtered_data[1][1]}) % {data[1][0].topology_name}\n", list(enumerate(cactus_data, 1)))) + "};\n"
 
     return latex_plot_legend + latex_plot_data
 
@@ -247,10 +248,10 @@ def latex_average_mean_latency__plot(data: dict[str, list[TopologyResult]]) -> s
                 if fs.successful_flows != fs.connected_flows:
                     full_connected_failure_scenarios.discard((topology.topology_name, i))
 
-
+    filtered_data = {alg: data[alg] for alg in algs}
 
     latex_plot_data = ""
-    for (alg, topologies) in data.items():
+    for (alg, topologies) in filtered_data.items():
         alg: str
         topologies: list[TopologyResult]
         if alg not in algs:
@@ -265,7 +266,7 @@ def latex_average_mean_latency__plot(data: dict[str, list[TopologyResult]]) -> s
 
         cactus_data = sorted(average_hops_mean, key=lambda x: x[1])
 
-        latex_plot_data += ''.join(map(lambda data: f"({data[0]}, {data[1][1]}) % {data[1][0].topology_name}\n", list(enumerate(cactus_data, 1)))) + "};\n"
+        latex_plot_data += ''.join(map(lambda data: f"({filtered_data[0]}, {filtered_data[1][1]}) % {filtered_data[1][0].topology_name}\n", list(enumerate(cactus_data, 1)))) + "};\n"
 
     return latex_plot_legend + latex_plot_data
 
