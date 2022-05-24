@@ -342,7 +342,7 @@ def latex_memory_failure_rate_plot(data: Dict[str, List[TopologyResult]]) -> str
             alg_longname_to_proper_alg_name[alg] = alg
             max_memory_topology = max(data[alg], key=lambda it: it.max_memory / it.num_flows)
             max_memory = int(math.ceil((max_memory_topology.max_memory / max_memory_topology.num_flows)))
-            filtered_memories = list(filter(lambda it: it > max_memory, memories))
+            filtered_memories = list(filter(lambda it: it >= max_memory, memories))
             for memory in filtered_memories:
                 memory_to_alg_dict[memory].append(alg)
             algs.add(alg)
