@@ -162,9 +162,14 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
     router_memory = [sum(len(rule) for rule in router.LFIB.values()) for router in routers]
     router_memory_str = str(router_memory).replace(' ', '')
 
+    hops_mean = -1 if len(s.num_hops.values()) == 0 else sum(s.num_hops.values())/len(s.num_hops.values())
+    hops_max = max(s.num_hops.values(), default=-1)
+    ll_mean = -1 if len(s.num_ll.values()) == 0 else sum(s.num_ll.values())/len(s.num_ll.values())
+    ll_max = max(s.num_ll.values(), default=-1)
+
     loops = codes[1]  # p8: we do not know what this is
     #f.write("attempted: {0}; succeses: {1}; loops: {2}; failed_links: {3}; connectivity: {4}\n".format(total, success, loops, len(F), success/total))
-    f.write(f"len(F):{len(F)} looping_links:{s.looping_links} successful_flows:{successful_flows} connected_flows:{initially_connected} hops_max:{max(s.num_hops.values(), default=-1)} hops_mean:{-1 if len(s.num_hops.values()) == 0 else sum(s.num_hops.values())/len(s.num_hops.values())}\n")
+    f.write(f"len(F):{len(F)} looping_links:{s.looping_links} successful_flows:{successful_flows} connected_flows:{initially_connected} hops_max:{hops_max} hops_mean:{hops_mean} ll_max:{ll_max} ll_mean:{ll_mean}\n")
 
     if len(F) == 0:
         common = open(os.path.join(os.path.dirname(f.name), "common"), "w")

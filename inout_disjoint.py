@@ -45,7 +45,7 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
     flow_to_weight_graph_dict = {f: network.topology.copy().to_directed() for f in flows}
 
     for _, weighted_graph in flow_to_weight_graph_dict.items():
-        reset_weights(weighted_graph, 1)
+        reset_weights(weighted_graph, 0)
 
     for i in range(epochs):
         # select the next ingress router to even out memory usage
@@ -80,7 +80,7 @@ def generate_pseudo_forwarding_table(network: Network, flows: List[Tuple[str, st
     for f in flows:
         # remove duplicate labels
         encoded_path = path_encoder(flow_to_paths_dict[f], create_label_generator(f))
-        encoded_path.to_graphviz(f'ft {f[0]} -> {f[1]}', network.topology)
+        #encoded_path.to_graphviz(f'ft {f[0]} -> {f[1]}', network.topology)
         forwarding_table.extend(encoded_path)
 
     return forwarding_table.table
@@ -98,7 +98,7 @@ def update_weights(G: Graph, path):
         # if weight <= 0:
         #     G[v1][v2]["weight"] = 1
         # else:
-        G[v1][v2]["weight"] = G[v1][v2]["weight"] * random.randint(1, G.number_of_nodes())
+        G[v1][v2]["weight"] = G[v1][v2]["weight"] * 2 + 1
 
 
 def encode_paths_full_backtrack(paths: List[str], label_generator: Iterator[oFEC]):

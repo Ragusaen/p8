@@ -816,7 +816,7 @@ class Label_Manager(object):
     """
     A class that handles requests for new MPLS labels.
     """
-    def __init__(self, first_label=16, max_first_label = 90000, final_value = 1048576, seed=0, numeric_labels=True):
+    def __init__(self, first_label=16, max_first_label = 9223372036854775807, final_value = 9223372036854775807, seed=0, numeric_labels=True):
 
         self.first_label = first_label
         self.max_first_label = max_first_label
@@ -841,7 +841,7 @@ class Label_Manager(object):
         if candidate_label < self.final_value:
             return candidate_label
         else:
-            raise Exception("MPLS labels depleted in router {}".format(self.name))
+            raise Exception("MPLS labels depleted in router {} {}".format(self.name))
 
 
 class Router(object):
@@ -2725,6 +2725,7 @@ class MPLS_packet(object):
         self.success = None
         self.targets = targets
         self.num_hops = 0
+        self.num_local_lookups = 0
 
     def info(self):
         print(".....INFO.....")
@@ -2920,6 +2921,7 @@ class MPLS_packet(object):
 
             if outgoing_iface == curr_r.LOCAL_LOOKUP:
                 p.cause = " FORWARDING recurrent: attempt to process next level on {}".format(curr_r.name)
+                self.num_local_lookups += 1
                 self.exit_code = 5
                 if p.verbose:
                     print(p.cause)
@@ -3005,6 +3007,7 @@ class Simulator(object):
         self.count_connected = 0
         self.looping_links = 0
         self.num_hops: dict[Tuple[str,str], int] = {}
+        self.num_ll: dict[Tuple[str, str], int] = {}
 
         if restricted_topology is not None:
             self.topology = restricted_topology
@@ -3054,6 +3057,7 @@ class Simulator(object):
 
                 if res:
                     self.num_hops[(tup[0][0], tup[1][0])] = p.num_hops
+                    self.num_ll[(tup[0][0], tup[1][0])] = p.num_local_lookups
 
                 if verbose:
                     print(f"label: {in_label}, Initial result: {res}")

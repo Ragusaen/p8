@@ -33,4 +33,4 @@ class ForwardingTable:
             for p, t, f2 in entries:
                 g.edge(s, t, label=str(p), arrowtail="dot", dir="both", color=f"{fec_to_color[f2]}:{fec_to_color[f1]}")
 
-        g.render(f'ft_{name}', 'gen')
+        #g.render(f'ft_{name}', 'gen')
