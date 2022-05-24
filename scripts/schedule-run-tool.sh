@@ -8,11 +8,12 @@
 
 PD=$(pwd)
 
-CONF=${1}
+#CONF=$1
 
 for TOPO in $(ls confs) ; do
-    #for CONF in $(ls confs/${TOPO}/conf_*) ; do
-    for FAILCHUNK in $(ls confs/${TOPO}/failure_chunks) ; do
-        sbatch scripts/run-tool.sh ${TOPO} ${CONF} confs/${TOPO}/failure_chunks/${FAILCHUNK}
+    for CONF in $(ls confs/${TOPO}/conf_inout-disjoint_max*) ; do
+        for FAILCHUNK in $(ls confs/${TOPO}/failure_chunks) ; do
+            sbatch scripts/run-tool.sh ${TOPO} ${CONF} ${FAILCHUNK}
+        done
     done
 done

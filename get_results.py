@@ -1,6 +1,7 @@
 import os
 from tqdm import tqdm
 from ast import literal_eval
+from typing import Dict, Tuple, List, Callable
 
 
 class FailureScenarioData:
@@ -88,7 +89,7 @@ def __parse_single_line_in_failure_scenario(line: str):
     return FailureScenarioData(failed_links, looping_links, successful_flows, connected_flows, hops_mean, hops_max)
 
 
-def parse_result_data(result_folder) -> dict[str, list[TopologyResult]]:
+def parse_result_data(result_folder) -> Dict[str, List[TopologyResult]]:
     result_dict: dict[str, list[TopologyResult]] = {}
     conf_progress = 1
     for conf_name in os.listdir(result_folder):

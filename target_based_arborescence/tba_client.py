@@ -74,12 +74,13 @@ class TargetBasedArborescence(MPLS_Client):
         #Create graph for debugging
         g = gv.Digraph(format="svg")
 
+        '''
         colors = ['blue', 'green', 'red', 'purple', 'orange', 'cyan']
         for arb, color in zip(self.rooted_arborescences, colors):
             for src, tgt, _ in arb:
                 g.edge(src, tgt, color=color)
 
-        g.render(f"arborescence_{self.router.name}", "gen")
+        g.render(f"arborescence_{self.router.name}", "gen")'''
 
         fec_arbors: list[tuple[oFEC, list[tuple[str, str, int]]]] =\
             [(oFEC("arborescence", f"{self.router.name}_{i}", (self.router.name, i, headends, i == 0)), a)
