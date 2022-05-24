@@ -347,7 +347,7 @@ def latex_memory_failure_rate_plot(data: Dict[str, List[TopologyResult]]) -> str
     alg_to_coordinates = {}
     for alg in algs:
         alg_to_coordinates[
-            alg] = r"\addplot[" + f"color={alg_to_plot_config_dict[alg].color}, {alg_to_plot_config_dict[alg].line_style}, thick, mark={alg_to_plot_config_dict[alg].mark}" + r", every mark/.append style={solid}] coordinates{"
+            alg] = r"\addplot[" + f"color={alg_to_plot_config_dict[alg].color}, {alg_to_plot_config_dict[alg].line_style}, thick" + r", every mark/.append style={solid}] coordinates{"
         latex_plot_legend += f"{alg_to_plot_config_dict[alg].name}, "
 
     latex_plot_legend += "}\n"
