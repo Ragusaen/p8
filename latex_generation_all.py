@@ -9,6 +9,7 @@ import re
 import math
 import functools
 
+from typing import Dict, Tuple, List, Callable
 
 class AlgorithmPlotConfiguration:
     def __init__(self, name: str, color: str, line_style: str, mark: str = "none"):
@@ -148,7 +149,7 @@ def output_latex_content(file_name: str, content: str, content_type: str):
             print(f"ERROR: Failed uploading {content_type} at 'figures/results_auto_generated/{file_name}'")
 
 
-def latex_average_max_latency_plot(data: dict[str, list[TopologyResult]]) -> str:
+def latex_average_max_latency_plot(data: Dict[str, List[TopologyResult]]) -> str:
     latex_plot_legend = r"\legend{"
     algs = set()
     skip_algs = set()
@@ -209,7 +210,7 @@ def latex_average_max_latency_plot(data: dict[str, list[TopologyResult]]) -> str
     return latex_plot_legend + latex_plot_data
 
 
-def latex_average_mean_latency__plot(data: dict[str, list[TopologyResult]]) -> str:
+def latex_average_mean_latency__plot(data: Dict[str, List[TopologyResult]]) -> str:
     latex_plot_legend = r"\legend{"
     algs = set()
     skip_algs = set()
@@ -271,7 +272,7 @@ def latex_average_mean_latency__plot(data: dict[str, list[TopologyResult]]) -> s
     return latex_plot_legend + latex_plot_data
 
 
-def latex_gen_time_plot(data: dict[str, list[TopologyResult]]) -> str:
+def latex_gen_time_plot(data: Dict[str, List[TopologyResult]]) -> str:
     latex_plot_legend = r"\legend{"
     algs = set()
     skip_algs = set()
@@ -316,7 +317,7 @@ def latex_gen_time_plot(data: dict[str, list[TopologyResult]]) -> str:
     return latex_plot_legend + latex_plot_data
 
 
-def latex_memory_failure_rate_plot(data: dict[str, list[TopologyResult]]) -> str:
+def latex_memory_failure_rate_plot(data: Dict[str, List[TopologyResult]]) -> str:
     latex_plot_legend = r"\legend{"
     skip_algs = set()
     skip_algs.add("Keep Forwarding")
@@ -365,8 +366,8 @@ def latex_memory_failure_rate_plot(data: dict[str, list[TopologyResult]]) -> str
 
     return latex_plot_legend + ''.join(alg_to_coordinates.values())
 
-def latex_scatter_plot(data: dict[str, list[TopologyResult]], alg1: str, alg2: str) -> str:
-    def get_connectedness(r: list[TopologyResult]):
+def latex_scatter_plot(data: Dict[str, List[TopologyResult]], alg1: str, alg2: str) -> str:
+    def get_connectedness(r: List[TopologyResult]):
         return map(lambda tr: tr.connectedness, r)
 
     datapoints = zip(get_connectedness(data[alg1]), get_connectedness(data[alg2]))
