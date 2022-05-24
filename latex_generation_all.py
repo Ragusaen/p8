@@ -299,7 +299,7 @@ def latex_gen_time_plot(data: dict[str, list[TopologyResult]]) -> str:
         if alg not in algs:
             continue
 
-        cactus_data = sorted(topologies, key=lambda topology: topology.fwd_gen_time)
+        cactus_data = sorted(topologies, key=lambda topology: topology.fwd_gen_time / topology.num_flows)
 
         latex_plot_data += r"\addplot[mark=none" + \
                            ", color=" + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].color + \
@@ -308,7 +308,7 @@ def latex_gen_time_plot(data: dict[str, list[TopologyResult]]) -> str:
 
         counter = 0
         for i in range(0, len(cactus_data)):
-            latex_plot_data += f"({counter}, {cactus_data[i].fwd_gen_time / 1000000000}) %{cactus_data[i].topology_name}\n"
+            latex_plot_data += f"({counter}, {(cactus_data[i].fwd_gen_time / cactus_data[i].num_flows) / 1000000000}) %{cactus_data[i].topology_name}\n"
             counter += 1
         latex_plot_data += r"};" + "\n"
 
