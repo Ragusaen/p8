@@ -28,7 +28,7 @@ alg_to_plot_config_dict: {str: AlgorithmPlotConfiguration} = {
     "kf": AlgorithmPlotConfiguration("KF", "cyan", "densely dotted"),
     "gft": AlgorithmPlotConfiguration("GFT-CA", "orange", "loosely dashed", "x"),
     "inout-disjoint": AlgorithmPlotConfiguration("FBR", "red", "solid", "square*"),
-    "inout-disjoint-full": AlgorithmPlotConfiguration('FBR-full', 'blue', 'dashed', 'circle*'),
+    "inout-disjoint-full": AlgorithmPlotConfiguration('FBR-full', 'magenta', 'solid', 'circle*'),
     "rmpls": AlgorithmPlotConfiguration("R-MPLS", "gray", "densely dashed", "*"),
     "plinko4": AlgorithmPlotConfiguration('Plinko', 'purple', 'loosely dotted')
 }
@@ -246,7 +246,7 @@ def latex_average_mean_latency__plot(data: Dict[str, List[TopologyResult]]) -> s
             topology: TopologyResult
             for i, fs in enumerate(topology.failure_scenarios):
                 fs: FailureScenarioData
-                if fs.successful_flows != fs.connected_flows:
+                if fs.successful_flows != fs.connected_flows or fs.connected_flows == 0:
                     full_connected_failure_scenarios.discard((topology.topology_name, i))
 
     filtered_data = {alg: data[alg] for alg in algs}
@@ -263,7 +263,10 @@ def latex_average_mean_latency__plot(data: Dict[str, List[TopologyResult]]) -> s
                            ", " + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].line_style + \
                            ", thick] coordinates{" + "\n"
 
-        average_hops_mean: list[(TopologyResult, float)] = [(top, sum([failure_scenario.hops_mean for failure_scenario in top.failure_scenarios if (top.topology_name, top.failure_scenarios.index(failure_scenario)) in full_connected_failure_scenarios], 0) / len(list(filter(lambda x: x[0] == top.topology_name, full_connected_failure_scenarios))), full_connected_failure_scenarios) for top in topologies]
+        average_hops_mean: list[(TopologyResult, float)] = \
+            [(top,
+              sum(failure_scenario.hops_mean for j, failure_scenario in enumerate(top.failure_scenarios) if (top.topology_name, j) in full_connected_failure_scenarios)
+                  / len(list(filter(lambda x: x[0] == top.topology_name, full_connected_failure_scenarios)))) for top in topologies]
 
         cactus_data = sorted(average_hops_mean, key=lambda x: x[1])
 
