@@ -1,17 +1,20 @@
 import os
+from functools import reduce
+
 from tqdm import tqdm
 from ast import literal_eval
 from typing import Dict, Tuple, List, Callable
 
+inf = 1_000_000
+
 
 class FailureScenarioData:
-    def __init__(self, failed_links, looping_links, successful_flows, connected_flows, hops_mean, hops_max):
+    def __init__(self, failed_links, looping_links, successful_flows, connected_flows, median_hops):
         self.failed_links = failed_links
         self.looping_links = looping_links
         self.successful_flows = successful_flows
         self.connected_flows = connected_flows
-        self.hops_mean = hops_mean
-        self.hops_max = hops_max
+        self.median_hops: int = median_hops
 
 
 class CommonResultData:
@@ -27,12 +30,16 @@ class TopologyResult:
         self.topology_name = topology_name
         self.total_links = total_links
         self.num_flows = num_flows
-        self.failure_scenarios = failure_scenarios
+        self.failure_scenarios: List[FailureScenarioData] = failure_scenarios
         self.connectedness = connectedness
         self.connectivity = connectivity
         self.fwd_gen_time = fwd_gen_time
         self.max_memory = max_memory
         self.within_memory_limit = within_memory_limit
+
+        self.median_hops: Dict[int, int] = {}
+        for fs in self.failure_scenarios:
+            self.median_hops[fs.median_hops] = self.median_hops.get(fs.median_hops, 0) + 1
 
 
 def __compute_probability(f, e, pf=0.001):
@@ -79,14 +86,11 @@ def __parse_single_line_in_failure_scenario(line: str):
         if (prop_name == 'connected_flows'):
             connected_flows = int(value)
             continue
-        if (prop_name == 'hops_mean'):
-            hops_mean = float(value)
-            continue
-        if (prop_name == 'hops_max'):
-            hops_max = int(value)
+        if (prop_name == 'median_hops'):
+            median_hops = int(value)
             continue
 
-    return FailureScenarioData(failed_links, looping_links, successful_flows, connected_flows, hops_mean, hops_max)
+    return FailureScenarioData(failed_links, looping_links, successful_flows, connected_flows, median_hops)
 
 
 def parse_result_data(result_folder) -> Dict[str, List[TopologyResult]]:

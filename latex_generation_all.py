@@ -9,6 +9,8 @@ import re
 import math
 import functools
 
+from statistics import median_low as median
+
 from typing import Dict, Tuple, List, Callable
 
 class AlgorithmPlotConfiguration:
@@ -130,6 +132,7 @@ def generate_all_latex():
     # output_latex_content("latency_average_max_data.tex", latex_average_max_latency_plot(results_data), "average max number of hops plot (latency)")
     output_latex_content("latency_average_mean_data.tex", latex_average_mean_latency__plot(results_data), "average mean number of hops plot (latency)")
     output_latex_content("fwd_gen_time_data.tex", latex_gen_time_plot(results_data), "forwarding table generation time")
+    output_latex_content('latency_full_median.tex', latex_full_latency_plot(results_data), 'median failure scenario latency')
 
 
     if overleaf_upload:
@@ -209,6 +212,64 @@ def latex_average_max_latency_plot(data: Dict[str, List[TopologyResult]]) -> str
 
     return latex_plot_legend + latex_plot_data
 
+def latex_full_latency_plot(data: Dict[str, List[TopologyResult]]) -> str:
+    latex_plot_legend = r"\legend{"
+    algs = list()
+    skip_algs = set()
+    skip_algs.add("kf")
+    skip_algs.add("plinko4")
+    memories = ["5"]
+    inf_hops = 100
+
+    for alg in sorted(data.keys()):
+        if alg in skip_algs:
+            continue
+
+        if "max-mem" in alg:
+            (alg_proper_name, memory_group) = re.split("_max-mem=", alg)
+            if memory_group not in memories:
+                continue
+            latex_plot_legend += f"{alg_to_plot_config_dict[alg_proper_name].name + memory_group}, "
+            algs.append(alg)
+        else:
+            algs.append(alg)
+            latex_plot_legend += f"{alg_to_plot_config_dict[alg].name}, "
+    latex_plot_legend += "}\n"
+
+    filtered_data = {alg: data[alg] for alg in algs}
+
+    latex_plot_data = ""
+    for (alg, topologies) in sorted(filtered_data.items(), key=lambda x: x[0]):
+        alg: str
+        topologies: list[TopologyResult]
+        if alg not in algs:
+            continue
+
+        latex_plot_data += r"\addplot[mark=none" + \
+                           ", color=" + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].color + \
+                           ", " + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].line_style + \
+                           ", thick] coordinates{" + "\n"
+
+        tot_median_hops = {}
+        for t in topologies:
+            for hop, count in t.median_hops.items():
+                tot_median_hops[hop] = tot_median_hops.get(hop, 0) + count
+
+        points = []
+        cum_points = 0
+        for hop, count in sorted(tot_median_hops.items(), key=lambda x: x[0]):
+            from get_results import inf
+            hop = hop if hop != inf else inf_hops
+            assert(hop <= inf_hops)
+            points.append((cum_points, hop))
+            if count > 1:
+                points.append((cum_points + count - 1, hop))
+            cum_points += count
+
+        latex_plot_data += '\n'.join(map(lambda p: str(p), points)) + "\n};\n"
+
+    return latex_plot_legend + latex_plot_data
+
 
 def latex_average_mean_latency__plot(data: Dict[str, List[TopologyResult]]) -> str:
     latex_plot_legend = r"\legend{"
@@ -277,13 +338,13 @@ def latex_average_mean_latency__plot(data: Dict[str, List[TopologyResult]]) -> s
 
 def latex_gen_time_plot(data: Dict[str, List[TopologyResult]]) -> str:
     latex_plot_legend = r"\legend{"
-    algs = set()
+    algs = list()
     skip_algs = set()
     skip_algs.add("kf")
     skip_algs.add("plinko4")
     memories = ["4"]
 
-    for alg in data.keys():
+    for alg in sorted(data.keys()):
         if alg in skip_algs:
             continue
 
@@ -292,15 +353,15 @@ def latex_gen_time_plot(data: Dict[str, List[TopologyResult]]) -> str:
             if memory_group not in memories:
                 continue
             latex_plot_legend += f"{alg_to_plot_config_dict[alg_proper_name].name + memory_group}, "
-            algs.add(alg)
+            algs.append(alg)
         else:
-            algs.add(alg)
+            algs.append(alg)
             latex_plot_legend += f"{alg_to_plot_config_dict[alg].name}, "
     latex_plot_legend += "}\n"
 
     latex_plot_data = ""
 
-    for (alg, topologies) in data.items():
+    for (alg, topologies) in sorted(data.items(), key=lambda x: x[0]):
         if alg not in algs:
             continue
 
@@ -331,7 +392,7 @@ def latex_memory_failure_rate_plot(data: Dict[str, List[TopologyResult]]) -> str
     memories = [i for i in range(2,mem_plot_cap+1)]
     memory_to_alg_dict = {i: [] for i in range(2, mem_plot_cap+1)}
 
-    for alg in data.keys():
+    for alg in sorted(data.keys()):
         alg: str
         if "max-mem" in alg:
             (alg_proper_name, memory_group) = re.split("_max-mem=", alg)
@@ -367,7 +428,7 @@ def latex_memory_failure_rate_plot(data: Dict[str, List[TopologyResult]]) -> str
     for alg in alg_to_coordinates.keys():
         alg_to_coordinates[alg] += "};\n"
 
-    return latex_plot_legend + ''.join(alg_to_coordinates.values())
+    return latex_plot_legend + ''.join(map(lambda x: x[1], sorted(alg_to_coordinates.items(), key=lambda x: x[0])))
 
 def latex_scatter_plot(data: Dict[str, List[TopologyResult]], alg1: str, alg2: str) -> str:
     def get_connectedness(r: List[TopologyResult]):
