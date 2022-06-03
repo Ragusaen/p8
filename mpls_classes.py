@@ -3058,6 +3058,10 @@ class Simulator(object):
                 if res:
                     self.num_hops[(tup[0][0], tup[1][0])] = p.num_hops
                     self.num_ll[(tup[0][0], tup[1][0])] = p.num_local_lookups
+                else:
+                    self.num_hops[(tup[0][0], tup[1][0])] = -1
+                    self.num_ll[(tup[0][0], tup[1][0])] = -1
+
 
                 if verbose:
                     print(f"label: {in_label}, Initial result: {res}")
