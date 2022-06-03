@@ -162,12 +162,11 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
     router_memory = [sum(len(rule) for rule in router.LFIB.values()) for router in routers]
     router_memory_str = str(router_memory).replace(' ', '')
 
-    from get_results import inf
     from statistics import median_low as median
-    median_hops = median(map(lambda x: inf if x == -1 else x, s.num_hops.values()))
+    hops = str(list(s.num_hops.values())).replace(' ', '')
 
     #f.write("attempted: {0}; succeses: {1}; loops: {2}; failed_links: {3}; connectivity: {4}\n".format(total, success, loops, len(F), success/total))
-    f.write(f"len(F):{len(F)} looping_links:{s.looping_links} successful_flows:{successful_flows} connected_flows:{initially_connected} median_hops:{median_hops}\n")
+    f.write(f"len(F):{len(F)} looping_links:{s.looping_links} successful_flows:{successful_flows} connected_flows:{initially_connected} hops:{hops}\n")
 
     if len(F) == 0:
         common = open(os.path.join(os.path.dirname(f.name), "common"), "w")

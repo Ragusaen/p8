@@ -130,7 +130,7 @@ def generate_all_latex():
     output_latex_content("loop_table_data.tex", latex_loop_table(results_data), "loop table")
     # output_latex_content('scatter_tba_vs_inout_data.tex', latex_scatter_plot(results_data, 'tba-complex_max-mem=5', 'inout-disjoint_max-mem=5'), 'scatter plot')
     # output_latex_content("latency_average_max_data.tex", latex_average_max_latency_plot(results_data), "average max number of hops plot (latency)")
-    output_latex_content("latency_average_mean_data.tex", latex_average_mean_latency__plot(results_data), "average mean number of hops plot (latency)")
+    # output_latex_content("latency_average_mean_data.tex", latex_average_mean_latency__plot(results_data), "average mean number of hops plot (latency)")
     output_latex_content("fwd_gen_time_data.tex", latex_gen_time_plot(results_data), "forwarding table generation time")
     output_latex_content('latency_full_median.tex', latex_full_latency_plot(results_data), 'median failure scenario latency')
 
@@ -218,7 +218,7 @@ def latex_full_latency_plot(data: Dict[str, List[TopologyResult]]) -> str:
     skip_algs = set()
     skip_algs.add("kf")
     skip_algs.add("plinko4")
-    memories = ["5"]
+    memories = ["4"]
     inf_hops = 100
 
     for alg in sorted(data.keys()):
@@ -250,14 +250,14 @@ def latex_full_latency_plot(data: Dict[str, List[TopologyResult]]) -> str:
                            ", " + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].line_style + \
                            ", thick] coordinates{" + "\n"
 
-        tot_median_hops = {}
+        tot_hops = {}
         for t in topologies:
-            for hop, count in t.median_hops.items():
-                tot_median_hops[hop] = tot_median_hops.get(hop, 0) + count
+            for hop, count in t.hops.items():
+                tot_hops[hop] = tot_hops.get(hop, 0) + count
 
         points = []
         cum_points = 0
-        for hop, count in sorted(tot_median_hops.items(), key=lambda x: x[0]):
+        for hop, count in sorted(tot_hops.items(), key=lambda x: x[0]):
             from get_results import inf
             hop = hop if hop != inf else inf_hops
             assert(hop <= inf_hops)

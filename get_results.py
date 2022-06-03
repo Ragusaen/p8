@@ -9,12 +9,12 @@ inf = 1_000_000
 
 
 class FailureScenarioData:
-    def __init__(self, failed_links, looping_links, successful_flows, connected_flows, median_hops):
+    def __init__(self, failed_links, looping_links, successful_flows, connected_flows, hops):
         self.failed_links = failed_links
         self.looping_links = looping_links
         self.successful_flows = successful_flows
         self.connected_flows = connected_flows
-        self.median_hops: int = median_hops
+        self.hops: List[int] = hops
 
 
 class CommonResultData:
@@ -37,9 +37,10 @@ class TopologyResult:
         self.max_memory = max_memory
         self.within_memory_limit = within_memory_limit
 
-        self.median_hops: Dict[int, int] = {}
+        self.hops: Dict[int, int] = {}
         for fs in self.failure_scenarios:
-            self.median_hops[fs.median_hops] = self.median_hops.get(fs.median_hops, 0) + 1
+            for hop in fs.hops:
+                self.hops[hop] = self.hops.get(hop, 0) + 1
 
 
 def __compute_probability(f, e, pf=0.001):
@@ -86,11 +87,11 @@ def __parse_single_line_in_failure_scenario(line: str):
         if (prop_name == 'connected_flows'):
             connected_flows = int(value)
             continue
-        if (prop_name == 'median_hops'):
-            median_hops = int(value)
+        if (prop_name == 'hops'):
+            hops = literal_eval(value)
             continue
 
-    return FailureScenarioData(failed_links, looping_links, successful_flows, connected_flows, median_hops)
+    return FailureScenarioData(failed_links, looping_links, successful_flows, connected_flows, hops)
 
 
 def parse_result_data(result_folder) -> Dict[str, List[TopologyResult]]:
