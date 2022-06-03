@@ -2727,6 +2727,13 @@ class MPLS_packet(object):
         self.num_hops = 0
         self.num_local_lookups = 0
 
+        def except_false(f):
+            try:
+                return f()
+            except:
+                return False
+        self.is_connected = any([except_false(lambda: nx.has_path(self.topology, self.init_router.name, tgt)) for tgt in self.targets])
+
     def info(self):
         print(".....INFO.....")
         print("Packet from {} with initial stack: [{}]" .format(self.init_router.name, "|".join(self.init_stack)))
@@ -2758,11 +2765,7 @@ class MPLS_packet(object):
             return None
 
     def step(self):
-        def except_false(f):
-            try:
-                return f()
-            except:
-                return False
+
 
         # Simulate one step: send the packet to the next hop.
         if self.state == "uninitialized":
@@ -2810,7 +2813,7 @@ class MPLS_packet(object):
             self.exit_code = 5
             if self.verbose:
                 if self.targets is not None:
-                    print("WAS CONNECTED" if any([except_false(lambda: nx.has_path(self.topology, self.init_router.name, tgt)) for tgt in self.targets]) else "WAS NOT CONNECTED")
+                    print("WAS CONNECTED" if self.is_connected else "WAS NOT CONNECTED")
                 print(self.cause)
             if self.mode == "pathfinder":
                 return (False, [])
@@ -2826,7 +2829,7 @@ class MPLS_packet(object):
             self.exit_code = 2
             if self.verbose:
                 if self.targets is not None:
-                    print("WAS CONNECTED" if any([except_false(lambda: nx.has_path(self.topology, self.init_router.name, tgt)) for tgt in self.targets]) else "WAS NOT CONNECTED")
+                    print("WAS CONNECTED" if self.is_connected else "WAS NOT CONNECTED")
                 print(self.cause)
             if self.mode == "pathfinder":
                 return (False, [])
@@ -2876,7 +2879,7 @@ class MPLS_packet(object):
                     self.exit_code = 3
                     if self.verbose:
                         if self.targets is not None:
-                            print("WAS CONNECTED" if any([except_false(lambda: nx.has_path(self.topology, self.init_router.name, tgt)) for tgt in self.targets]) else "WAS NOT CONNECTED")
+                            print("WAS CONNECTED" if self.is_connected else "WAS NOT CONNECTED")
                         print(self.cause)
                     if self.mode == "pathfinder":
                         return (True, [])
@@ -2893,7 +2896,7 @@ class MPLS_packet(object):
             self.exit_code = 4
             if self.verbose:
                 if self.targets is not None:
-                    print("WAS CONNECTED" if any([except_false(lambda: nx.has_path(self.topology, self.init_router.name, tgt)) for tgt in self.targets]) else "WAS NOT CONNECTED")
+                    print("WAS CONNECTED" if self.is_connected else "WAS NOT CONNECTED")
                 print(self.cause)
             if self.mode == "pathfinder":
                 return (False, [])
@@ -3058,7 +3061,7 @@ class Simulator(object):
                 if res:
                     self.num_hops[(tup[0][0], tup[1][0])] = p.num_hops
                     self.num_ll[(tup[0][0], tup[1][0])] = p.num_local_lookups
-                else:
+                elif p.is_connected:
                     from get_results import inf
                     self.num_hops[(tup[0][0], tup[1][0])] = inf
                     self.num_ll[(tup[0][0], tup[1][0])] = inf
@@ -3069,10 +3072,7 @@ class Simulator(object):
 
                 self.traces[router_name][in_label] = [{"trace": p, "result": res}]
 
-                for good_target in list(good_targets):
-                    if nx.has_path(self.topology, router_name, good_target):
-                        self.count_connected += 1
-                        break
+                self.count_connected += p.is_connected
 
                 if not res and verbose:
                     print(" ##### DEBUG INFO ###")

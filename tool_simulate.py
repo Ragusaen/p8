@@ -148,11 +148,6 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
     # Instantiate simulator object
     s = Simulator(network, trace_mode="links", restricted_topology=view, random_seed=conf["random_seed_sim"])
 
-    initially_connected = 0
-    for src, tgt in flows:
-        if nx.has_path(view, src, tgt):
-            initially_connected += 1
-
     verbose=conf["verbose"]
     s.run(flows, verbose=verbose)
 
@@ -166,13 +161,13 @@ def simulation(network, failed_set, f, flows: List[Tuple[str, str]]):
     hops = str(list(s.num_hops.values())).replace(' ', '')
 
     #f.write("attempted: {0}; succeses: {1}; loops: {2}; failed_links: {3}; connectivity: {4}\n".format(total, success, loops, len(F), success/total))
-    f.write(f"len(F):{len(F)} looping_links:{s.looping_links} successful_flows:{successful_flows} connected_flows:{initially_connected} hops:{hops}\n")
+    f.write(f"len(F):{len(F)} looping_links:{s.looping_links} successful_flows:{successful_flows} connected_flows:{s.count_connected} hops:{hops}\n")
 
     if len(F) == 0:
         common = open(os.path.join(os.path.dirname(f.name), "common"), "w")
         common.write(f"len(E):{links} num_flows:{total_flows} fwd_gen_time:{stats['fwd_gen_time']} memory:{router_memory_str}")
 
-    print(f"SIMULATION FINISHED - FAILED: {initially_connected - successful_flows}")
+    print(f"SIMULATION FINISHED - FAILED: {s.count_connected - successful_flows}")
 
 
 if __name__ == "__main__":

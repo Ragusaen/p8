@@ -250,23 +250,17 @@ def latex_full_latency_plot(data: Dict[str, List[TopologyResult]]) -> str:
                            ", " + alg_to_plot_config_dict[re.split("_max-mem=", alg)[0]].line_style + \
                            ", thick] coordinates{" + "\n"
 
-        tot_hops = {}
-        for t in topologies:
-            for hop, count in t.hops.items():
-                tot_hops[hop] = tot_hops.get(hop, 0) + count
-
         points = []
-        cum_points = 0
-        for hop, count in sorted(tot_hops.items(), key=lambda x: x[0]):
-            from get_results import inf
-            hop = hop if hop != inf else inf_hops
-            assert(hop <= inf_hops)
-            points.append((cum_points, hop))
-            if count > 1:
-                points.append((cum_points + count - 1, hop))
-            cum_points += count
+        from get_results import inf
+        for t in topologies:
+            med_hops = median(hop for fs in t.failure_scenarios for hop in fs.hops)
+            if med_hops == inf:
+                med_hops = inf_hops
 
-        latex_plot_data += '\n'.join(map(lambda p: str(p), points)) + "\n};\n"
+            points.append((t.topology_name, med_hops))
+        points.sort(key=lambda x: x[1])
+
+        latex_plot_data += '\n'.join(map(lambda p: f'({p[0]}, {p[1][1]}) % {p[1][0]}', enumerate(points))) + "\n};\n"
 
     return latex_plot_legend + latex_plot_data
 

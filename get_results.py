@@ -7,6 +7,8 @@ from typing import Dict, Tuple, List, Callable
 
 inf = 1_000_000
 
+def compute_probability(f, e, pf=0.001):
+    return (pf ** f) * (1 - pf) ** (e - f)
 
 class FailureScenarioData:
     def __init__(self, failed_links, looping_links, successful_flows, connected_flows, hops):
@@ -15,6 +17,8 @@ class FailureScenarioData:
         self.successful_flows = successful_flows
         self.connected_flows = connected_flows
         self.hops: List[int] = hops
+        self.probability = -1.0
+        self.normalised_probability = -1.0
 
 
 class CommonResultData:
@@ -42,9 +46,13 @@ class TopologyResult:
             for hop in fs.hops:
                 self.hops[hop] = self.hops.get(hop, 0) + 1
 
+        self.total_prob_mass = 0.0
+        for fs in self.failure_scenarios:
+            fs.probability = compute_probability(fs.failed_links, self.total_links)
+            self.total_prob_mass += fs.probability
 
-def __compute_probability(f, e, pf=0.001):
-    return (pf ** f) * (1 - pf) ** (e - f)
+        for fs in self.failure_scenarios:
+            fs.normalised_probability = fs.probability / self.total_prob_mass
 
 
 def __parse_line_in_common(line: str):
@@ -144,7 +152,6 @@ def compute_connectedness(result_data: dict) -> {}:
         conf_name: str
         for topology in result_data[conf_name]:
             topology: TopologyResult
-            normalisation_sum = 0
             connectedness = 0
             tot_successful = 0
             tot_connected = 0
@@ -154,8 +161,7 @@ def compute_connectedness(result_data: dict) -> {}:
                 tot_connected += failure_scenario.connected_flows
                 tot_successful += failure_scenario.successful_flows
 
-                p = __compute_probability(failure_scenario.failed_links, topology.total_links)
-                normalisation_sum += p
+                p = failure_scenario.normalised_probability
 
                 if failure_scenario.connected_flows != 0:
                     connectedness += p * (failure_scenario.successful_flows / failure_scenario.connected_flows)
@@ -166,9 +172,7 @@ def compute_connectedness(result_data: dict) -> {}:
                 topology.connectivity = 1
             else:
                 topology.connectivity = tot_successful / tot_connected
-            # Normalise
-            if normalisation_sum > 0:
-                connectedness = connectedness / normalisation_sum
+
             if len(topology.failure_scenarios) == 0:
                 connectedness = 1.2
                 # this should never happen
