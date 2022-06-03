@@ -149,7 +149,7 @@ def generate_conf(n, conf_type: str, topofile = None, random_seed = 1, per_flow_
         base_config['backtrack'] = 'partial'
     elif conf_type == 'inout-disjoint-full':
         base_config['method'] = 'inout-disjoint'
-        base_config['epochs'] = 1000
+        base_config['epochs'] = 3
         base_config['backtrack'] = 'full'
     elif conf_type == 'rmpls':
         base_config['enable_RMPLS'] = True

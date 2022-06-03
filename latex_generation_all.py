@@ -253,11 +253,11 @@ def latex_full_latency_plot(data: Dict[str, List[TopologyResult]]) -> str:
         points = []
         from get_results import inf
         for t in topologies:
-            med_hops = median(hop for fs in t.failure_scenarios for hop in fs.hops)
-            if med_hops == inf:
-                med_hops = inf_hops
-
-            points.append((t.topology_name, med_hops))
+            med_hops = [median(fs.hops[i] for fs in t.failure_scenarios) for i in range(t.num_flows)]
+            # if med_hops == inf:
+            #     med_hops = inf_hops
+            for i, mh in enumerate(med_hops):
+                points.append((t.topology_name + str(i), mh))
         points.sort(key=lambda x: x[1])
 
         latex_plot_data += '\n'.join(map(lambda p: f'({p[0]}, {p[1][1]}) % {p[1][0]}', enumerate(points))) + "\n};\n"

@@ -3065,6 +3065,9 @@ class Simulator(object):
                     from get_results import inf
                     self.num_hops[(tup[0][0], tup[1][0])] = inf
                     self.num_ll[(tup[0][0], tup[1][0])] = inf
+                else:
+                    self.num_hops[(tup[0][0], tup[1][0])] = -1
+                    self.num_ll[(tup[0][0], tup[1][0])] = -1
 
 
                 if verbose:
