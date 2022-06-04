@@ -9,8 +9,6 @@ import re
 import math
 import functools
 
-from statistics import median_low as median
-
 from typing import Dict, Tuple, List, Callable
 
 class AlgorithmPlotConfiguration:
@@ -252,10 +250,10 @@ def latex_full_latency_plot(data: Dict[str, List[TopologyResult]]) -> str:
 
         points = []
         from get_results import inf
+        from statistics import median_low as median  # Use median_low to avoid avg over number and infinity
         for t in topologies:
-            med_hops = [median(fs.hops[i] for fs in t.failure_scenarios) for i in range(t.num_flows)]
-            # if med_hops == inf:
-            #     med_hops = inf_hops
+            med_hops = [median(fs.hops[i] for fs in t.failure_scenarios if fs.hops[i] != -1) for i in range(t.num_flows)]
+            med_hops = map(lambda x: inf_hops if x == inf else x, med_hops)
             for i, mh in enumerate(med_hops):
                 points.append((t.topology_name + str(i), mh))
         points.sort(key=lambda x: x[1])

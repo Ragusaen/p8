@@ -96,7 +96,7 @@ def __parse_single_line_in_failure_scenario(line: str):
             connected_flows = int(value)
             continue
         if (prop_name == 'hops'):
-            hops = literal_eval(value)
+            hops = [int(n) for n in value[1:-2].split(',')]
             continue
 
     return FailureScenarioData(failed_links, looping_links, successful_flows, connected_flows, hops)
