@@ -41,10 +41,10 @@ class TopologyResult:
         self.max_memory = max_memory
         self.within_memory_limit = within_memory_limit
 
-        self.hops: Dict[int, int] = {}
-        for fs in self.failure_scenarios:
-            for hop in fs.hops:
-                self.hops[hop] = self.hops.get(hop, 0) + 1
+        # self.hops: Dict[int, int] = {}
+        # for fs in self.failure_scenarios:
+        #     for hop in fs.hops:
+        #         self.hops[hop] = self.hops.get(hop, 0) + 1
 
         self.total_prob_mass = 0.0
         for fs in self.failure_scenarios:
