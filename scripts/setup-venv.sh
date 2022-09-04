@@ -11,10 +11,8 @@ ulimit -v $m
 
 PYTHON_PROJECT_FOLDER="~/p8"
 
-cd ~/p8
-
 # Setup a venv (virtual environment) called venv. This creates a folder called 'venv' in the current (project) directory.
-python3 -m venv venv1
+python3 -m venv venv
 # Activate the venv.
 source venv/bin/activate
 

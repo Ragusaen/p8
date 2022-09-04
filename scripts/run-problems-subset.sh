@@ -5,7 +5,9 @@ CONFIG="${1}"
 AMOUNT_TO_TEST="${2}"
 count=1
 
-source ~/p8/venv/bin/activate
+PD=$(pwd)
+
+source ${PD}/venv/bin/activate
 
 for TOPO in $(ls confs) ; do
     if [ $count -le $AMOUNT_TO_TEST ]
