@@ -1995,7 +1995,6 @@ class ProcRMPLS(ProcRSVPTE):
         return False
 
     def compute_bad_edge_pairs_from(self, edge):
-        print("running compute_bad_edge_pairs_from")
         # This function computes the pairs of links (A,B) such that when on the bypass_path for A, if B also fails, we will not enter B's bypass_path like we normally would with RMPLS.
         # We do this to avoid forwarding loops. The algorithm is designed to guarantee that no forwarding loops can occur when using the computer bad_edge_pairs.
         if edge not in self.bad_edge_computations_covered: # Only compute once for each starting edge
