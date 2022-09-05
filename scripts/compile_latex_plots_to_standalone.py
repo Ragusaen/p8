@@ -1,6 +1,7 @@
 import os
 import argparse
 import glob
+import quick_fix_latex_data
 
 
 p = argparse.ArgumentParser()
@@ -15,7 +16,9 @@ plot_conf = {
     'latency': r'ylabel={Median number of hops}, xlabel={Demand},label style={font=\scriptsize}, ymin=1, ymax=140, ytick={1, 10, 100, 140}, yticklabels={1, 10, 100, $\infty$}, ymode=log,',
 }
 
-for f in glob.glob(os.path.join(args.dir, '../latex/*.tex')):
+os.chdir(args.dir)
+
+for f in glob.glob('*.tex'):
     if 'padded' in f or not any(k in f for k in plot_conf.keys()):
         continue
     with open(f, 'r') as original:
@@ -37,7 +40,8 @@ for f in glob.glob(os.path.join(args.dir, '../latex/*.tex')):
                     \\end{axis} \\end{tikzpicture} \\end{document}"""
 
             new.write(s)
+            if 'latency' in a:
+                quick_fix_latex_data.fix(a)
 
-        os.chdir(args.dir)
         os.system(f'pdflatex {os.path.basename(a)}')
         os.system('rm *.aux *.log')

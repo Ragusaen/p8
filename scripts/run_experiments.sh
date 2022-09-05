@@ -29,11 +29,11 @@ fi
 #where X is a integer limit on the number of rules per router per demand.
 
 
-for CONF in "${CONFS_TO_RUN[@]}" 
-do
-    ./scripts/run-problems-subset.sh ${CONF} 300                    #Simulate the CONFS. Second parameter is a limit on number of topologies to run on.
-done
+#for CONF in "${CONFS_TO_RUN[@]}"
+#do
+#    ./scripts/run-problems-subset.sh ${CONF} 300 ${FILTER}                   #Simulate the CONFS. Second parameter is a limit on number of topologies to run on.
+#done
 
 python3 latex_generation_all.py
 
-python3 ./scripts/compile_latex_plots_to_standalone.py
+python3 ./scripts/compile_latex_plots_to_standalone.py latex

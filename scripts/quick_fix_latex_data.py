@@ -1,7 +1,10 @@
 import re
+import argparse
 
-with open('latex2/latex/latency_full_median.tex', 'r') as f:
+def fix(file):
+    f = open(file, 'r')
     lines = f.readlines()
+    f.close()
 
     filtered_lines = []
 
@@ -17,4 +20,12 @@ with open('latex2/latex/latency_full_median.tex', 'r') as f:
             filtered_lines.append(lines[i])
     filtered_lines.append(lines[-1])
 
-    print(''.join(filtered_lines))
+    with open(file, 'w') as f:
+        f.write(''.join(filtered_lines))
+
+if __name__ == '__main__':
+    p = argparse.ArgumentParser()
+    p.add_argument('file')
+
+    args = p.parse_args()
+    fix(args.file)
