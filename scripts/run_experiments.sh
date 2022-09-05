@@ -35,3 +35,5 @@ do
 done
 
 python3 latex_generation_all.py
+
+python3 ./scripts/compile_latex_plots_to_standalone.py
