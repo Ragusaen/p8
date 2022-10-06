@@ -4,7 +4,7 @@
 
            # Downloads topologies (Currently already in folder)
 
-FILTER="$1" #Filter for which
+FILTER="$1" #Filter(prefix) for which of topology to run the experiments on
 
 ./scripts/create_confs.sh no "${FILTER}" # Create configurations that will be run. However, this will take a long time. To only create a subset of the problems, filter to only those topologies starting with `zoo_A` by `./scripts/create_confs.sh no zoo_A`.
 

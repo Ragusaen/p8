@@ -14,10 +14,10 @@ This script will set up a virtual python environment and install the required pa
 
 # Options to limit amount of topologies and algorithms
 The first argument is a string filter for which topologies to run. For example, `./scripts/run_experiments.sh zoo_A all` would run all the zoo topologies starting with A.
-The second argument specifies which algorithms to run. For all algorithms write `all`. If you only want to run e.g. all topologies using rmpls and FBR with memory limit of 4, it would be: `./run_experiments.sh "" rmpls input-disjoint_max-mem=4`.
+The second argument specifies which algorithms to run. For all algorithms write `all`. If you only want to run e.g. all topologies using rmpls and FBR with memory limit of 4, it would be: `./scripts/run_experiments.sh "" rmpls input-disjoint_max-mem=4`.
 
 To recreate some of the results in reasonable time, we suggest you run:
-```./run_experiments.sh zoo_A rmpls rsvp-fn tba-simple input-disjoint_max-mem=2 input-disjoint_max-mem=3 input-disjoint_max-mem=4 input-disjoint_max-mem=6 input-disjoint_max-mem=8 input-disjoint_max-mem=16 input-disjoint_max-mem=25 tba-complex_max-mem=2 tba-complex_max-mem=3 tba-complex_max-mem=4 tba-complex_max-mem=6 tba-complex_max-mem=8 tba-complex_max-mem=16 tba-complex_max-mem=25```
+```./scripts/run_experiments.sh zoo_A rmpls rsvp-fn tba-simple input-disjoint_max-mem=2 input-disjoint_max-mem=3 input-disjoint_max-mem=4 input-disjoint_max-mem=6 input-disjoint_max-mem=8 input-disjoint_max-mem=16 input-disjoint_max-mem=25 tba-complex_max-mem=2 tba-complex_max-mem=3 tba-complex_max-mem=4 tba-complex_max-mem=6 tba-complex_max-mem=8 tba-complex_max-mem=16 tba-complex_max-mem=25```
 
 The algorithms are: 
 
